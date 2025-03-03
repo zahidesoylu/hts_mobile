@@ -1,19 +1,29 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoginScreen from '../../src/screens/LoginScreen'; // LoginScreen'in doğru yolda olduğundan emin olun
-import DoctorMenu from '../../src/screens/DoctorMenu';   // Aynı şekilde diğer ekranlar için de kontrol edin
-import PatientMenu from '../../src/screens/PatientMenu';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack"; // Doğru import
+import { NavigationContainer } from "@react-navigation/native";
+import LoginScreen from "../../src/screens/LoginScreen";
+import DoctorMenu from "../../src/screens/DoctorMenu";
+import PatientMenu from "../../src/screens/PatientMenu";
+import RegisterScreen from "../../src/screens/RegisterScreen";
 
-const App = () => {
+export type RootStackParamList = {
+  LoginScreen: undefined;
+  DoctorMenu: undefined;
+  PatientMenu: undefined;
+  RegisterScreen: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>(); // Doğru Stack tanımı
+
+const Navigation = () => {
   return (
-    <Router>
-      <Routes>
-      <Route path="/" element={<LoginScreen />} />        <Route path="/doctor-menu" element={<DoctorMenu />} />
-        <Route path="/patient-menu" element={<PatientMenu />} />
-        {/* Diğer ekranlar */}
-      </Routes>
-    </Router>
+      <Stack.Navigator initialRouteName="RegisterScreen">
+        <Stack.Screen name="LoginScreen" component={LoginScreen} />
+        <Stack.Screen name="DoctorMenu" component={DoctorMenu} />
+        <Stack.Screen name="PatientMenu" component={PatientMenu} />
+        <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+      </Stack.Navigator>
   );
 };
 
-export default App;
-
+export default Navigation;
