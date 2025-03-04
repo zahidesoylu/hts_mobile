@@ -10,6 +10,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#ccc",
     height: 60, // Sabit yükseklik eklendi
+    borderTopLeftRadius: 0,  // 🔹 Sadece sol üst köşe yuvarlak
+    borderTopRightRadius: 0, // 🔹 Sadece sağ üst köşe yuvarlak
+    borderBottomLeftRadius: 10, // 🔸 Alt köşeler köşeli
+    borderBottomRightRadius: 10, 
   },
   text: {
     fontSize: 16,
