@@ -1,124 +1,146 @@
 import React from "react";
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Image, 
-  TouchableOpacity, 
-  StyleSheet 
-} from "react-native";
+import { View, Text, SafeAreaView, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import BottomMenu from "../../src/components/ui/BottomMenu";
 
 const DoctorMenu = () => {
+  const doctorGender = "male"; // "male" veya "female" olarak değiştirilebilir
+
   return (
-    <View style={styles.container}>
-      {/* Üst Kısım */}
-      <View style={styles.header}>
-        <Text style={styles.date}>29 Şubat 2025</Text>
-        <View style={styles.profileContainer}>
-          <Text style={styles.greeting}>Merhaba, Dr. X</Text>
-          <Image source={{ uri: "DOKTOR_PROFIL_RESIM_URL" }} style={styles.profileImage} />
+    <SafeAreaView style={styles.containerWrapper}>
+      {/* İçerik */}
+      <View style={styles.container}>
+        <View style={styles.innerContainer}>
+          {/* Tarih Alanı */}
+          <View style={styles.topSection}>
+            <Text style={styles.dateText}>4 Mart 2025</Text>
+          </View>
+
+          {/* Doktor Bilgileri */}
+          <View style={styles.doctorInfoWrapper}>
+            <View style={styles.doctorInfo}>
+              <Text style={styles.doctorTitle}>Doç. Dr.</Text>
+              <Text style={styles.doctorName}>Şeyma Özkaya</Text>
+            </View>
+            <View style={styles.profileIconContainer}>
+              <MaterialCommunityIcons
+                name={doctorGender === "male" ? "doctor" : "face-woman"}
+                size={50}
+                color="#007AFF"
+              />
+            </View>
+          </View>
+
+          {/* Arama Alanı */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color="gray" />
+            <TextInput placeholder="Ara..." style={styles.searchInput} />
+          </View>
+
+          {/* Butonlar */}
+          <View style={styles.buttonGrid}>
+            {["Randevular", "Raporlar", "Hastalar", "Mesajlar"].map((item, index) => (
+              <TouchableOpacity key={index} style={styles.menuButton}>
+                <Text style={styles.buttonText}>{item}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Alt Menü - İçeriğin en altında sabitlendi */}
+          <BottomMenu />
         </View>
       </View>
-
-      {/* Arama Çubuğu */}
-      <TextInput style={styles.searchBar} placeholder="Ara..." />
-
-      {/* Özellik Kartları */}
-      <View style={styles.featuresContainer}>
-        <TouchableOpacity style={styles.featureBox}><Text>Randevular</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.featureBox}><Text>Hasta Bilgileri</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.featureBox}><Text>Raporlar</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.featureBox}><Text>Mesajlar</Text></TouchableOpacity>
-      </View>
-
-      {/* Alt Navigasyon */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity><Ionicons name="home" size={24} /></TouchableOpacity>
-        <TouchableOpacity><Ionicons name="calendar" size={24} /></TouchableOpacity>
-        <TouchableOpacity><Ionicons name="chatbubbles" size={24} /></TouchableOpacity>
-        <TouchableOpacity><Ionicons name="settings" size={24} /></TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
-// StyleSheet ile stiller
 const styles = StyleSheet.create({
-  container: {
+  containerWrapper: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
-    padding: 20,
+    backgroundColor: "#f5f5f5",
   },
-  header: {
-    flexDirection: "column" as "column",
+  container: {
+    flex: 1, // Tüm ekranı kaplasın
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  innerContainer: {
+    width: "90%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    elevation: 5,
+    flex: 1, // İçeriğin tüm alanı doldurmasını sağlar
+    justifyContent: "flex-start",
+  },
+  topSection: {
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  dateText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+  },
+  doctorInfoWrapper: {
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    width: "100%",
+    marginTop: 10,
   },
-  date: {
-    fontSize: 16,
-    color: "#6C757D",
+  doctorInfo: {
+    alignItems: "flex-start",
   },
-  profileContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 5,
-  },
-  greeting: {
+  doctorName: {
     fontSize: 18,
     fontWeight: "bold",
-    marginRight: 10,
   },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  doctorTitle: {
+    fontSize: 16,
+    color: "gray",
   },
-  searchBar: {
-    height: 40,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+  profileIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: "#e0e0e0",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  featuresContainer: {
+  searchContainer: {
+    marginVertical: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e0e0e0",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+  },
+  searchInput: {
+    flex: 1,
+    padding: 10,
+  },
+  buttonGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
-  featureBox: {
+  menuButton: {
     width: "48%",
     height: 100,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#e0e0e0",
     borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    marginBottom: 15,
-  },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
     alignItems: "center",
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    elevation: 5,
+    justifyContent: "center",
+    marginVertical: 5,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
 export default DoctorMenu;
-
