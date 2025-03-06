@@ -6,6 +6,7 @@ import DoctorMenu from "../../src/screens/DoctorMenu";
 import PatientMenu from "../../src/screens/PatientMenu";
 import RegisterScreen from "../../src/screens/RegisterScreen";
 import DrRandevuButton from "../../src/screens/DrRandevuButton";
+import PtRandevuButton from "../../src/screens/PtRandevuButton";
 
 
 export type RootStackParamList = {
@@ -14,18 +15,21 @@ export type RootStackParamList = {
   PatientMenu: undefined;
   RegisterScreen: undefined;
   DrRandevuButton: undefined;
+  PtRandevuButton: undefined;
+
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>(); // Doğru Stack tanımı
 
 const Navigation = () => {
   return (
-      <Stack.Navigator initialRouteName="DrRandevuButton">
+      <Stack.Navigator initialRouteName="PtRandevuButton">
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="DoctorMenu" component={DoctorMenu} />
         <Stack.Screen name="PatientMenu" component={PatientMenu} />
         <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
         <Stack.Screen name="DrRandevuButton" component={DrRandevuButton} />
+        <Stack.Screen name="PtRandevuButton" component={PtRandevuButton} />
       </Stack.Navigator>
   );
 };
