@@ -1,7 +1,7 @@
-import React from "react";
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import BottomMenu from "../../src/components/ui/BottomMenu";
+import SearchBar from "../../src/components/ui/SearchBar";
 
 const PatientMenu = () => {
   const patientName = "Hasta: Ayşe Yılmaz";
@@ -26,10 +26,8 @@ const PatientMenu = () => {
         <Text style={styles.doctorName}>{doctorName}</Text>
 
         {/* Arama Çubuğu */}
-        <View style={styles.searchContainer}>
-          <FontAwesome name="search" size={20} color="gray" />
-          <TextInput placeholder="Ara..." style={styles.searchInput} />
-        </View>
+        <SearchBar /> 
+
 
         {/* Menü Butonları */}
         <View style={styles.menuContainer}>
@@ -87,31 +85,17 @@ const styles = StyleSheet.create({
     color: "gray",
     marginTop: 10,
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#eee",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginVertical: 35,
-    width: "100%",
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 8,
-    marginLeft: 15,
-  },
   menuContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    justifyContent: "center", // 📌 Butonları yatayda ortalar
+    justifyContent: "space-evenly", // 📌 Butonları yatayda ortalar
     width: "100%", // 📌 Konteynerin genişliği tam olsun
 },
 
   menuButton: {
-    width: "45%",
-    height: "80%",
+    width: "40%",
+    height: "70%",
     backgroundColor: "#ddd",
     padding: 20,
     borderRadius: 10,
