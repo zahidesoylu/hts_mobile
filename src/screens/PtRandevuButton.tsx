@@ -181,6 +181,11 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginBottom: 18,
     },
+    dateButtonText: {
+        color: "#fff", // yazının beyaz renkte olması
+        fontSize: 16,
+        fontWeight: "bold",
+    },
     headingText: {
         fontSize: 18,
         fontWeight: "bold",

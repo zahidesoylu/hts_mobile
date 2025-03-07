@@ -26,7 +26,7 @@ const PatientMenu = () => {
         <Text style={styles.doctorName}>{doctorName}</Text>
 
         {/* Arama Çubuğu */}
-        <SearchBar /> 
+        <SearchBar />
 
 
         {/* Menü Butonları */}
@@ -58,9 +58,9 @@ const styles = StyleSheet.create({
     height: 600,
     backgroundColor: "white",
     padding: 30,
-    borderTopLeftRadius: 10,  // 🔹 Sadece sol üst köşe yuvarlak
-    borderTopRightRadius: 10, // 🔹 Sadece sağ üst köşe yuvarlak
-    borderBottomLeftRadius: 0, // 🔸 Alt köşeler köşeli
+    borderTopLeftRadius: 10,  
+    borderTopRightRadius: 10, 
+    borderBottomLeftRadius: 0, 
     borderBottomRightRadius: 0,
     alignItems: "center",
     shadowColor: "#000",
@@ -89,9 +89,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    justifyContent: "space-evenly", // 📌 Butonları yatayda ortalar
-    width: "100%", // 📌 Konteynerin genişliği tam olsun
-},
+    justifyContent: "space-evenly", 
+    width: "100%", 
+  },
 
   menuButton: {
     width: "40%",
