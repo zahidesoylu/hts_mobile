@@ -1,25 +1,30 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import BottomMenuStyles from "../../styles/BottomMenuStyles";
+import styles from "../../styles/BottomMenuStyles"; 
+
+
+
+
 const BottomMenu = () => {
   return (
-    <View style={BottomMenuStyles.container}>
-      <TouchableOpacity style={BottomMenuStyles.menuItem}>
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.menuItem}>
         <MaterialCommunityIcons name="home" size={24} color="black" />
-        <Text style={BottomMenuStyles.menuText}>Anasayfa</Text>
+        <Text style={styles.menuText}>Anasayfa</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={BottomMenuStyles.micButton}>
+      <TouchableOpacity style={styles.micButton}>
         <MaterialCommunityIcons name="microphone" size={24} color="white" />
       </TouchableOpacity>
 
-      <TouchableOpacity style={BottomMenuStyles.menuItem}>
+      <TouchableOpacity style={styles.menuItem}>
         <MaterialCommunityIcons name="cog" size={24} color="black" />
-        <Text style={BottomMenuStyles.menuText}>Ayarlar</Text>
+        <Text style={styles.menuText}>Ayarlar</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 export default BottomMenu;
+

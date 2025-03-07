@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@react-native-community/cli": "^17.0.0",
     "@types/expo__vector-icons": "^9.0.1",
     "@types/jest": "^29.5.12",
     "@types/react": "^18.3.1",
