@@ -9,7 +9,9 @@ import DrRandevuButton from "../../src/screens/DrRandevuButton";
 import PtRandevuButton from "../../src/screens/PtRandevuButton";
 import DrHastalar from "../../src/screens/DrHastalar";
 import DrMessageScreen from "../../src/screens/ChatScreen";
-import DoctorMessage from "@/screens/DrMessage";
+import DoctorMessage from "../../src/screens/DrMessage";
+import PtReport from "../../src/screens/PtReport";
+import firestore from '@react-native-firebase/firestore'; // Firestore'dan kullanıcı verilerine erişim için import
 
 
 
@@ -23,6 +25,7 @@ export type RootStackParamList = {
   DrHastalar: undefined;
   DrMessageScreen: undefined;
   DrMessage: undefined;
+  PtReport: undefined;
 
 };
 
@@ -30,7 +33,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>(); // Doğru Stack 
 
 const Navigation = () => {
   return (
-      <Stack.Navigator initialRouteName="DrMessage">
+      <Stack.Navigator initialRouteName="LoginScreen">
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="DoctorMenu" component={DoctorMenu} />
         <Stack.Screen name="PatientMenu" component={PatientMenu} />
@@ -40,6 +43,7 @@ const Navigation = () => {
         <Stack.Screen name="DrHastalar" component={DrHastalar} />
         <Stack.Screen name="DrMessageScreen" component={DrMessageScreen} />
         <Stack.Screen name="DrMessage" component={DoctorMessage} />
+        <Stack.Screen name="PtReport" component={PtReport} />
       </Stack.Navigator>
   );
 };

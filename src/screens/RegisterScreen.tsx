@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { ImageBackground } from "react-native";
-
+import { auth, db } from "../../src/config/firebaseConfig"; // Firebase auth ve firestore importları
+import { createUserWithEmailAndPassword } from "firebase/auth"; // Firebase auth metodları
+import { doc, setDoc } from "firebase/firestore"; // Firestore'da veri yazma
 
 const RegisterScreen = () => {
   const [tc, setTc] = useState("");
@@ -19,14 +20,14 @@ const RegisterScreen = () => {
   const [sifre, setSifre] = useState("");
   const [isButtonPressed, setIsButtonPressed] = useState(false);
 
-
-  const unvanlar = ["Pratisyen Hekim",
+  const unvanlar = [
+    "Pratisyen Hekim",
     "Operatör Doktor (Op. Dr.)",
     "Profesör (Prof. Dr.)",
     "Doçent (Doç. Dr.)",
     "Yardımcı Doçent (Dr. Öğr. Üyesi)",
     "Uzman Doktor (Uzm. Dr.)",
-    "Başhekim"
+    "Başhekim",
   ];
 
   const uzmanlikAlanlari = [
@@ -40,28 +41,76 @@ const RegisterScreen = () => {
     "Dermatoloji",
   ];
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
+    // Şifre doğrulaması
     if (sifre.length < 8 || !/[A-Z]/.test(sifre) || !/[0-9]/.test(sifre)) {
       alert("Şifre en az 8 karakter, bir büyük harf ve bir rakam içermelidir.");
       return;
     }
-    // Kayıt işlemi burada yapılacak
+  
+    try {
+      // Firebase Authentication ile kullanıcı kaydını yap
+      const userCredential = await createUserWithEmailAndPassword(auth, eposta, sifre);
+      const user = userCredential.user;
+  
+      // Firestore'a kullanıcı bilgilerini kaydet
+      await setDoc(doc(db, "doktorlar", user.uid), {
+        tc,
+        ad,
+        soyad,
+        unvan,
+        cinsiyet,
+        dogumTarihi,
+        telefon,
+        eposta,
+        uzmanlik,
+        egitim,
+        kurum,
+      });
+  
+      alert("Kayıt başarılı!");
+    } catch (error: unknown) { // error'ı unknown olarak kabul et
+      // error'ı kontrol et
+      if (error instanceof Error) {
+        alert(`Kayıt işlemi sırasında hata oluştu: ${error.message}`);
+      } else {
+        alert("Beklenmeyen bir hata oluştu.");
+      }
+    }
   };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.formContainer}>
-
         <Text style={styles.header}>Doktor Kayıt Formu</Text>
-        
+
         <Text>TC Kimlik Numarası:</Text>
-        <TextInput style={styles.input} placeholder="TC Kimlik Numaranızı girin" placeholderTextColor="#aaa" value={tc} onChangeText={setTc} />
+        <TextInput
+          style={styles.input}
+          placeholder="TC Kimlik Numaranızı girin"
+          placeholderTextColor="#aaa"
+          value={tc}
+          onChangeText={setTc}
+        />
 
         <Text>Ad:</Text>
-        <TextInput style={styles.input} placeholder="Adınızı girin" placeholderTextColor="#aaa" value={ad} onChangeText={setAd} />
+        <TextInput
+          style={styles.input}
+          placeholder="Adınızı girin"
+          placeholderTextColor="#aaa"
+          value={ad}
+          onChangeText={setAd}
+        />
 
         <Text>Soyad:</Text>
-        <TextInput style={styles.input} placeholder="Soyadınızı girin" placeholderTextColor="#aaa" value={soyad} onChangeText={setSoyad} />
+        <TextInput
+          style={styles.input}
+          placeholder="Soyadınızı girin"
+          placeholderTextColor="#aaa"
+          value={soyad}
+          onChangeText={setSoyad}
+        />
 
         <Text>Unvan:</Text>
         <Picker selectedValue={unvan} onValueChange={setUnvan} style={styles.picker}>
@@ -77,13 +126,33 @@ const RegisterScreen = () => {
         </Picker>
 
         <Text>Doğum Tarihi:</Text>
-        <TextInput style={styles.input} placeholder="Doğum Tarihinizi girin" placeholderTextColor="#aaa" value={dogumTarihi} onChangeText={setDogumTarihi} />
+        <TextInput
+          style={styles.input}
+          placeholder="Doğum Tarihinizi girin"
+          placeholderTextColor="#aaa"
+          value={dogumTarihi}
+          onChangeText={setDogumTarihi}
+        />
 
         <Text>Telefon:</Text>
-        <TextInput style={styles.input} placeholder="Telefon Numaranızı girin" placeholderTextColor="#aaa" value={telefon} onChangeText={setTelefon} keyboardType="phone-pad" />
+        <TextInput
+          style={styles.input}
+          placeholder="Telefon Numaranızı girin"
+          placeholderTextColor="#aaa"
+          value={telefon}
+          onChangeText={setTelefon}
+          keyboardType="phone-pad"
+        />
 
         <Text>E-Posta:</Text>
-        <TextInput style={styles.input} placeholder="E-Postanızı girin" placeholderTextColor="#aaa" value={eposta} onChangeText={setEposta} keyboardType="email-address" />
+        <TextInput
+          style={styles.input}
+          placeholder="E-Postanızı girin"
+          placeholderTextColor="#aaa"
+          value={eposta}
+          onChangeText={setEposta}
+          keyboardType="email-address"
+        />
 
         <Text>Uzmanlık Alanı:</Text>
         <Picker selectedValue={uzmanlik} onValueChange={setUzmanlik} style={styles.picker}>
@@ -93,13 +162,32 @@ const RegisterScreen = () => {
         </Picker>
 
         <Text>Eğitim Bilgisi:</Text>
-        <TextInput style={styles.input} placeholder="Üniversite Adı" placeholderTextColor="#aaa" value={egitim} onChangeText={setEgitim} />
+        <TextInput
+          style={styles.input}
+          placeholder="Üniversite Adı"
+          placeholderTextColor="#aaa"
+          value={egitim}
+          onChangeText={setEgitim}
+        />
 
         <Text>Çalıştığı Kurum:</Text>
-        <TextInput style={styles.input} placeholder="Kurum Adı" placeholderTextColor="#aaa" value={kurum} onChangeText={setKurum} />
+        <TextInput
+          style={styles.input}
+          placeholder="Kurum Adı"
+          placeholderTextColor="#aaa"
+          value={kurum}
+          onChangeText={setKurum}
+        />
 
         <Text>Şifre:</Text>
-        <TextInput style={styles.input} placeholder="Şifre" placeholderTextColor="#aaa" secureTextEntry value={sifre} onChangeText={setSifre} />
+        <TextInput
+          style={styles.input}
+          placeholder="Şifre"
+          placeholderTextColor="#aaa"
+          secureTextEntry
+          value={sifre}
+          onChangeText={setSifre}
+        />
 
         <TouchableOpacity
           style={[styles.button, isButtonPressed && styles.buttonPressed]}
@@ -109,74 +197,68 @@ const RegisterScreen = () => {
         >
           <Text style={styles.buttonText}>Kayıt Ol</Text>
         </TouchableOpacity>
-
       </View>
     </ScrollView>
   );
 };
 
+
 const styles = StyleSheet.create({
-    container: {
-      flexGrow: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 20,
-      backgroundColor: "#f5f5f5",
-    },
-    formContainer: {
-      width: "30%",
-      backgroundColor: "#fff",
-      padding: 20,
-      borderRadius: 10,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
-      elevation: 3,
-    },
-    header: {
-      fontSize: 20,
-      fontWeight: "bold",
-      textAlign: "center",
-      marginBottom: 15,
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: "#ccc",
-      borderRadius: 5,
-      padding: 10,
-      marginBottom: 10,
-      backgroundColor: "#fff",
-    },
-    picker: {
-      borderWidth: 1,
-      borderColor: "#ccc",
-      borderRadius: 5,
-      padding: 10,
-      marginBottom: 10,
-    },
-    button: {
-      backgroundColor: "#007bff",
-      padding: 10,
-      borderRadius: 5,
-      alignItems: "center",
-      marginTop: 10,
-    },
-    buttonPressed: {
-      borderColor: "#0056b3",
-      borderWidth: 2,
-    },
-    buttonText: {
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-    overlay: {
-        backgroundColor: "rgba(255, 255, 255, 0.8)", // Hafif beyaz şeffaf katman
-        padding: 20,
-        borderRadius: 10,
-      },      
-  });
-  
+  container: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#f5f5f5",
+  },
+  formContainer: {
+    width: "80%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 15,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: "#fff",
+  },
+  picker: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: "#007bff",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonPressed: {
+    borderColor: "#0056b3",
+    borderWidth: 2,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+});
 
 export default RegisterScreen;

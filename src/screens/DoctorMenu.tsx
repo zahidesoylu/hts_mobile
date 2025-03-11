@@ -4,8 +4,9 @@ import { FontAwesome } from "@expo/vector-icons";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import SearchBar from "../../src/components/ui/SearchBar";
 
-const DoctorMenu = () => {
-  const doctorName = "Doktor: Şeyma Özkaya";
+const DoctorMenu = ({ route }: any) => {
+  const { doctorName } = route.params; // DoctorName parametresini alıyoruz
+
 
   return (
     <View style={styles.container}>

@@ -5,8 +5,8 @@ import BottomMenu from "../components/ui/BottomMenu";
 
 const MessageScreen = () => {
     const [messages, setMessages] = useState([
-        { id: "1", sender: "Doktor", text: "Merhaba, nasıl hissediyorsunuz?", time: "10:00 AM" },
-        { id: "2", sender: "Hasta", text: "İyi hissediyorum, teşekkür ederim.", time: "10:05 AM" },
+        { id: "1", sender: "Doktor", text: "İyi hissediyorum, teşekkür ederim.", time: "10:00 AM" },
+        { id: "2", sender: "Hasta", text: "Merhaba, nasıl hissediyorsunuz?", time: "10:05 AM" },
     ]);
     const [message, setMessage] = useState("");
 
