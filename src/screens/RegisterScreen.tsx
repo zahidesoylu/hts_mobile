@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { auth, db } from "../../src/config/firebaseConfig"; // Firebase auth ve firestore importları
+import { db } from "../../src/config/firebaseConfig"; // Firebase auth ve firestore importları
 import { createUserWithEmailAndPassword } from "firebase/auth"; // Firebase auth metodları
-import { doc, setDoc } from "firebase/firestore"; // Firestore'da veri yazma
+import { doc, setDoc, collection, getDocs } from "firebase/firestore"; // Firestore'da veri yazma
+import { auth } from '../config/firebaseConfig'; // Firebase'i import ettik
 
 const RegisterScreen = () => {
   const [tc, setTc] = useState("");
@@ -19,16 +20,23 @@ const RegisterScreen = () => {
   const [kurum, setKurum] = useState("");
   const [sifre, setSifre] = useState("");
   const [isButtonPressed, setIsButtonPressed] = useState(false);
+  const [unvanlar, setUnvanlar] = useState<string[]>([]);
+  const [selectedUnvan, setSelectedUnvan] = useState("Uzman");
 
-  const unvanlar = [
-    "Pratisyen Hekim",
-    "Operatör Doktor (Op. Dr.)",
-    "Profesör (Prof. Dr.)",
-    "Doçent (Doç. Dr.)",
-    "Yardımcı Doçent (Dr. Öğr. Üyesi)",
-    "Uzman Doktor (Uzm. Dr.)",
-    "Başhekim",
-  ];
+  useEffect(() => {
+    const fetchUnvanlar = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "unvanlar"));
+        const unvanList: string[] = querySnapshot.docs.map((doc) => doc.data().ad);
+        setUnvanlar(unvanList);
+        console.log("Unvanlar:", unvanList); // Verileri konsola yazdır
+      } catch (error) {
+        console.error("Ünvanları çekerken hata oluştu:", error);
+      }
+    };
+
+    fetchUnvanlar();
+  }, []);
 
   const uzmanlikAlanlari = [
     "Dahiliye",
@@ -42,23 +50,29 @@ const RegisterScreen = () => {
   ];
 
   const handleRegister = async () => {
+    // E-posta ve şifre kontrolü
+    if (!eposta || !sifre) {
+      alert("E-posta ve şifre boş olamaz!");
+      return;
+    }
+
     // Şifre doğrulaması
     if (sifre.length < 8 || !/[A-Z]/.test(sifre) || !/[0-9]/.test(sifre)) {
       alert("Şifre en az 8 karakter, bir büyük harf ve bir rakam içermelidir.");
       return;
     }
-  
+
     try {
       // Firebase Authentication ile kullanıcı kaydını yap
       const userCredential = await createUserWithEmailAndPassword(auth, eposta, sifre);
       const user = userCredential.user;
-  
+
       // Firestore'a kullanıcı bilgilerini kaydet
       await setDoc(doc(db, "doktorlar", user.uid), {
         tc,
         ad,
         soyad,
-        unvan,
+        unvan: selectedUnvan, // Burada seçilen unvan kaydediliyor
         cinsiyet,
         dogumTarihi,
         telefon,
@@ -67,18 +81,17 @@ const RegisterScreen = () => {
         egitim,
         kurum,
       });
-  
+
       alert("Kayıt başarılı!");
-    } catch (error: unknown) { // error'ı unknown olarak kabul et
-      // error'ı kontrol et
+    } catch (error: unknown) {
       if (error instanceof Error) {
+        console.log("Hata mesajı:", error.message);
         alert(`Kayıt işlemi sırasında hata oluştu: ${error.message}`);
       } else {
         alert("Beklenmeyen bir hata oluştu.");
       }
     }
   };
-  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -112,12 +125,21 @@ const RegisterScreen = () => {
           onChangeText={setSoyad}
         />
 
-        <Text>Unvan:</Text>
-        <Picker selectedValue={unvan} onValueChange={setUnvan} style={styles.picker}>
-          {unvanlar.map((item) => (
-            <Picker.Item key={item} label={item} value={item} />
-          ))}
-        </Picker>
+        <Text>Unvan Seçin:</Text>
+        {unvanlar.length > 0 ? (
+          <Picker
+            selectedValue={selectedUnvan}
+            style={styles.picker}
+            onValueChange={(itemValue) => setSelectedUnvan(itemValue)}
+          >
+            <Picker.Item label="Seçiniz..." value="" />
+            {unvanlar.map((unvanlar, index) => (
+              <Picker.Item key={index} label={unvanlar} value={unvanlar} />
+            ))}
+          </Picker>
+        ) : (
+          <Text>Veriler yükleniyor...</Text> // Eğer veriler gelmiyorsa bu mesajı göster
+        )}
 
         <Text>Cinsiyet:</Text>
         <Picker selectedValue={cinsiyet} onValueChange={setCinsiyet} style={styles.picker}>
@@ -202,7 +224,6 @@ const RegisterScreen = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -234,7 +255,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f8f8",
   },
   picker: {
     borderWidth: 1,
@@ -242,17 +263,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
+    backgroundColor: "#f8f8f8",
   },
   button: {
-    backgroundColor: "#007bff",
-    padding: 10,
+    backgroundColor: "#3498db",
+    padding: 15,
     borderRadius: 5,
     alignItems: "center",
-    marginTop: 10,
   },
   buttonPressed: {
-    borderColor: "#0056b3",
-    borderWidth: 2,
+    backgroundColor: "#2980b9",
   },
   buttonText: {
     color: "#fff",

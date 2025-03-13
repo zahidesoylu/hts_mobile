@@ -3,7 +3,6 @@ import { View, Alert, Text, TextInput, TouchableOpacity, StyleSheet } from "reac
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; // Firebase'den giriş için gerekli import
 import { auth } from "../../src/config/firebaseConfig"; // Firebase konfigürasyon dosyasından auth'i alıyoruz
-import firestore from '@react-native-firebase/firestore'; // Firestore'dan kullanıcı verilerine erişim için import
 import { getFirestore, doc, getDoc, collection } from 'firebase/firestore';
 
 

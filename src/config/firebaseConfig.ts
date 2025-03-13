@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, collection } from 'firebase/firestore';
+
 
 // Firebase konfigürasyon bilgilerin
 const firebaseConfig = {
@@ -19,6 +20,9 @@ const app = initializeApp(firebaseConfig);
 // Firebase servislerini al (Auth ve Firestore gibi)
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+
+
 
 // Firebase servislerini dışa aktar
 export { auth, db };
