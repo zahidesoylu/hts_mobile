@@ -10,7 +10,6 @@ const RegisterScreen = () => {
   const [tc, setTc] = useState("");
   const [ad, setAd] = useState("");
   const [soyad, setSoyad] = useState("");
-  const [unvan, setUnvan] = useState("Uzman");
   const [cinsiyet, setCinsiyet] = useState("Kadın");
   const [dogumTarihi, setDogumTarihi] = useState("");
   const [telefon, setTelefon] = useState("");
@@ -21,13 +20,15 @@ const RegisterScreen = () => {
   const [sifre, setSifre] = useState("");
   const [isButtonPressed, setIsButtonPressed] = useState(false);
   const [unvanlar, setUnvanlar] = useState<string[]>([]);
+  const [UzmanlikAlanlari, setUzmanlikAlanlari] = useState<string[]>([]);
   const [selectedUnvan, setSelectedUnvan] = useState("Uzman");
+  const [selectedUzmanlikAlanlari, setSelectedUzmanlikAlanlari] = useState("Dahiliye");
 
   useEffect(() => {
     const fetchUnvanlar = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "unvanlar"));
-        const unvanList: string[] = querySnapshot.docs.map((doc) => doc.data().ad);
+        var querySnapshot = await getDocs(collection(db, "unvanlar"));
+        const unvanList: string[] = querySnapshot.docs.map((doc) => doc.data().name);
         setUnvanlar(unvanList);
         console.log("Unvanlar:", unvanList); // Verileri konsola yazdır
       } catch (error) {
@@ -38,16 +39,25 @@ const RegisterScreen = () => {
     fetchUnvanlar();
   }, []);
 
-  const uzmanlikAlanlari = [
-    "Dahiliye",
-    "Kardiyoloji",
-    "Nöroloji",
-    "Ortopedi",
-    "Göz Hastalıkları",
-    "Kulak Burun Boğaz",
-    "Üroloji",
-    "Dermatoloji",
-  ];
+
+
+  // Veri çekme fonksiyonu
+  useEffect(() => {
+    const fetchUzmanlikAlanlari = async () => {
+      try {
+        var querySnapshot = await getDocs(collection(db, "uzmanlikAlanlari"));
+        const uzmanlikList: string[] = querySnapshot.docs.map((doc) => doc.data().name);
+        setUzmanlikAlanlari(uzmanlikList);
+        console.log("Uzmanlık Alanları:",uzmanlikList ); // Verileri konsola yazdır
+      } catch (error) {
+        console.error("Veri çekilirken hata:", error);
+      }
+    };
+
+    fetchUzmanlikAlanlari();
+  }, []);
+
+
 
   const handleRegister = async () => {
     // E-posta ve şifre kontrolü
@@ -77,7 +87,7 @@ const RegisterScreen = () => {
         dogumTarihi,
         telefon,
         eposta,
-        uzmanlik,
+        uzmanlik:selectedUzmanlikAlanlari,
         egitim,
         kurum,
       });
@@ -176,12 +186,21 @@ const RegisterScreen = () => {
           keyboardType="email-address"
         />
 
-        <Text>Uzmanlık Alanı:</Text>
-        <Picker selectedValue={uzmanlik} onValueChange={setUzmanlik} style={styles.picker}>
-          {uzmanlikAlanlari.map((item) => (
-            <Picker.Item key={item} label={item} value={item} />
-          ))}
-        </Picker>
+        <Text>Uzmanlık Alanınızı Seçin:</Text>
+        {UzmanlikAlanlari.length > 0 ? (
+          <Picker
+            selectedValue={selectedUzmanlikAlanlari}
+            style={styles.picker}
+            onValueChange={(itemValue) => setSelectedUzmanlikAlanlari(itemValue)}
+          >
+            <Picker.Item label="Seçiniz..." value="" />
+            {unvanlar.map((uzmanlikAlanlari, index) => (
+              <Picker.Item key={index} label={uzmanlikAlanlari} value={uzmanlikAlanlari} />
+            ))}
+          </Picker>
+        ) : (
+          <Text>Veriler yükleniyor...</Text> // Eğer veriler gelmiyorsa bu mesajı göster
+        )}
 
         <Text>Eğitim Bilgisi:</Text>
         <TextInput
