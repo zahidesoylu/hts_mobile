@@ -14,7 +14,6 @@ const RegisterScreen = () => {
   const [dogumTarihi, setDogumTarihi] = useState("");
   const [telefon, setTelefon] = useState("");
   const [eposta, setEposta] = useState("");
-  const [uzmanlik, setUzmanlik] = useState("Diyabet");
   const [egitim, setEgitim] = useState("");
   const [kurum, setKurum] = useState("");
   const [sifre, setSifre] = useState("");

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-nativ
 import { FontAwesome } from "@expo/vector-icons";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import SearchBar from "../../src/components/ui/SearchBar";
+import firestore from '@react-native-firebase/firestore'; // Firestore'dan kullanıcı verilerine erişim için import
+
 
 const DoctorMenu = ({ route }: any) => {
   const { doctorName } = route.params; // DoctorName parametresini alıyoruz
