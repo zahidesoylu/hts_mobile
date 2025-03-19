@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { db } from "../../src/config/firebaseConfig";
-import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
+import { doc, updateDoc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { auth } from '../config/firebaseConfig';
 import { getAuth,createUserWithEmailAndPassword } from "firebase/auth";
 
@@ -56,12 +56,13 @@ const RegisterScreen = ({ navigation, route }: any) => {
   }, []);
 
   const handleRegister = async () => {
+    // Gerekli alanların doldurulup doldurulmadığını kontrol ediyoruz
     if (!tc || !ad || !soyad || !dogumTarihi || !telefon || !selectedUnvan || !selectedUzmanlikAlanlari) {
       alert("Lütfen tüm alanları doldurun.");
       return;
     }
   
-    // Telefon numarası doğrulama
+    // Telefon numarasının geçerli olup olmadığını kontrol ediyoruz
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(telefon)) {
       alert("Geçersiz telefon numarası. Lütfen 10 haneli bir telefon numarası girin.");
@@ -69,47 +70,54 @@ const RegisterScreen = ({ navigation, route }: any) => {
     }
   
     try {
-      // Firebase Auth ile şifreyi de ekleyerek kullanıcıyı oluştur
-      const userCredential = await createUserWithEmailAndPassword(auth, eposta, password); // Kullanıcıyı oluştur
-      const uid = userCredential.user.uid; // Kullanıcının UID’sini al
+      // Firebase Auth'tan mevcut kullanıcıyı alıyoruz
+      const user = auth.currentUser;
   
-      // Veritabanındaki doktor kaydını oluştur
-      const doctorRef = doc(db, "users", uid); // Firestore'da users koleksiyonunda ilgili UID ile belge referansı al
-      const docSnap = await getDoc(doctorRef); // İlgili belgenin var olup olmadığını kontrol et
-  
-      if (!docSnap.exists()) { // Belge yoksa, verileri Firestore'a kaydediyoruz
-        await setDoc(doctorRef, {
-          tc,
-          ad,
-          soyad,
-          unvan: selectedUnvan,
-          cinsiyet,
-          dogumTarihi,
-          telefon,
-          eposta, // E-posta değişmeden kaldı
-          uzmanlik: selectedUzmanlikAlanlari,
-          egitim,
-          kurum,
-        });
-  
-        alert("Kayıt başarıyla tamamlandı!");
-        navigation.navigate("DoctorMenu"); // Başka bir ekrana yönlendirme
-      } else {
-        alert("Bu kullanıcı zaten kayıtlı.");
+      if (!user) {
+        alert("Lütfen önce giriş yapın.");
+        return;
       }
+  
+      // Firestore'da ilgili kullanıcıyı buluyoruz
+      const doctorRef = doc(db, "users", user.uid); // Firestore'da "users" koleksiyonundaki kullanıcı verisine referans alıyoruz
+      const docSnap = await getDoc(doctorRef); // Belgeyi alıyoruz
+  
+      if (!docSnap.exists()) { // Eğer kullanıcı verisi yoksa
+        alert("Bu kullanıcı bulunamadı. Lütfen tekrar giriş yapın.");
+        return;
+      }
+  
+      // Kullanıcı verilerini güncelliyoruz
+      await updateDoc(doctorRef, {
+        tc,
+        ad,
+        soyad,
+        unvan: selectedUnvan,
+        cinsiyet,
+        dogumTarihi,
+        telefon,
+        eposta, // E-posta verisi değişmeden kalacak
+        uzmanlik: selectedUzmanlikAlanlari,
+        egitim,
+        kurum,
+      });
+  
+      alert("Kayıt başarıyla tamamlandı!");
+      navigation.navigate("DoctorMenu"); // Kullanıcıyı ilgili menüye yönlendiriyoruz
     } catch (error: unknown) {
+      // Hata durumunda kullanıcıya mesaj veriyoruz
       if (error instanceof Error) {
         console.log("Email:", eposta);
         console.log("Password:", password);
         console.log("Hata mesajı:", error.message);
-        console.log(route.params);  // Tüm parametreleri konsola yazdırın
-
+  
         alert(`Kayıt işlemi sırasında hata oluştu: ${error.message}`);
       } else {
         alert("Beklenmeyen bir hata oluştu.");
       }
     }
   };
+  
   
   
   return (

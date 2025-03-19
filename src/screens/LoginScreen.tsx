@@ -97,12 +97,12 @@ const LoginScreen = ({ navigation }: any) => {
           />
           <View style={styles.passwordContainer}>
             <TextInput
-              style={styles.passwordInput}
               placeholder="Şifre"
-              secureTextEntry={!passwordVisible}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => setPassword(text)} // Şifreyi alıyoruz
+              secureTextEntry
             />
+            
             <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
               <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={20} color="#555" />
             </TouchableOpacity>
