@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { db } from "../../src/config/firebaseConfig"; // Firebase auth ve firestore importları
-import { createUserWithEmailAndPassword } from "firebase/auth"; // Firebase auth metodları
-import { doc, setDoc, collection, getDocs } from "firebase/firestore"; // Firestore'da veri yazma
-import { auth } from '../config/firebaseConfig'; // Firebase'i import ettik
+import { db } from "../../src/config/firebaseConfig";
+import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
+import { auth } from '../config/firebaseConfig';
+import { getAuth,createUserWithEmailAndPassword } from "firebase/auth";
 
-const RegisterScreen = () => {
+
+const RegisterScreen = ({ navigation, route }: any) => {
+  const { uid, eposta, password } = route.params; // Şifreyi de alıyoruz
+  console.log("Received email: ", eposta); // Emaili kontrol et
+  console.log("Received password: ", password);  // Şifreyi konsola yazdırarak kontrol edebilirsiniz.
+
+
   const [tc, setTc] = useState("");
   const [ad, setAd] = useState("");
   const [soyad, setSoyad] = useState("");
   const [cinsiyet, setCinsiyet] = useState("Kadın");
   const [dogumTarihi, setDogumTarihi] = useState("");
   const [telefon, setTelefon] = useState("");
-  const [eposta, setEposta] = useState("");
   const [egitim, setEgitim] = useState("");
   const [kurum, setKurum] = useState("");
-  const [sifre, setSifre] = useState("");
   const [isButtonPressed, setIsButtonPressed] = useState(false);
   const [unvanlar, setUnvanlar] = useState<string[]>([]);
   const [UzmanlikAlanlari, setUzmanlikAlanlari] = useState<string[]>([]);
@@ -26,28 +30,23 @@ const RegisterScreen = () => {
   useEffect(() => {
     const fetchUnvanlar = async () => {
       try {
-        var querySnapshot = await getDocs(collection(db, "unvanlar"));
-        const unvanList: string[] = querySnapshot.docs.map((doc) => doc.data().name);
+        const querySnapshot = await getDocs(collection(db, "unvanlar"));
+        const unvanList: string[] = querySnapshot.docs.map((doc) => doc.data().unv);
         setUnvanlar(unvanList);
-        console.log("Unvanlar:", unvanList); // Verileri konsola yazdır
       } catch (error) {
-        console.error("Ünvanları çekerken hata oluştu:", error);
+        console.error("Unvanları çekerken hata oluştu:", error);
       }
     };
 
     fetchUnvanlar();
   }, []);
 
-
-
-  // Veri çekme fonksiyonu
   useEffect(() => {
     const fetchUzmanlikAlanlari = async () => {
       try {
-        var querySnapshot = await getDocs(collection(db, "uzmanlikAlanlari"));
+        const querySnapshot = await getDocs(collection(db, "uzmanlikAlanlari"));
         const uzmanlikList: string[] = querySnapshot.docs.map((doc) => doc.data().name);
         setUzmanlikAlanlari(uzmanlikList);
-        console.log("Uzmanlık Alanları:",uzmanlikList ); // Verileri konsola yazdır
       } catch (error) {
         console.error("Veri çekilirken hata:", error);
       }
@@ -56,57 +55,71 @@ const RegisterScreen = () => {
     fetchUzmanlikAlanlari();
   }, []);
 
-
-
   const handleRegister = async () => {
-    // E-posta ve şifre kontrolü
-    if (!eposta || !sifre) {
-      alert("E-posta ve şifre boş olamaz!");
+    if (!tc || !ad || !soyad || !dogumTarihi || !telefon || !selectedUnvan || !selectedUzmanlikAlanlari) {
+      alert("Lütfen tüm alanları doldurun.");
       return;
     }
-
-    // Şifre doğrulaması
-    if (sifre.length < 8 || !/[A-Z]/.test(sifre) || !/[0-9]/.test(sifre)) {
-      alert("Şifre en az 8 karakter, bir büyük harf ve bir rakam içermelidir.");
+  
+    // Telefon numarası doğrulama
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(telefon)) {
+      alert("Geçersiz telefon numarası. Lütfen 10 haneli bir telefon numarası girin.");
       return;
     }
-
+  
     try {
-      // Firebase Authentication ile kullanıcı kaydını yap
-      const userCredential = await createUserWithEmailAndPassword(auth, eposta, sifre);
-      const user = userCredential.user;
-
-      // Firestore'a kullanıcı bilgilerini kaydet
-      await setDoc(doc(db, "doktorlar", user.uid), {
-        tc,
-        ad,
-        soyad,
-        unvan: selectedUnvan, // Burada seçilen unvan kaydediliyor
-        cinsiyet,
-        dogumTarihi,
-        telefon,
-        eposta,
-        uzmanlik:selectedUzmanlikAlanlari,
-        egitim,
-        kurum,
-      });
-
-      alert("Kayıt başarılı!");
+      // Firebase Auth ile şifreyi de ekleyerek kullanıcıyı oluştur
+      const userCredential = await createUserWithEmailAndPassword(auth, eposta, password); // Kullanıcıyı oluştur
+      const uid = userCredential.user.uid; // Kullanıcının UID’sini al
+  
+      // Veritabanındaki doktor kaydını oluştur
+      const doctorRef = doc(db, "users", uid); // Firestore'da users koleksiyonunda ilgili UID ile belge referansı al
+      const docSnap = await getDoc(doctorRef); // İlgili belgenin var olup olmadığını kontrol et
+  
+      if (!docSnap.exists()) { // Belge yoksa, verileri Firestore'a kaydediyoruz
+        await setDoc(doctorRef, {
+          tc,
+          ad,
+          soyad,
+          unvan: selectedUnvan,
+          cinsiyet,
+          dogumTarihi,
+          telefon,
+          eposta, // E-posta değişmeden kaldı
+          uzmanlik: selectedUzmanlikAlanlari,
+          egitim,
+          kurum,
+        });
+  
+        alert("Kayıt başarıyla tamamlandı!");
+        navigation.navigate("DoctorMenu"); // Başka bir ekrana yönlendirme
+      } else {
+        alert("Bu kullanıcı zaten kayıtlı.");
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
+        console.log("Email:", eposta);
+        console.log("Password:", password);
         console.log("Hata mesajı:", error.message);
+        console.log(route.params);  // Tüm parametreleri konsola yazdırın
+
         alert(`Kayıt işlemi sırasında hata oluştu: ${error.message}`);
       } else {
         alert("Beklenmeyen bir hata oluştu.");
       }
     }
   };
-
+  
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.header}>Doktor Kayıt Formu</Text>
+    <View style={styles.scrollViewContainer}>
+    <Text style={styles.header}>Doktor Kayıt Tamamlama Formu</Text>
 
+      <ScrollView contentContainerStyle={styles.formContainer}>
+
+        {/* Diğer alanlar */}
         <Text>TC Kimlik Numarası:</Text>
         <TextInput
           style={styles.input}
@@ -114,6 +127,7 @@ const RegisterScreen = () => {
           placeholderTextColor="#aaa"
           value={tc}
           onChangeText={setTc}
+          keyboardType="numeric"
         />
 
         <Text>Ad:</Text>
@@ -142,12 +156,12 @@ const RegisterScreen = () => {
             onValueChange={(itemValue) => setSelectedUnvan(itemValue)}
           >
             <Picker.Item label="Seçiniz..." value="" />
-            {unvanlar.map((unvanlar, index) => (
-              <Picker.Item key={index} label={unvanlar} value={unvanlar} />
+            {unvanlar.map((unvan, index) => (
+              <Picker.Item key={index} label={unvan} value={unvan} />
             ))}
           </Picker>
         ) : (
-          <Text>Veriler yükleniyor...</Text> // Eğer veriler gelmiyorsa bu mesajı göster
+          <Text>Veriler yükleniyor...</Text>
         )}
 
         <Text>Cinsiyet:</Text>
@@ -175,16 +189,6 @@ const RegisterScreen = () => {
           keyboardType="phone-pad"
         />
 
-        <Text>E-Posta:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="E-Postanızı girin"
-          placeholderTextColor="#aaa"
-          value={eposta}
-          onChangeText={setEposta}
-          keyboardType="email-address"
-        />
-
         <Text>Uzmanlık Alanınızı Seçin:</Text>
         {UzmanlikAlanlari.length > 0 ? (
           <Picker
@@ -193,12 +197,12 @@ const RegisterScreen = () => {
             onValueChange={(itemValue) => setSelectedUzmanlikAlanlari(itemValue)}
           >
             <Picker.Item label="Seçiniz..." value="" />
-            {unvanlar.map((uzmanlikAlanlari, index) => (
-              <Picker.Item key={index} label={uzmanlikAlanlari} value={uzmanlikAlanlari} />
+            {UzmanlikAlanlari.map((uzmanlik, index) => (
+              <Picker.Item key={index} label={uzmanlik} value={uzmanlik} />
             ))}
           </Picker>
         ) : (
-          <Text>Veriler yükleniyor...</Text> // Eğer veriler gelmiyorsa bu mesajı göster
+          <Text>Veriler yükleniyor...</Text>
         )}
 
         <Text>Eğitim Bilgisi:</Text>
@@ -218,85 +222,85 @@ const RegisterScreen = () => {
           value={kurum}
           onChangeText={setKurum}
         />
-
-        <Text>Şifre:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Şifre"
-          placeholderTextColor="#aaa"
-          secureTextEntry
-          value={sifre}
-          onChangeText={setSifre}
-        />
-
-        <TouchableOpacity
-          style={[styles.button, isButtonPressed && styles.buttonPressed]}
-          onPress={handleRegister}
-          onPressIn={() => setIsButtonPressed(true)}
-          onPressOut={() => setIsButtonPressed(false)}
-        >
-          <Text style={styles.buttonText}>Kayıt Ol</Text>
-        </TouchableOpacity>
+      </ScrollView>
       </View>
+        <TouchableOpacity onPress={handleRegister} style={styles.button}>
+          <Text style={styles.buttonText}>Kaydet</Text>
+        </TouchableOpacity>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
   },
   formContainer: {
-    width: "80%",
-    backgroundColor: "#fff",
+    width: 300, 
+    height: 500, 
+    justifyContent: "center",
     padding: 20,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    borderRadius: 12,
+    marginTop: 25,
+    marginBottom: 25,
+    backgroundColor: "#f4f4f4", 
+    shadowColor: "#000", // Gölgeleme efekti
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1, // Hafif gölgeleme
     shadowRadius: 5,
-    elevation: 3,
+    elevation: 5, // Android cihazlar için gölge
+  },
+  scrollViewContainer: {
+    flex: 1,
+    width: "100%", // ScrollView genişliği ekranın tamamını kaplayacak şekilde ayarlandı
   },
   header: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 10,
     textAlign: "center",
-    marginBottom: 15,
   },
   input: {
-    borderWidth: 1,
+    height: 40,
     borderColor: "#ccc",
+    borderWidth: 1,
     borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: "#f8f8f8",
+    paddingLeft: 10,
+    marginBottom: 15,
   },
   picker: {
-    borderWidth: 1,
+    height: 40,
     borderColor: "#ccc",
+    borderWidth: 1,
     borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: "#f8f8f8",
+    marginBottom: 15,
   },
   button: {
-    backgroundColor: "#3498db",
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  buttonPressed: {
-    backgroundColor: "#2980b9",
+    backgroundColor: "#2196F3",
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 10,
+    width: 100,  // Buton genişliği
+    height: 40,  // Buton yüksekliği
+    justifyContent: "center",  // Dikeyde ortalama
+    alignItems: "center",  // Yatayda ortalama
+    display: 'flex',  // Flex container olarak işaretle
   },
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
-  },
+    textAlign: "center",  // Metnin yatayda ortalanması
+    lineHeight: 40,  // Metnin dikeyde ortalanması için lineHeight'i butonun yüksekliğiyle aynı yap
+  }
+  
+  
 });
 
 export default RegisterScreen;

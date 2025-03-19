@@ -7,8 +7,8 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } f
 
 
 const LoginScreen = ({ navigation }: any) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [eposta, setEposta] = useState("");
+  const [password, setPassword] = useState("");  // Şifreyi burada state olarak tanımlıyorsunuz
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isDoctor, setIsDoctor] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -16,12 +16,12 @@ const LoginScreen = ({ navigation }: any) => {
   const firestore = getFirestore();
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!eposta || !password) {
       setErrorMessage("Lütfen tüm alanları doldurun!");
       return;
     }
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, eposta, password);
       const user = userCredential.user;
 
       const userRef = doc(firestore, "users", user.uid);
@@ -45,31 +45,35 @@ const LoginScreen = ({ navigation }: any) => {
   };
 
   const handleRegister = async () => {
-    if (!email || !password) {
+    if (!eposta || !password) {
       setErrorMessage("Lütfen tüm alanları doldurun!");
       return;
     }
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, eposta, password);
       const user = userCredential.user;
   
       // Firestore'a yeni kullanıcıyı ekleyelim
       await setDoc(doc(firestore, "users", user.uid), {
-        email: email,
+        email: eposta,
         role: "doctor",
       });
   
       console.log("Kayıt başarılı: Kullanıcı UID:", user.uid);
+      console.log("Navigating with email: ", eposta, "and password: ", password);  // Şifreyi kontrol edelim
+
   
       // Kullanıcıyı RegisterScreen'e yönlendiriyoruz
-      navigation.navigate("RegisterScreen");
-
+      navigation.navigate("RegisterScreen", {
+        uid: user.uid,
+        eposta: user.email,
+        password: password, // Burada 'password' değişkenini kullanıyoruz.
+      });
     } catch (error: any) {
       console.log("Kayıt hatası:", error);
       setErrorMessage("Kayıt başarısız. Lütfen tekrar deneyin.");
     }
   };
-  
 
   return (
     <View style={styles.screen}>
@@ -87,8 +91,8 @@ const LoginScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             placeholder="E-posta"
-            value={email}
-            onChangeText={setEmail}
+            value={eposta}
+            onChangeText={setEposta}
             keyboardType="email-address"
           />
           <View style={styles.passwordContainer}>
