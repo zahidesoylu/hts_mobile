@@ -12,8 +12,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 
 const RegisterScreen = ({ navigation, route }: any) => {
   const { uid, eposta, password } = route.params; // Şifreyi de alıyoruz
-  console.log("Route Object:", route);
-  console.log("Route Params:", route.params);
+  
 
 
   const [tc, setTc] = useState("");
