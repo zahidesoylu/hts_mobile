@@ -7,9 +7,11 @@ import firestore from '@react-native-firebase/firestore'; // Firestore'dan kulla
 
 
 const DoctorMenu = ({ route }: any) => {
-  const { doctorName } = route.params; // DoctorName parametresini alıyoruz
 
-
+  const { doctorName = "Doktor" } = route.params || {}; // Eğer params undefined ise, boş obje kullanıyoruz
+  console.log("Route Object:", route);
+  console.log("Route Params:", route.params);
+  
   return (
     <View style={styles.container}>
       {/* Ana Konteyner */}
@@ -46,7 +48,6 @@ const DoctorMenu = ({ route }: any) => {
   );
 };
 
-// **STYLE KISMI ALTA AYRILDI**
 const styles = StyleSheet.create({
   container: {
     flex: 1,
