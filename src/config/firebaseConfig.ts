@@ -20,7 +20,6 @@ const app = initializeApp(firebaseConfig);
 // Firebase servislerini al (Auth ve Firestore gibi)
 const auth = getAuth(app);
 const db = getFirestore(app);
-const firestore = getFirestore(app);
 
 
 

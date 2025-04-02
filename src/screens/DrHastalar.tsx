@@ -4,11 +4,10 @@ import { Picker } from "@react-native-picker/picker"; // Burada doğru bir şeki
 import BottomMenu from "../components/ui/BottomMenu";
 import { db , auth} from "../../src/config/firebaseConfig";
 import { doc, getDoc } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
 
 
-const Hastalar = () => {
-    const navigation = useNavigation();
+const DrHastalar = ({ navigation, route }: any) =>{
+    
 
     const [patients, setPatients] = useState(["Ali Veli", "Ayşe Yılmaz", "Mehmet Kara"]);
     const [isPanelVisible, setIsPanelVisible] = useState(false);
@@ -27,13 +26,10 @@ const Hastalar = () => {
     const [emergencyRelation, setEmergencyRelation] = useState("");
     const [emergencyPhone, setEmergencyPhone] = useState("");
 
-
-      const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
-      const [doctorName, setDoctorName] = useState<string | null>(null);
-      const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
+    const [doctorName, setDoctorName] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
     
-
-
     const chronicDiseases = [
         { label: "KOAH", value: "KOAH" },
         { label: "Astım", value: "Astım" },
@@ -124,10 +120,9 @@ const Hastalar = () => {
 
                 <TouchableOpacity
                     style={styles.addPatientButton}
-                    onPress={() => navigation.navigate('PatientRegister')} // Mesajlar sayfasına yönlendir
+                    onPress={() => navigation.navigate("PatientRegister")} // Mesajlar sayfasına yönlendir
                 >
                     <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
-
                 </TouchableOpacity>
 
             </View>
@@ -249,4 +244,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Hastalar;
+export default DrHastalar;
