@@ -1,9 +1,15 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from "react-native";
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView } from "react-native";
 import { Picker } from "@react-native-picker/picker"; // Burada doğru bir şekilde içe aktarılıyor
 import BottomMenu from "../components/ui/BottomMenu";
+import { db , auth} from "../../src/config/firebaseConfig";
+import { doc, getDoc } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
+
 
 const Hastalar = () => {
+    const navigation = useNavigation();
+
     const [patients, setPatients] = useState(["Ali Veli", "Ayşe Yılmaz", "Mehmet Kara"]);
     const [isPanelVisible, setIsPanelVisible] = useState(false);
     const [isAddingPatient, setIsAddingPatient] = useState(false);
@@ -21,6 +27,13 @@ const Hastalar = () => {
     const [emergencyRelation, setEmergencyRelation] = useState("");
     const [emergencyPhone, setEmergencyPhone] = useState("");
 
+
+      const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
+      const [doctorName, setDoctorName] = useState<string | null>(null);
+      const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
+    
+
+
     const chronicDiseases = [
         { label: "KOAH", value: "KOAH" },
         { label: "Astım", value: "Astım" },
@@ -31,7 +44,7 @@ const Hastalar = () => {
 
     const handleAddPatient = () => {
         if (patientName.trim()) {
-            const newPatient = `${patientName} - ${birthDate} - ${gender} - ${phoneNumber}`;
+            const newPatient = `${patientName}, ${birthDate}, ${gender}, ${phoneNumber}`;
             setPatients([...patients, newPatient]);
             setPatientName("");
             setBirthDate("");
@@ -41,6 +54,41 @@ const Hastalar = () => {
             setIsAddingPatient(false);
         }
     };
+
+    useEffect(() => {
+        const fetchDoctorData = async () => {
+          try {
+            // Giriş yapan kullanıcının UID'sini alıyoruz
+            const userId = auth.currentUser?.uid;
+    
+            if (!userId) {
+              setErrorMessage("Kullanıcı girişi yapılmamış.");
+              setLoading(false);
+              return;
+            }
+    
+            console.log("Giriş yapan kullanıcının UID'si:", userId);
+    
+            const userRef = doc(db, "users", userId); // Firestore'dan doktor verisini alıyoruz
+            const userDoc = await getDoc(userRef);
+    
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              console.log("Firestore'dan gelen veriler:", userData); // Veriyi konsola yazdıralım
+              const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+              setDoctorName(fullName); // Firestore'dan gelen doktor adını state'e set ediyoruz        } else {
+              setErrorMessage("Doktor verisi bulunamadı.");
+            }
+          } catch (error) {
+            console.log("Firestore hatası:", error);
+            setErrorMessage("Veri çekme hatası oluştu.");
+          } finally {
+            setLoading(false); // Veri çekme işlemi tamamlandığında loading'i false yapıyoruz
+          }
+        };
+    
+        fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
+      }, []);
 
     return (
         <View style={styles.container}>
@@ -54,7 +102,7 @@ const Hastalar = () => {
                 </Text>
 
                 <View style={styles.infoBox}>
-                    <Text style={styles.infoText}>Dr: Şeyma Özkaya</Text>
+                          <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
                 </View>
 
                 <TouchableOpacity
@@ -76,109 +124,13 @@ const Hastalar = () => {
 
                 <TouchableOpacity
                     style={styles.addPatientButton}
-                    onPress={() => setIsAddingPatient(!isAddingPatient)}
+                    onPress={() => navigation.navigate('PatientRegister')} // Mesajlar sayfasına yönlendir
                 >
                     <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
+
                 </TouchableOpacity>
 
-                {isAddingPatient && (
-                    <ScrollView style={styles.newPatientForm}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Adı"
-                            value={patientName}
-                            onChangeText={setPatientName}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Soyadı"
-                            value={patientSurname}
-                            onChangeText={setPatientSurname}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="TC Kimlik No"
-                            value={tcNumber}
-                            onChangeText={setTcNumber}
-                            keyboardType="number-pad"
-                            maxLength={11}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Doğum Tarihi (GG/AA/YYYY)"
-                            value={birthDate}
-                            onChangeText={setBirthDate}
-                        />
-                        <Picker
-                            selectedValue={gender}
-                            style={styles.input}
-                            onValueChange={setGender}
-                        >
-                            <Picker.Item label="Cinsiyet Seçiniz" value={null} />
-                            <Picker.Item label="Kadın" value="Kadın" />
-                            <Picker.Item label="Erkek" value="Erkek" />
-                        </Picker>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Telefon Numarası"
-                            value={phoneNumber}
-                            onChangeText={setPhoneNumber}
-                            keyboardType="phone-pad"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="E-posta"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Adres"
-                            value={address}
-                            onChangeText={setAddress}
-                        />
-                        <Picker
-                            selectedValue={chronicDisease}
-                            style={styles.input}
-                            onValueChange={(itemValue) => setChronicDisease(itemValue)}
-                        >
-                            <Picker.Item label="Kronik Hastalık Türünü Seçin" value="" />
-                            {chronicDiseases.map((disease, index) => (
-                                <Picker.Item key={index} label={disease.label} value={disease.value} />
-                            ))}
-                        </Picker>
-                        <Text style={styles.label}>Acil Durum Kişisi</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Adı Soyadı"
-                            value={emergencyName}
-                            onChangeText={setEmergencyName}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Yakınlık Derecesi"
-                            value={emergencyRelation}
-                            onChangeText={setEmergencyRelation}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Telefon Numarası"
-                            value={emergencyPhone}
-                            onChangeText={setEmergencyPhone}
-                            keyboardType="phone-pad"
-                        />
-                        <TouchableOpacity
-                            style={styles.saveButton}
-                            onPress={handleAddPatient}
-                        >
-                            <Text style={styles.saveButtonText}>Kaydet</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                )}
-
             </View>
-
             <BottomMenu />
         </View>
     );
@@ -268,6 +220,12 @@ const styles = StyleSheet.create({
         width: "100%",
         paddingTop: 20,
     },
+    doctorName: {
+        fontSize: 14,
+        color: "black",
+        marginTop: 10,
+        fontWeight: "bold",
+      },
     input: {
         width: "100%",
         padding: 10,
