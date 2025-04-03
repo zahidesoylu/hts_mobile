@@ -32,7 +32,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>(); // Doğru Stack 
 
 const Navigation = () => {
   return (
-      <Stack.Navigator initialRouteName="PatientRegister">
+      <Stack.Navigator initialRouteName="LoginScreen">
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="DoctorMenu" component={DoctorMenu} />
         <Stack.Screen name="PatientMenu" component={PatientMenu} />

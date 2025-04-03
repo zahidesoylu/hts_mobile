@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: 400,
-    height: 600,
+    height: 550,
     backgroundColor: "white",
     padding: 30,
     borderTopLeftRadius: 10,  
@@ -158,8 +158,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   card: {
-    width: '40%',
-    height: 150,
+    width: '35%',
+    height: 120,
     margin: 10,
     backgroundColor: '#f0f0f0',
     borderRadius: 10,

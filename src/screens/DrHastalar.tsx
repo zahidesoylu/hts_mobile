@@ -105,7 +105,7 @@ const DrHastalar = ({ navigation, route }: any) =>{
                     style={styles.hastalarButton}
                     onPress={() => setIsPanelVisible(!isPanelVisible)}
                 >
-                    <Text style={styles.hastalarButtonText}>Hastalarım</Text>
+                    <Text style={styles.hastalarButtonText}>Mevcut Hastalarım</Text>
                 </TouchableOpacity>
 
                 {isPanelVisible && (
@@ -123,6 +123,13 @@ const DrHastalar = ({ navigation, route }: any) =>{
                     onPress={() => navigation.navigate("PatientRegister")} // Mesajlar sayfasına yönlendir
                 >
                     <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.hastalarButton}
+                    onPress={() => setIsPanelVisible(!isPanelVisible)}
+                >
+                    <Text style={styles.hastalarButtonText}>Hasta Kayıt Sil</Text>
                 </TouchableOpacity>
 
             </View>

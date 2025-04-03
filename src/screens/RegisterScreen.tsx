@@ -14,7 +14,6 @@ const RegisterScreen = ({ navigation, route }: any) => {
   const { uid, eposta, password } = route.params; // Şifreyi de alıyoruz
   
 
-
   const [tc, setTc] = useState("");
   const [ad, setAd] = useState("");
   const [soyad, setSoyad] = useState("");
@@ -317,7 +316,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   picker: {
-    height: 40,
+    height: 30,
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,

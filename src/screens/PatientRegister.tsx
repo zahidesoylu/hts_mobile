@@ -3,50 +3,76 @@ import { View, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity, Activi
 import { FontAwesome } from "@expo/vector-icons";
 import { doc, getDoc, getDocs, collection, addDoc } from 'firebase/firestore';
 import { db, auth } from "../../src/config/firebaseConfig";
-import { useNavigation } from "@react-navigation/native";
 import BottomMenu from "../components/ui/BottomMenu";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import {Picker} from "@react-native-picker/picker"; // Picker bileşenini içe aktarıyoruz
+import { Picker } from "@react-native-picker/picker"; // Picker bileşenini içe aktarıyoruz
 
 
 const PatientRegister = ({ navigation }: any) => {
 
+    interface Hastalik {
+        id: string; // Firestore'dan gelen her bir hastalık objesinde bir id olacak
+        hastalik: string;
+    }
+
     const [doctorName, setDoctorName] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [patientData, setPatientData] = useState({
+        ad: "",
+        soyad: "",
+        tc: "",
+        sifre: "",
+        dogumTarihi: "",
+        telefon: "",
+        adres: "",
+        cinsiyet: "Kadın",
+        hastalik: "",
+        acilDurumKisiAd: "",
+        acilDurumKisiSoyad: "",
+        acilDurumKisiYakinlik: "",
+        acilDurumKisiTelefon: "",
+
+    });
+
+
+    const [ad, setAd] = useState("");
+    const [soyad, setSoyad] = useState("");
+    const [tc, setTc] = useState("");
+    const [cinsiyet, setCinsiyet] = useState("Kadın");
+    const [telefon, setTelefon] = useState("");
+    const [dogumTarihi, setDogumTarihi] = useState("");
+    const [adres, setAdres] = useState("");
+    const [acilDurumKisiAd, setAcilDurumKisiAd] = useState("");
+    const [acilDurumKisiSoyad, setAcilDurumKisiSoyad] = useState("");
+    const [acilDurumKisiYakinlik, setAcilDurumKisiYakinlik] = useState("");
+    const [acilDurumKisiTelefon, setAcilDurumKisiTelefon] = useState(""); // Acil durum kişisi telefon numarası için state
+
+    const [hastaliklar, setHastalik] = useState<Hastalik[]>([]); // Hastalıkları tutacak state
+    const [selectedHastalik, setSelectedHastalik] = useState(""); // Seçilen hastalık için state
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const [loading, setLoading] = useState(true);
     const [isDatePickerVisible, setDatePickerVisible] = useState(false); // Doğru tanım
     const [date, setDate] = useState(new Date());
-    const [hastaliklar, setHastaliklar] = useState<any[]>([]); 
-    const [selectedHastalik, setSelectedHastalik] = useState(""); // Seçilen hastalık için state
+    const showDatePicker = () => setDatePickerVisible(true);
+
 
     // Firestore'dan hastalıkları çek
     useEffect(() => {
         const fetchHastaliklar = async () => {
             try {
                 const snapshot = await getDocs(collection(db, 'hastaliklar'));
-                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setHastaliklar(data);
+                const hastalikList = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    hastalik: doc.data().hastalik, // Bu şekilde hastalık adını alıyoruz
+                }));
+                setHastalik(hastalikList); // Hastalıkları state'e atıyoruz
             } catch (error) {
                 console.error("Hastalık verisi çekilemedi:", error);
             }
         };
         fetchHastaliklar();
-    }, [])
+    }, []);
 
-
-    const [patientData, setPatientData] = useState({
-        ad: "",
-        soyad: "",
-        tc: "",
-        sifre: "", // Şifre alanı eklendi
-        dogumTarihi: "",
-        telefon: "",
-        adres: "",  // Bu alan eklendi
-        acilDurumKisiAd: "", // Acil durum kişisi adı
-        acilDurumKisiSoyad: "", // Acil durum kişisi soyadı
-        acilDurumKisiYakinlik: "", // Acil durum kişisi yakınlık derecesi
-    });
-
+    //doktor bilgileri
     useEffect(() => {
         const fetchDoctorData = async () => {
             try {
@@ -68,7 +94,7 @@ const PatientRegister = ({ navigation }: any) => {
                     setErrorMessage("Doktor verisi bulunamadı.");
                 }
             } catch (error) {
-                setErrorMessage("Veri çekme hatası oluştu.");
+                console.error("Veri çekme hatası oluştu.", error);
             } finally {
                 setLoading(false);
             }
@@ -76,8 +102,8 @@ const PatientRegister = ({ navigation }: any) => {
         fetchDoctorData();
     }, []);
 
+    //verilerin doldurulması kontrolu
     const validateInputs = () => {
-        const { ad, soyad, tc, dogumTarihi, telefon, adres, acilDurumKisiAd, acilDurumKisiSoyad, acilDurumKisiYakinlik } = patientData;
 
         if (!ad || !soyad || !tc || !dogumTarihi || !telefon || !adres || !acilDurumKisiAd || !acilDurumKisiSoyad || !acilDurumKisiYakinlik) {
             Alert.alert("Hata", "Tüm alanları doldurmanız gerekmektedir.");
@@ -98,30 +124,33 @@ const PatientRegister = ({ navigation }: any) => {
         return true;
     };
 
+
     const handleRegister = async () => {
         if (!validateInputs()) return;
 
+        // hastalık bilgisini patientData'ya ekleyelim
+        const newPatientData = { 
+            ...patientData,
+            hastalik: selectedHastalik,  // Hastalık bilgisini de buraya ekliyoruz
+        };
+
         try {
-            const patientRef = collection(db, "patients");
-            await addDoc(patientRef, {
-                ...patientData,
-                hastalik: selectedHastalik // Hastalık bilgisini ekle
-            });
+            await addDoc(collection(db, "patients"), newPatientData);
+
+            console.log("Hasta kaydı başarılı:", patientData);
             Alert.alert("Başarılı", "Hasta başarıyla kaydedildi!");
             navigation.goBack();
-        } catch (error: any) {
-            Alert.alert("Hata", errorMessage || "Hata oluştu, tekrar deneyiniz.");
+        } catch (error) {
+            Alert.alert("Hata", "Kayıt sırasında bir hata oluştu.");
+            console.error("Kayıt hatası:", error);
         }
     };
 
     const handleConfirmDate = (selectedDate: Date) => {
         setDate(selectedDate);
-        setPatientData({ ...patientData, dogumTarihi: selectedDate.toLocaleDateString("tr-TR") });
+        setPatientData(prev => ({ ...prev, dogumTarihi: selectedDate.toLocaleDateString("tr-TR") }));
         setDatePickerVisible(false);
     };
-
-    const showDatePicker = () => setDatePickerVisible(true);
-    const hideDatePicker = () => setDatePickerVisible(false);
 
     if (loading) {
         return (
@@ -143,20 +172,28 @@ const PatientRegister = ({ navigation }: any) => {
 
                 <ScrollView style={styles.scrollContainer}>
 
-                    <TextInput style={styles.input} placeholder="Ad" onChangeText={(text) => setPatientData({ ...patientData, ad: text })} />
-                    <TextInput style={styles.input} placeholder="Soyad" onChangeText={(text) => setPatientData({ ...patientData, soyad: text })} />
-                    <TextInput style={styles.input} placeholder="TC Kimlik No" keyboardType="numeric" onChangeText={(text) => setPatientData({ ...patientData, tc: text })} />
+                    <TextInput style={styles.input} placeholder="Ad" value={ad} onChangeText={setAd} />
+                    <TextInput style={styles.input} placeholder="Soyad" value={soyad} onChangeText={setSoyad} />
+                    <TextInput style={styles.input} placeholder="TC Kimlik No" value={tc} onChangeText={setTc} keyboardType="numeric" />
                     <TextInput
                         style={styles.input}
                         placeholder="Şifre"
                         secureTextEntry={true}
                         onChangeText={(text) => setPatientData({ ...patientData, sifre: text })}
                     />
-                    <TouchableOpacity style={styles.input} onPress={showDatePicker}>
-                        <Text>{patientData.dogumTarihi || "Doğum Tarihi Seçin"}</Text>
-                    </TouchableOpacity>
-                    <TextInput style={styles.input} placeholder="Telefon" keyboardType="phone-pad" onChangeText={(text) => setPatientData({ ...patientData, telefon: text })} />
-                    <TextInput style={styles.input} placeholder="Adres" onChangeText={(text) => setPatientData({ ...patientData, adres: text })} />
+                    <Text>Cinsiyet:</Text>
+                    <Picker selectedValue={cinsiyet} onValueChange={setCinsiyet} style={styles.picker}>
+                        <Picker.Item label="Kadın" value="Kadın" />
+                        <Picker.Item label="Erkek" value="Erkek" />
+                    </Picker>
+                    <Text>Doğum Tarihi:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Doğum Tarihinizi girin"
+                        placeholderTextColor="#aaa"
+                        value={dogumTarihi}
+                        onChangeText={setDogumTarihi}
+                    />
                     <View style={styles.pickerContainer}>
                         <Picker
                             selectedValue={selectedHastalik}
@@ -166,17 +203,21 @@ const PatientRegister = ({ navigation }: any) => {
                         >
                             <Picker.Item label="Hastalık Seçiniz" value="" />
                             {hastaliklar.map((hastaliklar) => (
-                                <Picker.Item 
-                                    key={hastaliklar.hastalik} 
-                                    label={hastaliklar.hastalik} 
-                                    value={hastaliklar.hastalik} 
+                                <Picker.Item
+                                    key={hastaliklar.id}
+                                    label={hastaliklar.hastalik}
+                                    value={hastaliklar.hastalik}
                                 />
                             ))}
                         </Picker>
                     </View>
+                    <TextInput style={styles.input} placeholder="Telefon" keyboardType="phone-pad" value={telefon} onChangeText={setTelefon} />
+                    <TextInput style={styles.input} placeholder="Adres" onChangeText={(text) => setPatientData({ ...patientData, adres: text })} />
+
                     <TextInput style={styles.input} placeholder="Acil Durum Kişisi Adı" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiAd: text })} />
                     <TextInput style={styles.input} placeholder="Acil Durum Kişisi Soyadı" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiSoyad: text })} />
                     <TextInput style={styles.input} placeholder="Acil Durum Kişisi Yakınlık Derecesi" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiYakinlik: text })} />
+                    <TextInput style={styles.input} placeholder="Acil Durum Kişisi Telefon" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiTelefon: text })} />
                 </ScrollView>
                 <TouchableOpacity style={styles.button} onPress={handleRegister}>
                     <Text style={styles.buttonText}>Kaydet</Text>
@@ -259,11 +300,11 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
-      },
-      pickerContainer: {
+    },
+    pickerContainer: {
         width: "100%",
-      },
-      
+    },
+
 });
 
 export default PatientRegister;
