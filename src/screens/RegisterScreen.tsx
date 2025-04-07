@@ -8,11 +8,9 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 
-
-
 const RegisterScreen = ({ navigation, route }: any) => {
   const { uid, eposta, password } = route.params; // Şifreyi de alıyoruz
-  
+
 
   const [tc, setTc] = useState("");
   const [ad, setAd] = useState("");
@@ -30,7 +28,7 @@ const RegisterScreen = ({ navigation, route }: any) => {
   const [errorMessage, setErrorMessage] = useState(""); // Hata mesajını tutacak state
 
 
-
+  //Uçnvanları firestore dan cek
   useEffect(() => {
     const fetchUnvanlar = async () => {
       try {
@@ -45,6 +43,7 @@ const RegisterScreen = ({ navigation, route }: any) => {
     fetchUnvanlar();
   }, []);
 
+  // Uzmanlık alanlarını firestore dan cek
   useEffect(() => {
     const fetchUzmanlikAlanlari = async () => {
       try {
@@ -58,6 +57,7 @@ const RegisterScreen = ({ navigation, route }: any) => {
 
     fetchUzmanlikAlanlari();
   }, []);
+
 
   const handleRegister = async () => {
     // Gerekli alanların doldurulup doldurulmadığını kontrol ediyoruz
@@ -112,7 +112,7 @@ const RegisterScreen = ({ navigation, route }: any) => {
         try {
           const userCredential = await signInWithEmailAndPassword(auth, eposta, password);
           const user = userCredential.user;
-      
+
           const userRef = doc(db, "users", user.uid); // db, 'users' koleksiyonu, user.uid
           const userDoc = await getDoc(userRef);
           console.log("Firestore Kullanıcı Belgesi:", userDoc.data());

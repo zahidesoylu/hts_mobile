@@ -3,6 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, collection } from 'firebase/firestore';
 
 
+
 // Firebase konfigürasyon bilgilerin
 const firebaseConfig = {
   apiKey: "AIzaSyBpEUxhSZPdpheFOL9VuLWsAoL5k_P0QMI",

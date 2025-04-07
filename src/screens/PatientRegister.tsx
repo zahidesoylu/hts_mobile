@@ -31,7 +31,7 @@ const PatientRegister = ({ navigation }: any) => {
         acilDurumKisiSoyad: "",
         acilDurumKisiYakinlik: "",
         acilDurumKisiTelefon: "",
-        rol: "hasta",
+        role: "hasta",
 
     });
 
@@ -141,6 +141,8 @@ const PatientRegister = ({ navigation }: any) => {
     const handleRegister = async () => {
         console.log('Kayıt başlatıldı');
         console.log('current patientData:', patientData);
+        const userId = auth.currentUser?.uid;
+
 
         if (!validateInputs()) {
             alert('Tüm bilgileri doldurun');
@@ -150,6 +152,7 @@ const PatientRegister = ({ navigation }: any) => {
         const newPatientData = {
             ...patientData,
             doktor: doctorName,
+            doctorId:userId,
         };
 
         try {
@@ -174,6 +177,7 @@ const PatientRegister = ({ navigation }: any) => {
                 acilDurumKisiSoyad: "",
                 acilDurumKisiYakinlik: "",
                 acilDurumKisiTelefon: "",
+                role: "hasta",
             });
 
             navigation.goBack();

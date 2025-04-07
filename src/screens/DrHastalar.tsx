@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView } from "react-native";
 import BottomMenu from "../components/ui/BottomMenu";
 import { db, auth } from "../../src/config/firebaseConfig";
-import { doc, getDoc, deleteDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc, query, where, deleteDoc, getDocs, collection } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
 
 
 const DrHastalar = ({ navigation, route }: any) => {
@@ -13,11 +14,14 @@ const DrHastalar = ({ navigation, route }: any) => {
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
 
+    const auth = getAuth();
+    const doctorId = auth.currentUser?.uid;
 
     //Doktor bilgilerini çekiyoruz
     useEffect(() => {
         const fetchDoctorData = async () => {
             try {
+                // Giriş yapan doktorun UID'sini alıyoruz
                 const userId = auth.currentUser?.uid;
 
                 if (!userId) {
@@ -47,7 +51,14 @@ const DrHastalar = ({ navigation, route }: any) => {
     useEffect(() => {
         const fetchPatients = async () => {
             try {
-                const querySnapshot = await getDocs(collection(db, "patients"));
+                const userId = auth.currentUser?.uid;
+                console.log("Giriş yapan doktor ID'si:", userId);
+
+    
+                const patientsRef = collection(db, "patients");
+                const q = query(patientsRef, where("doctorId", "==", userId));
+                const querySnapshot = await getDocs(q);
+    
                 const patientList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
                     return {
@@ -56,12 +67,13 @@ const DrHastalar = ({ navigation, route }: any) => {
                         soyad: data.soyad
                     };
                 });
+    
                 setPatients(patientList);
             } catch (error) {
                 console.error("Hastalar alınırken hata oluştu:", error);
             }
         };
-
+    
         fetchPatients();
     }, []);
 
@@ -110,7 +122,7 @@ const DrHastalar = ({ navigation, route }: any) => {
                     style={styles.hastalarButton}
                     onPress={() => setIsPanelVisible(!isPanelVisible)}
                 >
-                    <Text style={styles.hastalarButtonText}>Mevcut Hastalarım</Text>
+                    <Text style={styles.hastalarButtonText}>Hastaları Listele</Text>
                 </TouchableOpacity>
 
                 {isPanelVisible && (
@@ -119,7 +131,7 @@ const DrHastalar = ({ navigation, route }: any) => {
                             <Text key={index} style={styles.patientText}>
                                 {patient.ad} {patient.soyad}
                             </Text>
-                            
+
                         ))}
                     </View>
                 )}

@@ -84,7 +84,7 @@ const DoctorMenu = ({ navigation, route }: any) => {
           style={styles.card} 
           onPress={() => navigation.navigate('DrHastalar')} // Hastalar sayfasına yönlendir
         >
-          <Text style={styles.cardText}>Hastalar</Text>
+          <Text style={styles.cardText}>Hasta İşlemleri</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   menuContainer: {
     flexDirection: "row",
