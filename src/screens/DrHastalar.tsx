@@ -1,90 +1,95 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView } from "react-native";
-import { Picker } from "@react-native-picker/picker"; // Burada doğru bir şekilde içe aktarılıyor
 import BottomMenu from "../components/ui/BottomMenu";
-import { db , auth} from "../../src/config/firebaseConfig";
-import { doc, getDoc } from 'firebase/firestore';
+import { db, auth } from "../../src/config/firebaseConfig";
+import { doc, getDoc, deleteDoc, getDocs, collection } from 'firebase/firestore';
 
 
-const DrHastalar = ({ navigation, route }: any) =>{
-    
+const DrHastalar = ({ navigation, route }: any) => {
 
-    const [patients, setPatients] = useState(["Ali Veli", "Ayşe Yılmaz", "Mehmet Kara"]);
+    const [patients, setPatients] = useState<{ id: string, ad: string, soyad: string }[]>([]);
     const [isPanelVisible, setIsPanelVisible] = useState(false);
-    const [isAddingPatient, setIsAddingPatient] = useState(false);
-
-    const [patientName, setPatientName] = useState("");
-    const [patientSurname, setPatientSurname] = useState("");
-    const [tcNumber, setTcNumber] = useState("");  // TC kimlik numarası için state
-    const [birthDate, setBirthDate] = useState("");
-    const [gender, setGender] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [email, setEmail] = useState("");
-    const [address, setAddress] = useState("");
-    const [chronicDisease, setChronicDisease] = useState("");
-    const [emergencyName, setEmergencyName] = useState("");
-    const [emergencyRelation, setEmergencyRelation] = useState("");
-    const [emergencyPhone, setEmergencyPhone] = useState("");
-
     const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
-    
-    const chronicDiseases = [
-        { label: "KOAH", value: "KOAH" },
-        { label: "Astım", value: "Astım" },
-        { label: "Hipertansiyon", value: "Hipertansiyon" },
-        { label: "Diyabet", value: "Diyabet" },
-        { label: "Kalp Hastalığı", value: "Kalp Hastalığı" },
-    ];
 
-    const handleAddPatient = () => {
-        if (patientName.trim()) {
-            const newPatient = `${patientName}, ${birthDate}, ${gender}, ${phoneNumber}`;
-            setPatients([...patients, newPatient]);
-            setPatientName("");
-            setBirthDate("");
-            setGender("");
-            setPhoneNumber("");
-            setAddress("");
-            setIsAddingPatient(false);
-        }
-    };
 
+    //Doktor bilgilerini çekiyoruz
     useEffect(() => {
         const fetchDoctorData = async () => {
-          try {
-            // Giriş yapan kullanıcının UID'sini alıyoruz
-            const userId = auth.currentUser?.uid;
-    
-            if (!userId) {
-              setErrorMessage("Kullanıcı girişi yapılmamış.");
-              setLoading(false);
-              return;
+            try {
+                const userId = auth.currentUser?.uid;
+
+                if (!userId) {
+                    setLoading(false);
+                    return;
+                }
+
+                const userRef = doc(db, "users", userId);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+                    setDoctorName(fullName);
+                }
+            } catch (error) {
+                console.error("Doktor verisi çekilirken hata:", error);
+            } finally {
+                setLoading(false);
             }
-    
-            console.log("Giriş yapan kullanıcının UID'si:", userId);
-    
-            const userRef = doc(db, "users", userId); // Firestore'dan doktor verisini alıyoruz
-            const userDoc = await getDoc(userRef);
-    
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              console.log("Firestore'dan gelen veriler:", userData); // Veriyi konsola yazdıralım
-              const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
-              setDoctorName(fullName); // Firestore'dan gelen doktor adını state'e set ediyoruz        } else {
-              setErrorMessage("Doktor verisi bulunamadı.");
-            }
-          } catch (error) {
-            console.log("Firestore hatası:", error);
-            setErrorMessage("Veri çekme hatası oluştu.");
-          } finally {
-            setLoading(false); // Veri çekme işlemi tamamlandığında loading'i false yapıyoruz
-          }
         };
-    
-        fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
-      }, []);
+
+        fetchDoctorData();
+    }, []);
+
+    // Hastaları Firestore'dan çekiyoruz
+    useEffect(() => {
+        const fetchPatients = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, "patients"));
+                const patientList = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ad: data.ad,
+                        soyad: data.soyad
+                    };
+                });
+                setPatients(patientList);
+            } catch (error) {
+                console.error("Hastalar alınırken hata oluştu:", error);
+            }
+        };
+
+        fetchPatients();
+    }, []);
+
+
+    // Hastaları silme işlemi
+    const handleDeletePatient = (id: string) => {
+        Alert.alert(
+            "Hasta Sil",
+            "Bu hastayı silmek istediğinize emin misiniz?",
+            [
+                { text: "İptal", style: "cancel" },
+                {
+                    text: "Sil", style: "destructive", onPress: async () => {
+                        try {
+                            await deleteDoc(doc(db, "patients", id));
+                            setPatients(prev => prev.filter(p => p.id !== id));
+                            Alert.alert("Silme işlemi başarılı");
+                        } catch (error) {
+                            console.error("Hasta silinirken hata oluştu:", error);
+                            Alert.alert("Silme işlemi başarısız");
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+
 
     return (
         <View style={styles.container}>
@@ -98,7 +103,7 @@ const DrHastalar = ({ navigation, route }: any) =>{
                 </Text>
 
                 <View style={styles.infoBox}>
-                          <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+                    <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
                 </View>
 
                 <TouchableOpacity
@@ -112,8 +117,9 @@ const DrHastalar = ({ navigation, route }: any) =>{
                     <View style={styles.patientPanel}>
                         {patients.map((patient, index) => (
                             <Text key={index} style={styles.patientText}>
-                                {patient}
+                                {patient.ad} {patient.soyad}
                             </Text>
+                            
                         ))}
                     </View>
                 )}
@@ -227,7 +233,7 @@ const styles = StyleSheet.create({
         color: "black",
         marginTop: 10,
         fontWeight: "bold",
-      },
+    },
     input: {
         width: "100%",
         padding: 10,

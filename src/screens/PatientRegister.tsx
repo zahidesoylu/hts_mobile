@@ -4,6 +4,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { doc, getDoc, getDocs, collection, addDoc } from 'firebase/firestore';
 import { db, auth } from "../../src/config/firebaseConfig";
 import BottomMenu from "../components/ui/BottomMenu";
+import firestore from '@react-native-firebase/firestore';
 import { Picker } from "@react-native-picker/picker"; // Picker bileşenini içe aktarıyoruz
 
 
@@ -19,6 +20,7 @@ const PatientRegister = ({ navigation }: any) => {
         ad: "",
         soyad: "",
         tc: "",
+        eposta: "",
         sifre: "",
         dogumTarihi: "",
         telefon: "",
@@ -29,21 +31,10 @@ const PatientRegister = ({ navigation }: any) => {
         acilDurumKisiSoyad: "",
         acilDurumKisiYakinlik: "",
         acilDurumKisiTelefon: "",
+        rol: "hasta",
 
     });
 
-
-    const [ad, setAd] = useState("");
-    const [soyad, setSoyad] = useState("");
-    const [tc, setTc] = useState("");
-    const [cinsiyet, setCinsiyet] = useState("Kadın");
-    const [telefon, setTelefon] = useState("");
-    const [dogumTarihi, setDogumTarihi] = useState("");
-    const [adres, setAdres] = useState("");
-    const [acilDurumKisiAd, setAcilDurumKisiAd] = useState("");
-    const [acilDurumKisiSoyad, setAcilDurumKisiSoyad] = useState("");
-    const [acilDurumKisiYakinlik, setAcilDurumKisiYakinlik] = useState("");
-    const [acilDurumKisiTelefon, setAcilDurumKisiTelefon] = useState(""); // Acil durum kişisi telefon numarası için state
 
     const [hastaliklar, setHastalik] = useState<Hastalik[]>([]); // Hastalıkları tutacak state
     const [selectedHastalik, setSelectedHastalik] = useState(""); // Seçilen hastalık için state
@@ -104,47 +95,95 @@ const PatientRegister = ({ navigation }: any) => {
 
     //verilerin doldurulması kontrolu
     const validateInputs = () => {
+        console.log('validateInputs asdasda');
+        console.log('patientData:', patientData); // Burada tüm verileri kontrol edelim
 
-        if (!ad || !soyad || !tc || !dogumTarihi || !telefon || !adres || !acilDurumKisiAd || !acilDurumKisiSoyad || !acilDurumKisiYakinlik) {
+        if (
+            !patientData.ad.trim() ||
+            !patientData.soyad.trim() ||
+            !patientData.tc.trim() ||
+            !patientData.sifre.trim() ||
+            !patientData.eposta.trim() ||
+            !patientData.dogumTarihi.trim() ||
+            !patientData.telefon.trim() ||
+            !patientData.adres.trim() ||
+            !patientData.acilDurumKisiAd.trim() ||
+            !patientData.acilDurumKisiSoyad.trim() ||
+            !patientData.acilDurumKisiYakinlik.trim()
+
+        ) {
+
+            // Hangi alanın eksik olduğunu konsola yazdıralım
+            console.log('Eksik Alanlar:');
+            console.log('Ad:', patientData.ad);
+            console.log('Soyad:', patientData.soyad);
+            console.log('TC:', patientData.tc);
+            console.log('Doğum Tarihi:', patientData.dogumTarihi);
+            console.log('Telefon:', patientData.telefon);
+            console.log('Adres:', patientData.adres);
+            console.log('Acil Durum Kişisi Ad:', patientData.acilDurumKisiAd);
+            console.log('Acil Durum Kişisi Soyad:', patientData.acilDurumKisiSoyad);
+            console.log('Acil Durum Kişisi Yakınlık:', patientData.acilDurumKisiYakinlik);
+            console.log('Acil Durum Kişisi Telefon:', patientData.acilDurumKisiTelefon);
+
+
             Alert.alert("Hata", "Tüm alanları doldurmanız gerekmektedir.");
+
             return false;
         }
 
-        if (tc.length !== 11 || isNaN(Number(tc))) {
-            Alert.alert("Hata", "Geçerli bir TC Kimlik Numarası giriniz.");
-            return false;
-        }
-
-        const phonePattern = /^[0-9]{10,11}$/;
-        if (!phonePattern.test(telefon)) {
-            Alert.alert("Hata", "Geçerli bir telefon numarası giriniz.");
-            return false;
-        }
+        console.log('Tüm alanlar dolu.');
 
         return true;
     };
 
 
     const handleRegister = async () => {
-        if (!validateInputs()) return;
+        console.log('Kayıt başlatıldı');
+        console.log('current patientData:', patientData);
 
-        // hastalık bilgisini patientData'ya ekleyelim
-        const newPatientData = { 
+        if (!validateInputs()) {
+            alert('Tüm bilgileri doldurun');
+            return;
+        }
+
+        const newPatientData = {
             ...patientData,
-            hastalik: selectedHastalik,  // Hastalık bilgisini de buraya ekliyoruz
+            doktor: doctorName,
         };
 
         try {
             await addDoc(collection(db, "patients"), newPatientData);
 
-            console.log("Hasta kaydı başarılı:", patientData);
+            console.log("Hasta kaydı başarılı:", newPatientData);
             Alert.alert("Başarılı", "Hasta başarıyla kaydedildi!");
+
+            // Formu sıfırla
+            setPatientData({
+                ad: "",
+                soyad: "",
+                tc: "",
+                sifre: "",
+                eposta: "",
+                dogumTarihi: "",
+                telefon: "",
+                adres: "",
+                cinsiyet: "Kadın",
+                hastalik: "",
+                acilDurumKisiAd: "",
+                acilDurumKisiSoyad: "",
+                acilDurumKisiYakinlik: "",
+                acilDurumKisiTelefon: "",
+            });
+
             navigation.goBack();
+
         } catch (error) {
             Alert.alert("Hata", "Kayıt sırasında bir hata oluştu.");
             console.error("Kayıt hatası:", error);
         }
     };
+
 
     const handleConfirmDate = (selectedDate: Date) => {
         setDate(selectedDate);
@@ -171,33 +210,63 @@ const PatientRegister = ({ navigation }: any) => {
                 <Text style={styles.doctorName}>Yeni Hasta Kaydı Bilgileri</Text>
 
                 <ScrollView style={styles.scrollContainer}>
-
-                    <TextInput style={styles.input} placeholder="Ad" value={ad} onChangeText={setAd} />
-                    <TextInput style={styles.input} placeholder="Soyad" value={soyad} onChangeText={setSoyad} />
-                    <TextInput style={styles.input} placeholder="TC Kimlik No" value={tc} onChangeText={setTc} keyboardType="numeric" />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Ad"
+                        value={patientData.ad}
+                        onChangeText={(text) => setPatientData({ ...patientData, ad: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Soyad"
+                        value={patientData.soyad}
+                        onChangeText={(text) => setPatientData({ ...patientData, soyad: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="TC Kimlik No"
+                        value={patientData.tc}
+                        onChangeText={(text) => setPatientData({ ...patientData, tc: text })}
+                        keyboardType="numeric"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="E-posta"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        value={patientData.eposta}
+                        onChangeText={(text) => setPatientData({ ...patientData, eposta: text })}
+                    />
                     <TextInput
                         style={styles.input}
                         placeholder="Şifre"
                         secureTextEntry={true}
+                        value={patientData.sifre}
                         onChangeText={(text) => setPatientData({ ...patientData, sifre: text })}
                     />
                     <Text>Cinsiyet:</Text>
-                    <Picker selectedValue={cinsiyet} onValueChange={setCinsiyet} style={styles.picker}>
+                    <Picker
+                        selectedValue={patientData.cinsiyet}
+                        onValueChange={(itemValue) => setPatientData({ ...patientData, cinsiyet: itemValue })}
+                        style={styles.picker}
+                    >
                         <Picker.Item label="Kadın" value="Kadın" />
                         <Picker.Item label="Erkek" value="Erkek" />
                     </Picker>
+
                     <Text>Doğum Tarihi:</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Doğum Tarihinizi girin"
                         placeholderTextColor="#aaa"
-                        value={dogumTarihi}
-                        onChangeText={setDogumTarihi}
+                        value={patientData.dogumTarihi}
+                        onChangeText={(text) => setPatientData({ ...patientData, dogumTarihi: text })}
                     />
+
                     <View style={styles.pickerContainer}>
                         <Picker
-                            selectedValue={selectedHastalik}
-                            onValueChange={(itemValue) => setSelectedHastalik(itemValue)}
+                            selectedValue={patientData.hastalik}
+                            onValueChange={(itemValue) => setPatientData({ ...patientData, hastalik: itemValue })}
                             style={styles.picker}
                             dropdownIconColor="#007bff"
                         >
@@ -211,15 +280,52 @@ const PatientRegister = ({ navigation }: any) => {
                             ))}
                         </Picker>
                     </View>
-                    <TextInput style={styles.input} placeholder="Telefon" keyboardType="phone-pad" value={telefon} onChangeText={setTelefon} />
-                    <TextInput style={styles.input} placeholder="Adres" onChangeText={(text) => setPatientData({ ...patientData, adres: text })} />
 
-                    <TextInput style={styles.input} placeholder="Acil Durum Kişisi Adı" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiAd: text })} />
-                    <TextInput style={styles.input} placeholder="Acil Durum Kişisi Soyadı" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiSoyad: text })} />
-                    <TextInput style={styles.input} placeholder="Acil Durum Kişisi Yakınlık Derecesi" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiYakinlik: text })} />
-                    <TextInput style={styles.input} placeholder="Acil Durum Kişisi Telefon" onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiTelefon: text })} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Telefon"
+                        keyboardType="phone-pad"
+                        value={patientData.telefon}
+                        onChangeText={(text) => setPatientData({ ...patientData, telefon: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Adres"
+                        value={patientData.adres}
+                        onChangeText={(text) => setPatientData({ ...patientData, adres: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Acil Durum Kişisi Adı"
+                        value={patientData.acilDurumKisiAd}
+                        onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiAd: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Acil Durum Kişisi Soyadı"
+                        value={patientData.acilDurumKisiSoyad}
+                        onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiSoyad: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Acil Durum Kişisi Yakınlık Derecesi"
+                        value={patientData.acilDurumKisiYakinlik}
+                        onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiYakinlik: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Acil Durum Kişisi Telefon"
+                        keyboardType="phone-pad"
+                        value={patientData.acilDurumKisiTelefon}
+                        onChangeText={(text) => setPatientData({ ...patientData, acilDurumKisiTelefon: text })}
+                    />
                 </ScrollView>
-                <TouchableOpacity style={styles.button} onPress={handleRegister}>
+
+                <TouchableOpacity style={styles.button}
+                    onPress={() => {
+                        alert("Butona basıldı!"); // Basit bir alert mesajı
+                        handleRegister();
+                    }}>
                     <Text style={styles.buttonText}>Kaydet</Text>
                 </TouchableOpacity>
             </View>
