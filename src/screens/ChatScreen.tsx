@@ -3,26 +3,27 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList } from "r
 import { Ionicons } from "@expo/vector-icons";
 import BottomMenu from "../components/ui/BottomMenu";
 import { auth, db } from "@/config/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 
 const MessageScreen = () => {
 
- const [doctorName, setDoctorName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
-
+    const [doctorName, setDoctorName] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const [messages, setMessages] = useState([
         { id: "1", sender: "Doktor", text: "İyi hissediyorum, teşekkür ederim.", time: "10:00 AM" },
         { id: "2", sender: "Hasta", text: "Merhaba, nasıl hissediyorsunuz?", time: "10:05 AM" },
     ]);
     const [message, setMessage] = useState("");
+    const [patients, setPatients] = useState<{ id: string; name: string }[]>([]);
+    const [selectedPatient, setSelectedPatient] = useState<string | null>(null); // Selected patient state
 
     const handleSendMessage = () => {
         if (message.trim()) {
             const newMessage = {
                 id: (messages.length + 1).toString(),
-                sender: "Hasta", // Mesajın kimden gönderileceğini kontrol edebilirsiniz
+                sender: "Hasta", 
                 text: message,
                 time: new Date().toLocaleTimeString(),
             };
@@ -31,53 +32,69 @@ const MessageScreen = () => {
         }
     };
 
-    const handleBackPress = () => {
-        // Geri gitme işlemi
-    };
+    useEffect(() => {
+        const fetchDoctorData = async () => {
+            try {
+                const userId = auth.currentUser?.uid;
+                if (!userId) {
+                    setErrorMessage("Kullanıcı girişi yapılmamış.");
+                    setLoading(false);
+                    return;
+                }
 
-    //Doktor verileri
-  useEffect(() => {
-    const fetchDoctorData = async () => {
-      try {
-        // Giriş yapan kullanıcının UID'sini alıyoruz
-        const userId = auth.currentUser?.uid;
+                const userRef = doc(db, "users", userId); 
+                const userDoc = await getDoc(userRef);
 
-        if (!userId) {
-          setErrorMessage("Kullanıcı girişi yapılmamış.");
-          setLoading(false);
-          return;
-        }
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+                    setDoctorName(fullName); 
+                } else {
+                    setErrorMessage("Doktor verisi bulunamadı.");
+                }
+            } catch (error) {
+                setErrorMessage("Veri çekme hatası oluştu.");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        console.log("Giriş yapan kullanıcının UID'si:", userId);
+        fetchDoctorData(); 
+    }, []);
 
-        const userRef = doc(db, "users", userId); // Firestore'dan doktor verisini alıyoruz
-        const userDoc = await getDoc(userRef);
+    useEffect(() => {
+        const fetchPatients = async () => {
+            try {
+                const userId = auth.currentUser?.uid;
+                const patientsRef = collection(db, "patients");
+                const q = query(patientsRef, where("doctorId", "==", userId));
+                const querySnapshot = await getDocs(q);
 
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          console.log("Firestore'dan gelen veriler:", userData); // Veriyi konsola yazdıralım
-          const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
-          setDoctorName(fullName); // Firestore'dan gelen doktor adını state'e set ediyoruz        } else {
-          setErrorMessage("Doktor verisi bulunamadı.");
-        }
-      } catch (error) {
-        console.log("Firestore hatası:", error);
-        setErrorMessage("Veri çekme hatası oluştu.");
-      } finally {
-        setLoading(false); // Veri çekme işlemi tamamlandığında loading'i false yapıyoruz
-      }
-    };
+                const patientList = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: `${data.ad} ${data.soyad}`
+                    };
+                });
 
-    fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
-  }, []);
+                setPatients(patientList);
+                if (patientList.length > 0) {
+                    setSelectedPatient(patientList[0].name); // İlk hastayı varsayılan olarak seçiyoruz
+                }
+            } catch (error) {
+                console.error("Hastalar alınırken hata oluştu:", error);
+            }
+        };
+
+        fetchPatients();
+    }, []);
 
     return (
         <View style={styles.container}>
-            {/* İçerik alanı */}
             <View style={styles.innerContainer}>
-                {/* Üst Bar */}
                 <View style={styles.topBar}>
-                    <TouchableOpacity onPress={handleBackPress}>
+                    <TouchableOpacity onPress={() => {}}>
                         <Ionicons name="arrow-back" size={24} color="black" />
                     </TouchableOpacity>
                     <Text style={styles.dateText}>
@@ -89,13 +106,11 @@ const MessageScreen = () => {
                     </Text>
                 </View>
 
-                {/* InfoBox */}
                 <View style={styles.infoBox}>
-      <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
-                    <Text style={styles.infoText}>Hasta: Ayşe Yılmaz</Text>
+                    <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+                    <Text style={styles.infoText}>Hasta: {selectedPatient || 'Seçilen hasta yok'}</Text>
                 </View>
 
-                {/* Mesajlaşma Alanı */}
                 <View style={styles.messagesContainer}>
                     <FlatList
                         data={messages}
@@ -106,18 +121,15 @@ const MessageScreen = () => {
                                     item.sender === "Doktor" ? styles.doctorMessage : styles.patientMessage,
                                 ]}
                             >
-                                <Text style={styles.messageText}>
-                                    {item.text}
-                                </Text>
+                                <Text style={styles.messageText}>{item.text}</Text>
                                 <Text style={styles.timeText}>{item.time}</Text>
                             </View>
                         )}
                         keyExtractor={(item) => item.id}
-                        inverted // Mesajları alt alta sıralar
+                        inverted
                     />
                 </View>
 
-                {/* Mesaj Yazma Alanı */}
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
@@ -131,11 +143,11 @@ const MessageScreen = () => {
                 </View>
             </View>
 
-            {/* Menü */}
             <BottomMenu />
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
