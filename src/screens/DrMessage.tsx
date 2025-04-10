@@ -74,6 +74,7 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
 
     const navigateToChatScreen = () => {
         if (selectedPatient) {
+            // Hasta bilgisiyle ChatScreen'e yönlendirme
             navigation.navigate("ChatScreen", { patient: selectedPatient });
         }
     };
@@ -127,7 +128,8 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
 
                 {/* Mesaj Yazmaya Yönlendirme */}
                 <View style={styles.messageContainer}>
-                    <TouchableOpacity onPress={navigateToChatScreen}>
+                    <TouchableOpacity onPress={() => navigation.navigate('ChatScreen', { patient: selectedPatient })}>
+
                         <Text style={styles.messageText}>Mesaj Gönder</Text>
                     </TouchableOpacity>
                 </View>
