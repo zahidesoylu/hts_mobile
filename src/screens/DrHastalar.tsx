@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import BottomMenu from "../components/ui/BottomMenu";
 import { db, auth } from "../../src/config/firebaseConfig";
 import { doc, getDoc, query, where, deleteDoc, getDocs, collection } from 'firebase/firestore';
@@ -13,6 +13,10 @@ const DrHastalar = ({ navigation, route }: any) => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
+
+    const [isDeletePanelVisible, setIsDeletePanelVisible] = useState(false);
+
+
 
     const auth = getAuth();
     const doctorId = auth.currentUser?.uid;
@@ -54,11 +58,11 @@ const DrHastalar = ({ navigation, route }: any) => {
                 const userId = auth.currentUser?.uid;
                 console.log("Giriş yapan doktor ID'si:", userId);
 
-    
+
                 const patientsRef = collection(db, "patients");
                 const q = query(patientsRef, where("doctorId", "==", userId));
                 const querySnapshot = await getDocs(q);
-    
+
                 const patientList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
                     return {
@@ -67,38 +71,37 @@ const DrHastalar = ({ navigation, route }: any) => {
                         soyad: data.soyad
                     };
                 });
-    
+
                 setPatients(patientList);
             } catch (error) {
                 console.error("Hastalar alınırken hata oluştu:", error);
             }
         };
-    
+
         fetchPatients();
     }, []);
 
 
     // Hastaları silme işlemi
     const handleDeletePatient = (id: string) => {
-        Alert.alert(
-            "Hasta Sil",
-            "Bu hastayı silmek istediğinize emin misiniz?",
-            [
-                { text: "İptal", style: "cancel" },
-                {
-                    text: "Sil", style: "destructive", onPress: async () => {
-                        try {
-                            await deleteDoc(doc(db, "patients", id));
-                            setPatients(prev => prev.filter(p => p.id !== id));
-                            Alert.alert("Silme işlemi başarılı");
-                        } catch (error) {
-                            console.error("Hasta silinirken hata oluştu:", error);
-                            Alert.alert("Silme işlemi başarısız");
-                        }
-                    }
-                }
-            ]
-        );
+        console.log("Silme butonuna tıklandı. ID:", id);
+        // Alert olmadan doğrudan silmeyi test edelim
+        deletePatient(id);
+    };
+
+
+    const deletePatient = async (id: string) => {
+        try {
+            const patientRef = doc(db, "patients", id);
+            await deleteDoc(patientRef); // Firestore'dan silme işlemi
+
+            // Silindikten sonra listeyi güncelle
+            setPatients(prev => prev.filter(patient => patient.id !== id));
+
+            console.log(`Hasta başarıyla silindi: ${id}`);
+        } catch (error) {
+            console.error("Hasta silinirken hata oluştu:", error);
+        }
     };
 
 
@@ -145,11 +148,28 @@ const DrHastalar = ({ navigation, route }: any) => {
 
                 <TouchableOpacity
                     style={styles.hastalarButton}
-                    onPress={() => setIsPanelVisible(!isPanelVisible)}
+                    onPress={() => setIsDeletePanelVisible(!isDeletePanelVisible)}
                 >
                     <Text style={styles.hastalarButtonText}>Hasta Kayıt Sil</Text>
                 </TouchableOpacity>
 
+
+                {isDeletePanelVisible && (
+                    <View style={styles.patientPanel}>
+                        {patients.map((patient) => (
+                            <View key={patient.id} style={styles.patientItem}>
+                                <Text style={styles.patientText}>{patient.ad} {patient.soyad}</Text>
+                                <TouchableOpacity
+                                    style={styles.deleteButton}
+                                    onPress={() => handleDeletePatient(patient.id)}
+                                >
+                                    <Text style={styles.deleteButtonText}>Sil</Text>
+                                </TouchableOpacity>
+
+                            </View>
+                        ))}
+                    </View>
+                )}
             </View>
             <BottomMenu />
         </View>
@@ -267,6 +287,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
+    patientItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#f9f9f9',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    deleteButton: {
+        backgroundColor: '#FF4C4C',
+        paddingVertical: 5,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+    },
+    deleteButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+
 });
 
 export default DrHastalar;

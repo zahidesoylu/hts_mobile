@@ -28,7 +28,7 @@ const RegisterScreen = ({ navigation, route }: any) => {
   const [errorMessage, setErrorMessage] = useState(""); // Hata mesajını tutacak state
 
 
-  //Uçnvanları firestore dan cek
+  //Unvanları firestore dan cek
   useEffect(() => {
     const fetchUnvanlar = async () => {
       try {

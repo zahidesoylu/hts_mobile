@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { auth } from "../../src/config/firebaseConfig"; // Firebase konfigürasyon dosyasından auth'i alıyoruz
-import { getFirestore, doc, setDoc, getDoc, collection } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { View, Alert, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-
 
 const LoginScreen = ({ navigation }: any) => {
   const [eposta, setEposta] = useState("");
@@ -20,24 +19,43 @@ const LoginScreen = ({ navigation }: any) => {
       setErrorMessage("Lütfen tüm alanları doldurun!");
       return;
     }
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, eposta, password);
-      const user = userCredential.user;
 
-      const userRef = doc(firestore, "users", user.uid);
-      const userDoc = await getDoc(userRef);
-      if (!userDoc.exists()) {
-        setErrorMessage("Kullanıcı verisi bulunamadı.");
-        return;
-      }
-      const userRole = userDoc.data()?.role;
-      if (userRole === 'doctor') {
-        navigation.navigate('DoctorMenu');
-      } else if (userRole === 'patient') {
-        navigation.navigate('PatientMenu');
+    try {
+      // Doktor girişini Firebase Authentication ile kontrol et
+      if (isDoctor) {
+        const userCredential = await signInWithEmailAndPassword(auth, eposta, password);
+        const user = userCredential.user;
+
+        const userRef = doc(firestore, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+          setErrorMessage("Kullanıcı verisi bulunamadı.");
+          return;
+        }
+
+        const userRole = userDoc.data()?.role;
+        if (userRole === 'doctor') {
+          navigation.navigate('DoctorMenu');
+        } else if (userRole === 'patient') {
+          navigation.navigate('PatientMenu');
+        } else {
+          setErrorMessage("Geçersiz kullanıcı rolü.");
+        }
       } else {
-        setErrorMessage("Geçersiz kullanıcı rolü.");
+        // Hasta girişini Firestore'dan kontrol et
+        const patientsRef = collection(firestore, "patients");
+        const q = query(patientsRef, where("email", "==", eposta), where("password", "==", password));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          setErrorMessage("Hasta bilgileri hatalı.");
+          return;
+        }
+
+        // Hasta bilgileri doğrulandı
+        navigation.navigate('PatientMenu');
       }
+
     } catch (error: any) {
       console.log("Giriş hatası:", error);
       setErrorMessage("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
@@ -49,26 +67,21 @@ const LoginScreen = ({ navigation }: any) => {
       setErrorMessage("Lütfen tüm alanları doldurun!");
       return;
     }
+
     try {
+      // Doktor kaydı yapmak
       const userCredential = await createUserWithEmailAndPassword(auth, eposta, password);
       const user = userCredential.user;
-  
-      // Firestore'a yeni kullanıcıyı ekleyelim
+
+      // Firestore'a yeni kullanıcı kaydını ekliyoruz
       await setDoc(doc(firestore, "users", user.uid), {
         email: eposta,
-        role: "doctor",
+        role: "doctor", // Doktor rolü ekliyoruz
       });
-  
-      console.log("Kayıt başarılı: Kullanıcı UID:", user.uid);
-      console.log("Navigating with email: ", eposta, "and password: ", password);  // Şifreyi kontrol edelim
 
-  
-      // Kullanıcıyı RegisterScreen'e yönlendiriyoruz
-      navigation.navigate("RegisterScreen", {
-        uid: user.uid,
-        eposta: user.email,
-        password: password, // Burada 'password' değişkenini kullanıyoruz.
-      });
+      console.log("Kayıt başarılı: Kullanıcı UID:", user.uid);
+      navigation.navigate("DoctorMenu"); // Doktoru DoctorMenu'ya yönlendiriyoruz
+
     } catch (error: any) {
       console.log("Kayıt hatası:", error);
       setErrorMessage("Kayıt başarısız. Lütfen tekrar deneyin.");
@@ -100,9 +113,8 @@ const LoginScreen = ({ navigation }: any) => {
               placeholder="Şifre"
               value={password}
               onChangeText={(text) => setPassword(text)} // Şifreyi alıyoruz
-              secureTextEntry
+              secureTextEntry={!passwordVisible}
             />
-            
             <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
               <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={20} color="#555" />
             </TouchableOpacity>
@@ -120,6 +132,7 @@ const LoginScreen = ({ navigation }: any) => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
