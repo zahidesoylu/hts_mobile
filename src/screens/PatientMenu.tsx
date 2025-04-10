@@ -2,10 +2,54 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-nativ
 import { FontAwesome } from "@expo/vector-icons";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import SearchBar from "../../src/components/ui/SearchBar";
+import { useEffect, useState } from "react";
+import { auth, db } from "@/config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
-const PatientMenu = () => {
-  const patientName = "Hasta: Ayşe Yılmaz";
-  const doctorName = "Doktor: Şeyma Özkaya";
+const PatientMenu = ({ navigation, route }: any) => {
+
+    const [doctorName, setDoctorName] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
+    const [patientName, setPatientName] = useState<string | null>(null); // Hasta adı için state
+  
+
+    
+//Doktor verileri
+useEffect(() => {
+  const fetchDoctorData = async () => {
+    try {
+      // Giriş yapan kullanıcının UID'sini alıyoruz
+      const userId = auth.currentUser?.uid;
+
+      if (!userId) {
+        setErrorMessage("Kullanıcı girişi yapılmamış.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Giriş yapan kullanıcının UID'si:", userId);
+
+      const userRef = doc(db, "users", userId); // Firestore'dan doktor verisini alıyoruz
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        console.log("Firestore'dan gelen veriler:", userData); // Veriyi konsola yazdıralım
+        const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+        setDoctorName(fullName); // Firestore'dan gelen doktor adını state'e set ediyoruz        } else {
+        setErrorMessage("Doktor verisi bulunamadı.");
+      }
+    } catch (error) {
+      console.log("Firestore hatası:", error);
+      setErrorMessage("Veri çekme hatası oluştu.");
+    } finally {
+      setLoading(false); // Veri çekme işlemi tamamlandığında loading'i false yapıyoruz
+    }
+  };
+
+  fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
+}, []);
 
   return (
     <View style={styles.container}>
@@ -23,20 +67,42 @@ const PatientMenu = () => {
         {/* Profil Bilgileri */}
         <FontAwesome name="user-circle" size={50} color="gray" style={styles.profileIcon} />
         <Text style={styles.patientName}>{patientName}</Text>
-        <Text style={styles.doctorName}>{doctorName}</Text>
+        <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
 
         {/* Arama Çubuğu */}
         <SearchBar />
 
 
         {/* Menü Butonları */}
-        <View style={styles.menuContainer}>
-          {["Raporlar", "Randevular", "Hatırlatmalar", "Mesajlar"].map((title, index) => (
-            <TouchableOpacity key={index} style={styles.menuButton}>
-              <Text style={styles.menuText}>{title}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+                <View style={styles.menuContainer}>
+                  <TouchableOpacity
+                    style={styles.card}
+                    onPress={() => navigation.navigate('PtReport')} // Hastalar sayfasına yönlendir
+                  >
+                    <Text style={styles.cardText}>Raporlar</Text>
+                  </TouchableOpacity>
+        
+                  <TouchableOpacity
+                    style={styles.card}
+                    onPress={() => navigation.navigate('PtRandevuButton')} // Randevular sayfasına yönlendir
+                  >
+                    <Text style={styles.cardText}>Randevular</Text>
+                  </TouchableOpacity>
+        
+                  <TouchableOpacity
+                    style={styles.card}
+                    onPress={() => navigation.navigate('')} // Raporlar sayfasına yönlendir
+                  >
+                    <Text style={styles.cardText}>Hatırlatmalar</Text>
+                  </TouchableOpacity>
+        
+                  <TouchableOpacity
+                    style={styles.card}
+                    onPress={() => navigation.navigate('PtChatScreen')} // Mesajlar sayfasına yönlendir
+                  >
+                    <Text style={styles.cardText}>Mesajlar</Text>
+                  </TouchableOpacity>
+                </View>
       </View>
 
       {/* Alt Menü */}
@@ -45,7 +111,6 @@ const PatientMenu = () => {
   );
 };
 
-// **STYLE KISMI ALTA AYRILDI**
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -89,8 +154,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    justifyContent: "space-evenly", 
-    width: "100%", 
+    justifyContent: "space-evenly",
+    width: "100%",
   },
 
   menuButton: {
@@ -105,6 +170,25 @@ const styles = StyleSheet.create({
   menuText: {
     fontWeight: "bold",
     textAlign: "center",
+  },
+  card: {
+    width: '35%',
+    height: 120,
+    margin: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5, // Android için gölge efekti
+    shadowColor: '#000', // iOS için gölge efekti
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+  cardText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

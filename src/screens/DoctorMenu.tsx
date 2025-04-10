@@ -1,11 +1,11 @@
 import React from "react";
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet,ActivityIndicator, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import SearchBar from "../../src/components/ui/SearchBar";
 import { doc, getDoc } from 'firebase/firestore';
-import { db , auth} from "../../src/config/firebaseConfig";
+import { db, auth } from "../../src/config/firebaseConfig";
 
 
 const DoctorMenu = ({ navigation, route }: any) => {
@@ -14,7 +14,7 @@ const DoctorMenu = ({ navigation, route }: any) => {
   const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
 
-
+  //Doktor verileri
   useEffect(() => {
     const fetchDoctorData = async () => {
       try {
@@ -59,7 +59,7 @@ const DoctorMenu = ({ navigation, route }: any) => {
     );
   }
 
-  
+
   return (
     <View style={styles.container}>
       {/* Ana Konteyner */}
@@ -74,39 +74,39 @@ const DoctorMenu = ({ navigation, route }: any) => {
         </Text>
 
         <FontAwesome name="user-circle" size={50} color="gray" style={styles.profileIcon} />
-      <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+        <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
         {/* Arama Çubuğu */}
         <SearchBar />
 
         {/* Menü Butonları */}
         <View style={styles.menuContainer}>
-        <TouchableOpacity 
-          style={styles.card} 
-          onPress={() => navigation.navigate('DrHastalar')} // Hastalar sayfasına yönlendir
-        >
-          <Text style={styles.cardText}>Hasta İşlemleri</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('DrHastalar')} // Hastalar sayfasına yönlendir
+          >
+            <Text style={styles.cardText}>Hasta İşlemleri</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.card} 
-          onPress={() => navigation.navigate('DrRandevuButton')} // Randevular sayfasına yönlendir
-        >
-          <Text style={styles.cardText}>Randevular</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('DrRandevuButton')} // Randevular sayfasına yönlendir
+          >
+            <Text style={styles.cardText}>Randevular</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.card} 
-          onPress={() => navigation.navigate('Reports')} // Raporlar sayfasına yönlendir
-        >
-          <Text style={styles.cardText}>Raporlar</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('Reports')} // Raporlar sayfasına yönlendir
+          >
+            <Text style={styles.cardText}>Raporlar</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.card} 
-          onPress={() => navigation.navigate('DrMessage')} // Mesajlar sayfasına yönlendir
-        >
-          <Text style={styles.cardText}>Mesajlar</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('DrMessage')} // Mesajlar sayfasına yönlendir
+          >
+            <Text style={styles.cardText}>Mesajlar</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -128,9 +128,9 @@ const styles = StyleSheet.create({
     height: 550,
     backgroundColor: "white",
     padding: 30,
-    borderTopLeftRadius: 10,  
-    borderTopRightRadius: 10, 
-    borderBottomLeftRadius: 0, 
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     alignItems: "center",
     shadowColor: "#000",
@@ -180,8 +180,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    justifyContent: "space-evenly", 
-    width: "100%", 
+    justifyContent: "space-evenly",
+    width: "100%",
   },
 
   menuButton: {

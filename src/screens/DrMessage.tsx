@@ -4,7 +4,6 @@ import BottomMenu from "../components/ui/BottomMenu";
 import { auth, db } from "../config/firebaseConfig"; // Firebase config dosyasını import edin
 import { collection, getDocs, query, where } from "firebase/firestore";
 
-
 // Hasta tipini tanımla
 type Patient = {
     id: string;
@@ -26,7 +25,6 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [showPatientList, setShowPatientList] = useState(false);
-
 
     // Firestore'dan hasta verilerini çek
     useEffect(() => {
@@ -56,21 +54,6 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
 
         fetchPatients();
     }, []);
-
-
-    const handleSendMessage = () => {
-        if (message.trim() && selectedPatient) {
-            const newMessage: Message = {
-                id: (messages.length + 1).toString(),
-                sender: "Doktor",
-                text: message,
-                patient: selectedPatient.name,
-                timestamp: new Date().toLocaleTimeString(),
-            };
-            setMessages([...messages, newMessage]);
-            setMessage("");
-        }
-    };
 
     const navigateToChatScreen = () => {
         if (selectedPatient) {
@@ -128,7 +111,14 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
 
                 {/* Mesaj Yazmaya Yönlendirme */}
                 <View style={styles.messageContainer}>
-                    <TouchableOpacity onPress={() => navigation.navigate('ChatScreen', { patient: selectedPatient })}>
+                    <TouchableOpacity onPress={() => {
+                        if (selectedPatient) {
+                            navigation.navigate("ChatScreen", { patient: selectedPatient });
+                        } else {
+                            alert("Lütfen önce bir hasta seçin.");
+                        }
+                    }}
+                    >
 
                         <Text style={styles.messageText}>Mesaj Gönder</Text>
                     </TouchableOpacity>

@@ -6,16 +6,13 @@ import { auth, db } from "@/config/firebaseConfig";
 import { collection, serverTimestamp, doc, getDoc, getDocs, query, where, addDoc } from "firebase/firestore";
 import { orderBy, onSnapshot } from "firebase/firestore";
 
-
-const MessageScreen = ({ route }: { route: any }) => {
-    const { patientId } = route.params.patient.id; // Hasta ID'sini parametre olarak alıyoru
+const PtChatScreen = ({ route }: { route: any }) => {
+    const { patientId } = route.params.patient.id; // Hasta ID'sini parametre olarak alıyoruz
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [messages, setMessages] = useState<{ id: string; sender: string; text: string; time: string; timestamp?: { seconds: number; nanoseconds: number } }[]>([]);
     const [message, setMessage] = useState("");
-    const [patients, setPatients] = useState<{ id: string; name: string }[]>([]);
-    const [selectedPatient, setSelectedPatient] = useState<string | null>(null); // Selected patient state
     const myPatient = route.params.patient; // myPatient'ı route'dan alıyoruz
 
     // Mesaj gönderme fonksiyonu
@@ -24,11 +21,11 @@ const MessageScreen = ({ route }: { route: any }) => {
             try {
                 // Mesaj verilerini Firestore'a kaydediyoruz
                 const messageData = {
-                    senderId: auth.currentUser?.uid,
-                    receiverId: selectedPatient,  // Burada hasta ID'si seçili olmalı
+                    senderId: patientId,  // Burada hasta ID'si kullanılacak
+                    receiverId: auth.currentUser?.uid,  // Doktorun ID'si
                     text: message,
                     timestamp: serverTimestamp(),
-                    senderName: doctorName || "Doktor",
+                    senderName: myPatient.name, // Hasta adı
                 };
 
                 // messages koleksiyonuna yeni bir mesaj ekliyoruz
@@ -57,8 +54,8 @@ const MessageScreen = ({ route }: { route: any }) => {
     useEffect(() => {
         const messagesRef = collection(db, "messages");
         const q = query(messagesRef,
-            where("senderId", "in", [auth.currentUser?.uid, selectedPatient]),  // Kullanıcı ve hasta arasında iletişim
-            where("receiverId", "in", [auth.currentUser?.uid, selectedPatient]),
+            where("senderId", "in", [patientId, auth.currentUser?.uid]),  // Hasta ve doktor arasındaki mesajlar
+            where("receiverId", "in", [patientId, auth.currentUser?.uid]),
             orderBy("timestamp") // Mesajları zaman sırasına göre sıralıyoruz
         );
 
@@ -79,30 +76,7 @@ const MessageScreen = ({ route }: { route: any }) => {
         });
 
         return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
-    }, [selectedPatient]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
-
-    //Mesajları listeleme 
-    <FlatList
-    data={messages}
-    renderItem={({ item }) => (
-        <View
-            style={[
-                styles.messageBox,
-                item.sender === doctorName ? styles.doctorMessage : styles.patientMessage,
-            ]}
-        >
-            <Text style={styles.messageText}>{item.text}</Text>
-            <Text style={styles.timeText}>
-                {item.time || (item.timestamp?.seconds 
-                    ? new Date(item.timestamp.seconds * 1000).toLocaleTimeString() 
-                    : "Unknown time")}
-            </Text>
-        </View>
-    )}
-    keyExtractor={(item) => item.id}
-    inverted
-/>
-
+    }, [patientId]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
 
     //Doktor verisi
     useEffect(() => {
@@ -135,34 +109,6 @@ const MessageScreen = ({ route }: { route: any }) => {
         fetchDoctorData();
     }, []);
 
-    //Hasta verisi
-    useEffect(() => {
-        const fetchPatients = async () => {
-            try {
-                const userId = auth.currentUser?.uid;
-                console.log("Giriş yapan doktor ID'si:", userId);
-
-                const patientsRef = collection(db, "patients");
-                const q = query(patientsRef, where("doctorId", "==", userId));
-                const querySnapshot = await getDocs(q);
-
-                const patientList = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        name: `${data.ad} ${data.soyad}`
-                    };
-                });
-
-                setPatients(patientList);
-            } catch (error) {
-                console.error("Hastalar alınırken hata oluştu:", error);
-            }
-        };
-
-        fetchPatients();
-    }, []);
-
     return (
         <View style={styles.container}>
             <View style={styles.innerContainer}>
@@ -189,11 +135,7 @@ const MessageScreen = ({ route }: { route: any }) => {
                         data={messages}
                         renderItem={({ item }) => (
                             <View
-                                style={[
-                                    styles.messageBox,
-                                    item.sender === "Doktor" ? styles.doctorMessage : styles.patientMessage,
-                                ]}
-                            >
+                                style={[styles.messageBox, item.sender === "Doktor" ? styles.doctorMessage : styles.patientMessage]}>
                                 <Text style={styles.messageText}>{item.text}</Text>
                                 <Text style={styles.timeText}>{item.time}</Text>
                             </View>
@@ -221,17 +163,16 @@ const MessageScreen = ({ route }: { route: any }) => {
     );
 };
 
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#f5f5f5",
-        justifyContent: "center",  // Ortada hizalamak için
-        alignItems: "center",      // Ortada hizalamak için
+        justifyContent: "center", 
+        alignItems: "center",      
     },
     innerContainer: {
-        width: 400,  // Genişliği küçülterek içerik alanını daraltıyoruz
-        height: 550, // Yüksekliği belirleyerek sabit tutuyoruz
+        width: 400,
+        height: 550,
         backgroundColor: "white",
         padding: 20,
         borderTopLeftRadius: 10,
@@ -241,7 +182,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
-        overflow: "hidden", // Taşan içeriği gizler
+        overflow: "hidden",
     },
     topBar: {
         flexDirection: "row",
@@ -292,11 +233,11 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     doctorMessage: {
-        backgroundColor: "#e1f5fe", // Doktor mesajları için mavi tonları
+        backgroundColor: "#e1f5fe",
         alignSelf: "flex-start",
     },
     patientMessage: {
-        backgroundColor: "#c8e6c9", // Hasta mesajları için yeşil tonları
+        backgroundColor: "#c8e6c9",
         alignSelf: "flex-end",
     },
     messageText: {
@@ -329,4 +270,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default MessageScreen;
+export default PtChatScreen;

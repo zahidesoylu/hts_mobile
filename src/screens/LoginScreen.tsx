@@ -44,15 +44,19 @@ const LoginScreen = ({ navigation }: any) => {
       } else {
         // Hasta girişini Firestore'dan kontrol et
         const patientsRef = collection(firestore, "patients");
-        const q = query(patientsRef, where("email", "==", eposta), where("password", "==", password));
+        const q = query(patientsRef, where("eposta", "==", eposta), where("sifre", "==", password));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
           setErrorMessage("Hasta bilgileri hatalı.");
+          console.log("Hasta verisi bulunamadı veya bilgiler yanlış.");
           return;
         }
+        // Veriler varsa hasta menüsüne yönlendir
+        querySnapshot.forEach((doc) => {
+          console.log("Hasta verisi:", doc.id, doc.data());
+        });
 
-        // Hasta bilgileri doğrulandı
         navigation.navigate('PatientMenu');
       }
 
