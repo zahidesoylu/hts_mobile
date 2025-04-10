@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import BottomMenu from "../components/ui/BottomMenu";
+import { auth, db } from "@/config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 const MessageScreen = () => {
+
+ const [doctorName, setDoctorName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
+
+
     const [messages, setMessages] = useState([
         { id: "1", sender: "Doktor", text: "İyi hissediyorum, teşekkür ederim.", time: "10:00 AM" },
         { id: "2", sender: "Hasta", text: "Merhaba, nasıl hissediyorsunuz?", time: "10:05 AM" },
@@ -27,6 +35,42 @@ const MessageScreen = () => {
         // Geri gitme işlemi
     };
 
+    //Doktor verileri
+  useEffect(() => {
+    const fetchDoctorData = async () => {
+      try {
+        // Giriş yapan kullanıcının UID'sini alıyoruz
+        const userId = auth.currentUser?.uid;
+
+        if (!userId) {
+          setErrorMessage("Kullanıcı girişi yapılmamış.");
+          setLoading(false);
+          return;
+        }
+
+        console.log("Giriş yapan kullanıcının UID'si:", userId);
+
+        const userRef = doc(db, "users", userId); // Firestore'dan doktor verisini alıyoruz
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          console.log("Firestore'dan gelen veriler:", userData); // Veriyi konsola yazdıralım
+          const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+          setDoctorName(fullName); // Firestore'dan gelen doktor adını state'e set ediyoruz        } else {
+          setErrorMessage("Doktor verisi bulunamadı.");
+        }
+      } catch (error) {
+        console.log("Firestore hatası:", error);
+        setErrorMessage("Veri çekme hatası oluştu.");
+      } finally {
+        setLoading(false); // Veri çekme işlemi tamamlandığında loading'i false yapıyoruz
+      }
+    };
+
+    fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
+  }, []);
+
     return (
         <View style={styles.container}>
             {/* İçerik alanı */}
@@ -47,7 +91,7 @@ const MessageScreen = () => {
 
                 {/* InfoBox */}
                 <View style={styles.infoBox}>
-                    <Text style={styles.infoText}>Dr: Şeyma Özkaya</Text>
+      <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
                     <Text style={styles.infoText}>Hasta: Ayşe Yılmaz</Text>
                 </View>
 
@@ -144,6 +188,12 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginBottom: 5,
         textAlign: "center",
+    },
+    doctorName: {
+        fontSize: 18,
+        fontWeight: "bold",
+        textAlign: "center",
+        marginBottom: 5,
     },
     messagesContainer: {
         width: "100%",
