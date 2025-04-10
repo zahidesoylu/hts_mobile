@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import BottomMenu from "../../src/components/ui/BottomMenu";
+import { auth,db } from "@/config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 // Randevu tipi için bir interface tanımlıyoruz.
 interface Appointment {
@@ -12,7 +14,6 @@ interface Appointment {
 const DrRandevuButton = () => {
     const [selectedDate, setSelectedDate] = useState("Bugün");
 
-    const doctorName = "Doktor: Şeyma Özkaya";
 
     const appointments: Appointment[] = [
         { hour: "10:00", name: "Ali Veli", status: "Iptal Et" },
@@ -26,6 +27,46 @@ const DrRandevuButton = () => {
     const handleCancel = (appointment: Appointment) => {
         console.log(`Randevu iptal edildi: ${appointment.hour} - ${appointment.name}`);
     };
+      const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
+      const [doctorName, setDoctorName] = useState<string | null>(null);
+        const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
+
+    useEffect(() => {
+        const fetchDoctorData = async () => {
+          try {
+            // Giriş yapan kullanıcının UID'sini alıyoruz
+            const userId = auth.currentUser?.uid;
+    
+            if (!userId) {
+              setErrorMessage("Kullanıcı girişi yapılmamış.");
+              setLoading(false);
+              return;
+            }
+    
+            console.log("Giriş yapan kullanıcının UID'si:", userId);
+    
+            const userRef = doc(db, "users", userId); // Firestore'dan doktor verisini alıyoruz
+            const userDoc = await getDoc(userRef);
+    
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              console.log("Firestore'dan gelen veriler:", userData); // Veriyi konsola yazdıralım
+              const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+              setDoctorName(fullName); // Firestore'dan gelen doktor adını state'e set ediyoruz        } else {
+              setErrorMessage("Doktor verisi bulunamadı.");
+            }
+          } catch (error) {
+            console.log("Firestore hatası:", error);
+            setErrorMessage("Veri çekme hatası oluştu.");
+          } finally {
+            setLoading(false); // Veri çekme işlemi tamamlandığında loading'i false yapıyoruz
+          }
+        };
+    
+        fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
+      }, []);
+
+
 
     return (
         <View style={styles.container}>
@@ -40,7 +81,7 @@ const DrRandevuButton = () => {
 
                 <Text style={styles.headingText}>Randevular</Text>
 
-                <Text style={styles.doctorName}>{doctorName}</Text>
+      <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
 
                 {/* Tarih Seçim */}
                 <View style={styles.dateSelector}>

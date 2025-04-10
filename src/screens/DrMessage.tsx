@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import BottomMenu from "../components/ui/BottomMenu";
+import { auth, db } from "../config/firebaseConfig"; // Firebase config dosyasını import edin
+import { collection, getDocs, query, where } from "firebase/firestore";
+
 
 // Hasta tipini tanımla
 type Patient = {
@@ -19,18 +21,42 @@ type Message = {
 };
 
 const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
-    const [patients, setPatients] = useState<Patient[]>([
-        { id: "1", name: "Ayşe Yılmaz" },
-        { id: "2", name: "Mehmet Ali" },
-        { id: "3", name: "Fatma Can" },
-        { id: "4", name: "Ali Veli" },
-        { id: "5", name: "Zeynep Kaya" },
-    ]);
-
+    const [patients, setPatients] = useState<Patient[]>([]);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
-    const [showPatientList, setShowPatientList] = useState(false); // Hastalar listesini kontrol etmek için
+    const [showPatientList, setShowPatientList] = useState(false);
+
+
+    // Firestore'dan hasta verilerini çek
+    useEffect(() => {
+        const fetchPatients = async () => {
+            try {
+                const userId = auth.currentUser?.uid;
+                console.log("Giriş yapan doktor ID'si:", userId);
+
+
+                const patientsRef = collection(db, "patients");
+                const q = query(patientsRef, where("doctorId", "==", userId));
+                const querySnapshot = await getDocs(q);
+
+                const patientList = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: `${data.ad} ${data.soyad}`
+                    };
+                });
+
+                setPatients(patientList);
+            } catch (error) {
+                console.error("Hastalar alınırken hata oluştu:", error);
+            }
+        };
+
+        fetchPatients();
+    }, []);
+
 
     const handleSendMessage = () => {
         if (message.trim() && selectedPatient) {
