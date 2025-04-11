@@ -7,7 +7,7 @@ import { collection, serverTimestamp, doc, getDoc, getDocs, query, where, addDoc
 import { orderBy, onSnapshot } from "firebase/firestore";
 
 
-const MessageScreen = ({ route }: { route: any }) => {
+const ChatScreen = ({ route }: { route: any }) => {
     const { patientId } = route.params.patient.id; // Hasta ID'sini parametre olarak alıyoru
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -329,4 +329,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default MessageScreen;
+export default ChatScreen;
