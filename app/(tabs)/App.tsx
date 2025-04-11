@@ -11,6 +11,7 @@ import DoctorMessage from "../../src/screens/DrMessage";
 import PtReport from "../../src/screens/PtReport";
 import PatientRegister from "../../src/screens/PatientRegister";
 import ChatScreen from "../../src/screens/ChatScreen";
+import PtChatScreen from "../../src/screens/PtChatScreen";
 
 
 export type RootStackParamList = {
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   PtReport: undefined;
   PatientRegister: undefined;
   ChatScreen: undefined;
+  PtChatScreen: undefined;
 
 };
 
@@ -46,6 +48,7 @@ const Navigation = () => {
         <Stack.Screen name="PtReport" component={PtReport} />
         <Stack.Screen name="PatientRegister" component={PatientRegister} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen name="PtChatScreen" component={PtChatScreen} />
       </Stack.Navigator>
   );
 };

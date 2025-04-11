@@ -57,7 +57,7 @@ const LoginScreen = ({ navigation }: any) => {
           console.log("Hasta verisi:", doc.id, doc.data());
         });
 
-        navigation.navigate('PatientMenu');
+        navigation.navigate('PatientMenu', { patientId: querySnapshot.docs[0].id });
       }
 
     } catch (error: any) {
