@@ -57,7 +57,7 @@ const LoginScreen = ({ navigation }: any) => {
           console.log("Hasta verisi:", doc.id, doc.data());
         });
 
-        navigation.navigate('PatientMenu', { patientId: querySnapshot.docs[0].id });
+        navigation.navigate('PatientMenu', {name: eposta}); // Hasta menüsüne yönlendiriyoruz
       }
 
     } catch (error: any) {
@@ -73,7 +73,7 @@ const LoginScreen = ({ navigation }: any) => {
     }
 
     try {
-      // Doktor kaydı yapmak
+      // firebase authenticationa doktor kaydı yapmak 
       const userCredential = await createUserWithEmailAndPassword(auth, eposta, password);
       const user = userCredential.user;
 
@@ -84,8 +84,11 @@ const LoginScreen = ({ navigation }: any) => {
       });
 
       console.log("Kayıt başarılı: Kullanıcı UID:", user.uid);
-      navigation.navigate("DoctorMenu"); // Doktoru DoctorMenu'ya yönlendiriyoruz
-
+// Eposta ve şifreyi RegisterScreen'e gönderiyoruz
+navigation.navigate("RegisterScreen", {
+  eposta: eposta,
+  password: password,
+});
     } catch (error: any) {
       console.log("Kayıt hatası:", error);
       setErrorMessage("Kayıt başarısız. Lütfen tekrar deneyin.");

@@ -39,7 +39,6 @@ const PtChatScreen = () => {
                 <View style={styles.infoBox}>
                 </View>
 
-
                 <ScrollView style={styles.messagesContainer}>
                     {messages.map((msg, index) => (
                         <View

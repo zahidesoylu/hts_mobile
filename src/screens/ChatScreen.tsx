@@ -40,9 +40,9 @@ const ChatScreen = ({ route }: { route: any }) => {
                     sender: "Hasta",  // Mesajın kimden gönderileceğini kontrol et
                     text: message,
                     time: new Date().toLocaleTimeString(),
-                    timestamp: { 
-                        seconds: Math.floor(Date.now() / 1000), 
-                        nanoseconds: 0 
+                    timestamp: {
+                        seconds: Math.floor(Date.now() / 1000),
+                        nanoseconds: 0
                     }
                 }]);
 
@@ -83,25 +83,25 @@ const ChatScreen = ({ route }: { route: any }) => {
 
     //Mesajları listeleme 
     <FlatList
-    data={messages}
-    renderItem={({ item }) => (
-        <View
-            style={[
-                styles.messageBox,
-                item.sender === doctorName ? styles.doctorMessage : styles.patientMessage,
-            ]}
-        >
-            <Text style={styles.messageText}>{item.text}</Text>
-            <Text style={styles.timeText}>
-                {item.time || (item.timestamp?.seconds 
-                    ? new Date(item.timestamp.seconds * 1000).toLocaleTimeString() 
-                    : "Unknown time")}
-            </Text>
-        </View>
-    )}
-    keyExtractor={(item) => item.id}
-    inverted
-/>
+        data={messages}
+        renderItem={({ item }) => (
+            <View
+                style={[
+                    styles.messageBox,
+                    item.sender === doctorName ? styles.doctorMessage : styles.patientMessage,
+                ]}
+            >
+                <Text style={styles.messageText}>{item.text}</Text>
+                <Text style={styles.timeText}>
+                    {item.time || (item.timestamp?.seconds
+                        ? new Date(item.timestamp.seconds * 1000).toLocaleTimeString()
+                        : "Unknown time")}
+                </Text>
+            </View>
+        )}
+        keyExtractor={(item) => item.id}
+        inverted
+    />
 
 
     //Doktor verisi
