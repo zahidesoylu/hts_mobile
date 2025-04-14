@@ -96,7 +96,13 @@ const PatientMenu = ({ navigation, route }: any) => {
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('PtRandevuButton')}
+            onPress={() => navigation.navigate('PtRandevuButton',{
+              patientName,
+              doctorName,
+              patientId,
+              doctorId,
+            })
+          }
           >
             <Text style={styles.cardText}>Randevular</Text>
           </TouchableOpacity>
