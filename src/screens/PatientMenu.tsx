@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import SearchBar from "../../src/components/ui/SearchBar";
@@ -6,26 +6,45 @@ import { useEffect, useState } from "react";
 import { auth, db } from "@/config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
-
 const PatientMenu = ({ navigation, route }: any) => {
-
   const [doctorName, setDoctorName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
-  const patientId = route?.params?.patientId; // Hasta kimliği için değişken
-  const [patientName, setPatientName] = useState<string | null>(null); // Hasta adı için state
+  const [patientName, setPatientName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [doctorId, setDoctorId] = useState<string | null>(null); // <- Yeni eklendi
 
-//hasta verileri
+  const patientId = route?.params?.patientId;
+  const patientNameFromRoute = route?.params?.name;
+
+  console.log("Route params:", route.params);
+  console.log("Aktif kullanıcı UID:", auth.currentUser?.uid);
+
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
         const patientRef = doc(db, "patients", patientId);
         const patientDoc = await getDoc(patientRef);
-  
+
         if (patientDoc.exists()) {
           const patientData = patientDoc.data();
-          setPatientName(`${patientData?.ad} ${patientData?.soyad}`);
-          console.log("Hasta verisi:", patientData); // Veriyi konsola yazdıralım
+
+          // Hasta adı
+          const pFullName = `${patientData?.ad} ${patientData?.soyad}`;
+          setPatientName(pFullName);
+
+          // Doktor adı ve ID'si hastanın içinden alınır
+          if (patientData?.doktor) {
+            setDoctorName(patientData.doktor);
+          } else {
+            setDoctorName("Doktor adı bulunamadı");
+          }
+          if (patientData?.doctorId) {
+            setDoctorId(patientData.doctorId);
+          } else {
+            setDoctorId(null);
+          }
+
+          console.log("Hasta verisi:", patientData);
         } else {
           setErrorMessage("Hasta verisi bulunamadı.");
         }
@@ -36,65 +55,18 @@ const PatientMenu = ({ navigation, route }: any) => {
         setLoading(false);
       }
     };
-  
+
     if (patientId) {
       fetchPatientData();
     } else {
       setErrorMessage("Hasta kimliği eksik.");
       setLoading(false);
     }
-  }, []);
-  
-  
-
-
-  //Doktor verileri
-  useEffect(() => {
-    const fetchDoctorData = async () => {
-      try {
-        // Giriş yapan kullanıcının UID'sini alıyoruz
-        const userId = auth.currentUser?.uid;
-
-        if (!userId) {
-          setErrorMessage("Kullanıcı girişi yapılmamış.");
-          setLoading(false);
-          return;
-        }
-
-        console.log("Giriş yapan kullanıcının UID'si:", userId);
-
-        const userRef = doc(db, "users", userId); // Firestore'dan doktor verisini alıyoruz
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          console.log("Firestore'dan gelen veriler:", userData); // Veriyi konsola yazdıralım
-          const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
-          setDoctorName(fullName); // Firestore'dan gelen doktor adını state'e set ediyoruz        } else {
-          setErrorMessage("Doktor verisi bulunamadı.");
-        }
-      } catch (error) {
-        console.log("Firestore hatası:", error);
-        setErrorMessage("Veri çekme hatası oluştu.");
-      } finally {
-        setLoading(false); // Veri çekme işlemi tamamlandığında loading'i false yapıyoruz
-      }
-    };
-
-    fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
-  }, []);
-
-
-  console.log("Ekrana yazılacak patientName:", patientName);
-
-
-
+  }, [patientId]);
 
   return (
     <View style={styles.container}>
-      {/* Ana Konteyner */}
       <View style={styles.innerContainer}>
-        {/* Üst Kısım: Tarih */}
         <Text style={styles.dateText}>
           {new Date().toLocaleDateString("tr-TR", {
             day: "numeric",
@@ -103,52 +75,59 @@ const PatientMenu = ({ navigation, route }: any) => {
           })}
         </Text>
 
-         {/* Profil Bilgileri */}
         <FontAwesome name="user-circle" size={50} color="gray" style={styles.profileIcon} />
-        <Text style={styles.patientName}>{patientName || 'Hasta adı bulunamadı'}</Text>
-        <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+        <Text style={styles.pFullName}>{patientName || 'Hasta adı bulunamadı'}</Text>
 
-        {/* Arama Çubuğu */}
+        {loading ? (
+          <Text style={styles.doctorName}>Yükleniyor...</Text>
+        ) : (
+          <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+        )}
+
         <SearchBar />
 
-
-        {/* Menü Butonları */}
         <View style={styles.menuContainer}>
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('PtReport')} // Hastalar sayfasına yönlendir
+            onPress={() => navigation.navigate('PtReport')}
           >
             <Text style={styles.cardText}>Raporlar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('PtRandevuButton')} // Randevular sayfasına yönlendir
+            onPress={() => navigation.navigate('PtRandevuButton')}
           >
             <Text style={styles.cardText}>Randevular</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('')} // Raporlar sayfasına yönlendir
+            onPress={() => navigation.navigate('')}
           >
             <Text style={styles.cardText}>Hatırlatmalar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('PtChatScreen')} 
+            onPress={() =>
+              navigation.navigate('PtChatScreen', {
+                patientName,
+                doctorName,
+                patientId,
+              })
+            }
           >
             <Text style={styles.cardText}>Mesajlar</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Alt Menü */}
       <BottomMenu />
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -164,8 +143,6 @@ const styles = StyleSheet.create({
     padding: 30,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
     alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
@@ -180,7 +157,7 @@ const styles = StyleSheet.create({
   profileIcon: {
     marginBottom: 10,
   },
-  patientName: {
+  pFullName: {
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -195,20 +172,7 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: "space-evenly",
     width: "100%",
-  },
-
-  menuButton: {
-    width: "40%",
-    height: "70%",
-    backgroundColor: "#ddd",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  menuText: {
-    fontWeight: "bold",
-    textAlign: "center",
+    marginTop: 20,
   },
   card: {
     width: '35%',
@@ -218,8 +182,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5, // Android için gölge efekti
-    shadowColor: '#000', // iOS için gölge efekti
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

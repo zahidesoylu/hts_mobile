@@ -1,32 +1,98 @@
-import BottomMenu from "@/components/ui/BottomMenu";
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import BottomMenu from "../components/ui/BottomMenu";
+import { auth, db } from "@/config/firebaseConfig";
+import { collection, serverTimestamp, doc, getDoc, query, where, addDoc, orderBy, onSnapshot, getDocs } from "firebase/firestore";
+import { useRoute } from '@react-navigation/native';
 
-const PtChatScreen = () => {
+
+const PtChatScreen = ({ route }: { route: any }) => {
+    const [messages, setMessages] = useState<{ id: string; sender: string; text: string; time: string; timestamp?: { seconds: number; nanoseconds: number } }[]>([]);
     const [message, setMessage] = useState("");
-    const [messages, setMessages] = useState<any[]>([
-        { sender: "doctor", text: "Merhaba, nasıl hissediyorsunuz?" },
-        { sender: "patient", text: "Bugün biraz başım ağrıyor." },
-    ]);
+    const [selectedPatient, setSelectedPatient] = useState<string | null>(null); // Selected patient state
+    const flatListRef = useRef<FlatList>(null);
+    const { patientName, doctorName, patientId, doctorId } = route.params;
 
-    const handleSendMessage = () => {
+
+    console.log("Route params:", route.params);
+
+
+    // Mesaj gönderme fonksiyonu
+    const handleSendMessage = async () => {
         if (message.trim()) {
-            setMessages([
-                ...messages,
-                { sender: "patient", text: message },
-            ]);
-            setMessage(""); // Mesajı gönderdikten sonra input'u temizle
+            try {
+                // Mesaj verilerini Firestore'a kaydediyoruz
+                const messageData = {
+                    senderId: selectedPatient,
+                    receiverId: auth.currentUser?.uid,// Burada hasta ID'si seçili olmalı
+                    text: message,
+                    timestamp: serverTimestamp(),
+                    senderName: doctorName || "Doktor",
+                };
+
+                // messages koleksiyonuna yeni bir mesaj ekliyoruz
+                await addDoc(collection(db, "messages"), messageData);
+
+                setMessage("");  // Mesaj kutusunu sıfırlıyoruz
+
+
+                setMessage("");  // Mesaj kutusunu sıfırlıyoruz
+                // Yeni mesaj gönderildiğinde, FlatList'in en altına kaydırıyoruz
+            flatListRef.current?.scrollToEnd({ animated: true });
+
+            } catch (error) {
+                console.error("Mesaj gönderme hatası:", error);
+            }
         }
     };
+
+    // Mesajları çekme fonksiyonu
+    useEffect(() => {
+        const messagesRef = collection(db, "messages");
+        const q = query(messagesRef,
+            where("senderId", "in", [auth.currentUser?.uid, selectedPatient]),  // Kullanıcı ve hasta arasında iletişim
+            where("receiverId", "in", [auth.currentUser?.uid, selectedPatient]),
+            orderBy("timestamp") // Mesajları zaman sırasına göre sıralıyoruz
+        );
+
+        // Firestore'dan veri dinleme
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const messagesData = querySnapshot.docs.map((doc) => {
+                const data = doc.data();
+                const timestamp = data.timestamp;
+        
+                let timeString = "Bilinmeyen zaman";
+                if (timestamp?.seconds) {
+                    const date = new Date(timestamp.seconds * 1000);
+                    timeString = date.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+                }
+        
+                return {
+                    id: doc.id,
+                    sender: data.senderName || "Unknown",
+                    text: data.text || "",
+                    time: timeString,
+                };
+            });
+        
+            setMessages(messagesData);
+        });
+        
+
+        return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
+        }, [selectedPatient]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
+
+        useEffect(() => {
+            setSelectedPatient(patientName); // hasta adı aslında ID ise
+          }, [patientName]);
+          
 
     return (
         <View style={styles.container}>
             <View style={styles.innerContainer}>
                 <View style={styles.topBar}>
-                    <TouchableOpacity onPress={() => { }}>
-                        <Ionicons name="arrow-back" size={24} color="black" />
-                    </TouchableOpacity>
+
                     <Text style={styles.dateText}>
                         {new Date().toLocaleDateString("tr-TR", {
                             day: "numeric",
@@ -37,37 +103,46 @@ const PtChatScreen = () => {
                 </View>
 
                 <View style={styles.infoBox}>
+                {/* Doktor adı hastanın bağlı olduğu doktorun adı olacak */}
+                <Text style={styles.doctorName}>{doctorName || "Doktor adı bulunamadı"}</Text>
+                
+                {/* Hasta adı giriş yapan kullanıcının adı olacak */}
+                <Text style={styles.infoText}>Hasta: {patientName || "Hasta adı bulunamadı"}</Text>
+
+                 </View>
+
+                <View style={styles.messagesContainer}>
+                    <FlatList
+                        ref={flatListRef}
+                        data={messages}
+                        renderItem={({ item }) => (
+                            <View
+                                style={[
+                                    styles.messageBox,
+                                    item.sender === "Doktor" ? styles.doctorMessage : styles.patientMessage,
+                                ]}
+                            >
+                                <Text style={styles.messageText}>{item.text}</Text>
+                                <Text style={styles.timeText}>{item.time}</Text>
+                            </View>
+                        )}
+                        keyExtractor={(item) => item.id}
+                    />
                 </View>
 
-                <ScrollView style={styles.messagesContainer}>
-                    {messages.map((msg, index) => (
-                        <View
-                            key={index}
-                            style={[
-                                styles.messageBox,
-                                msg.sender === "doctor"
-                                    ? styles.doctorMessage
-                                    : styles.patientMessage,
-                            ]}
-                        >
-                            <Text style={styles.messageText}>{msg.text}</Text>
-                            <Text style={styles.timeText}>{`${new Date().toLocaleTimeString()
-                                }`}</Text>
-                        </View>
-                    ))}
-                </ScrollView>
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
+                        placeholder="Mesajınızı yazın..."
                         value={message}
                         onChangeText={setMessage}
-                        placeholder="Mesajınızı yazın"
                     />
                     <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-                        <Text style={{ color: "white" }}>Gönder</Text>
+                        <Ionicons name="send" size={24} color="white" />
                     </TouchableOpacity>
                 </View>
             </View>
+
             <BottomMenu />
         </View>
     );
@@ -96,7 +171,7 @@ const styles = StyleSheet.create({
     },
     topBar: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "center",
         alignItems: "center",
         width: "100%",
         padding: 10,
@@ -123,6 +198,17 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 8,
     },
+
+    infoText: {
+        fontSize: 16,
+        fontWeight: "500",
+        marginBottom: 4,
+      },
+    doctorName: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 10,
+    },  
     doctorMessage: {
         backgroundColor: "#e1f5fe", // Doktor mesajları için mavi tonları
         alignSelf: "flex-start",
