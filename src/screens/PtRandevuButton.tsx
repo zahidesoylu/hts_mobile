@@ -16,6 +16,7 @@ import { doc, collection, addDoc, getDoc } from "firebase/firestore";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Takvim from "@/components/ui/takvim";
+import DateDaily from "./dateDaily";
 
 const DrRandevuButton = () => {
   const [selectedOption, setSelectedOption] = useState<string>("none");
@@ -80,13 +81,7 @@ const DrRandevuButton = () => {
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
-        <Text style={styles.dateText}>
-          {new Date().toLocaleDateString("tr-TR", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-        </Text>
+        <DateDaily />
 
         <Text style={styles.headingText}>Randevular</Text>
 
