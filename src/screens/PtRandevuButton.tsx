@@ -1,20 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  TextInput,
   ScrollView,
+  StyleSheet,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import { useRoute } from "@react-navigation/native";
 import { auth, db } from "@/config/firebaseConfig";
-import { doc, collection, addDoc, getDoc } from "firebase/firestore";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore"; // Firebase importları
 import Takvim from "@/components/ui/takvim";
 import DateDaily from "./dateDaily";
 
@@ -23,6 +20,16 @@ const DrRandevuButton = () => {
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [hour, setHour] = useState<string>("");
+  interface Appointment {
+    hastaId: string;
+    doktorId: string;
+    tarih: string;
+    saat: string;
+    hastaAd: string;
+    doktorAd: string;
+  }
+
+  const [appointments, setAppointments] = useState<Appointment[]>([]); // Randevuların listeleneceği state
   const route = useRoute();
   const { patientName, doctorName, patientId, doctorId } = route.params as {
     patientName: string;
@@ -46,15 +53,29 @@ const DrRandevuButton = () => {
     setSelectedOption(selectedOption === option ? "none" : option);
   };
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowPicker(false);
-    if (selectedDate) {
-      setDate(selectedDate);
+  // Firebase'den randevuları çekmek için bir fonksiyon
+  const fetchAppointments = React.useCallback(async () => {
+    try {
+      const q = query(
+        collection(db, "randevu"),
+        where("hastaId", "==", patientId),
+        where("doktorId", "==", doctorId),
+      );
+      const querySnapshot = await getDocs(q);
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      const fetchedAppointments: any[] = [];
+      for (const doc of querySnapshot.docs) {
+        fetchedAppointments.push(doc.data());
+      }
+      setAppointments(fetchedAppointments);
+    } catch (error) {
+      console.error("Randevular alınırken hata oluştu: ", error);
     }
-  };
+  }, [patientId, doctorId]); // ← bağımlılıkları buraya yazmalısın
 
+  // Randevu oluşturma işlemi
   const handleCreateAppointment = async () => {
+    console.log("Randevu oluşturuluyor...");
     if (!hour || !date) {
       alert("Lütfen tarih ve saat seçiniz.");
       return;
@@ -77,6 +98,13 @@ const DrRandevuButton = () => {
       alert("Randevu oluşturulamadı.");
     }
   };
+
+  // `selectedOption` değiştiğinde, güncel randevuları almak için fetch fonksiyonu çalıştırılıyor
+  useEffect(() => {
+    if (selectedOption === "guncelRandevular") {
+      fetchAppointments(); // Randevuları al
+    }
+  }, [selectedOption, fetchAppointments]);
 
   return (
     <View style={styles.container}>
@@ -123,7 +151,10 @@ const DrRandevuButton = () => {
                 value={date}
                 mode="date"
                 display="default"
-                onChange={handleDateChange}
+                onChange={(event, selectedDate) => {
+                  setShowPicker(false);
+                  if (selectedDate) setDate(selectedDate);
+                }}
                 minimumDate={new Date()} // Geçmiş tarihleri seçmeyi engeller
               />
             )}
@@ -133,11 +164,7 @@ const DrRandevuButton = () => {
                 style={styles.picker}
                 onValueChange={(itemValue: string) => setHour(itemValue)}
               >
-                <Picker.Item
-                  label="Saat Seç"
-                  value=""
-                  style={styles.placeholderText}
-                />
+                <Picker.Item label="Saat Seç" value="" />
                 {availableHours.map((availableHour) => (
                   <Picker.Item
                     key={availableHour}
@@ -158,9 +185,20 @@ const DrRandevuButton = () => {
 
         {selectedOption === "guncelRandevular" && (
           <View style={styles.accordionPanel}>
-            <Text style={styles.noAppointmentText}>
-              Güncel randevunuz bulunmamaktadır.
-            </Text>
+            {appointments.length > 0 ? (
+              appointments.map((appointment, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                <View key={index} style={{ marginBottom: 10 }}>
+                  <Text style={styles.noAppointmentText}>
+                    {appointment.tarih} - {appointment.saat}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noAppointmentText}>
+                Güncel randevunuz bulunmamaktadır.
+              </Text>
+            )}
           </View>
         )}
 
@@ -278,6 +316,7 @@ const styles = StyleSheet.create({
   pickerContainer: {
     width: "100%",
     marginBottom: 15,
+    marginLeft: 1,
   },
   picker: {
     height: 40,
