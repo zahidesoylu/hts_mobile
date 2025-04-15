@@ -186,14 +186,19 @@ const PtRandevuButton = () => {
         {selectedOption === "guncelRandevular" && (
           <View style={styles.accordionPanel}>
             {appointments.length > 0 ? (
-              appointments.map((appointment, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                <View key={index} style={{ marginBottom: 10 }}>
-                  <Text style={styles.noAppointmentText}>
-                    {appointment.tarih} - {appointment.saat}
-                  </Text>
-                </View>
-              ))
+              <ScrollView
+                style={{ maxHeight: 300 }}
+                showsVerticalScrollIndicator={false}
+              >
+                {appointments.map((appointment, index) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                  <View key={index} style={styles.appointmentCard}>
+                    <Text style={styles.appointmentText}>
+                      {appointment.tarih} - {appointment.saat}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
             ) : (
               <Text style={styles.noAppointmentText}>
                 Güncel randevunuz bulunmamaktadır.
@@ -345,12 +350,28 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    alignSelf: "center", // Butonun bulunduğu satırda ortalanması için
+    alignSelf: "center",
   },
   createButtonText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  appointmentCard: {
+    backgroundColor: "#f0f0f0", // veya istediğin bir renk
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Android gölgesi
+  },
+
+  appointmentText: {
+    fontSize: 16,
+    color: "#333",
   },
 });
 
