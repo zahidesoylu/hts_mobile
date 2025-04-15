@@ -158,10 +158,8 @@ const PtRandevuButton = () => {
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={hour || ""}
-                onValueChange={(itemValue: string) => {
-                  console.log("Seçilen saat:", itemValue); // 🔥 Saat seçimi konsola yazılır
-                  setHour(itemValue);
-                }}
+                style={styles.picker}
+                onValueChange={(itemValue: string) => setHour(itemValue)}
               >
                 <Picker.Item label="Saat Seç" value="" />
                 {availableHours.map((availableHour) => (
@@ -178,7 +176,9 @@ const PtRandevuButton = () => {
               style={styles.createButton}
               onPress={handleCreateAppointment}
             >
-              <Text style={styles.createButtonText}>Randevu Oluştur</Text>
+              <Text style={styles.createButtonText}>
+                Randevu Talebi Oluştur
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         )}
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
     padding: 20,
-    marginTop: 15,
+    marginTop: 0,
   },
   noAppointmentText: {
     fontSize: 16,
@@ -315,18 +315,22 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     width: "100%",
-    marginBottom: 15,
+    marginBottom: 20,
     marginLeft: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   picker: {
     height: 40,
-    width: "100%",
+    width: "80%",
+    justifyContent: "center",
   },
   selectedDateText: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "bold",
     color: "#333",
     marginTop: 10,
+    marginBottom: 10,
     textAlign: "center",
   },
 
@@ -335,15 +339,17 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   createButton: {
-    width: "100%",
+    width: "80%",
     backgroundColor: "#007BFF",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center", // Butonun bulunduğu satırda ortalanması için
   },
   createButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
   },
 });

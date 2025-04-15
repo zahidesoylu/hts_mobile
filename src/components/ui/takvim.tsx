@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
   h4: {
     fontSize: 20,
     textAlign: "center",
+    marginTop: 0,
   },
 });
 
