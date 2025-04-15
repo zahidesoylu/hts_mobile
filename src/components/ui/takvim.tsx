@@ -1,17 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { StyleSheet } from "react-native";
 
-const Takvim = () => {
-  const [startDate, setStartDate] = useState(new Date());
+type TakvimProps = {
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
+};
 
+const Takvim = ({ selectedDate, onDateChange }: TakvimProps) => {
   return (
-    <div>
-      <h3>Randevu Tarihi Seçin</h3>
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
+      <h4>Randevu Tarihi Seçin</h4>
       <DatePicker
-        selected={startDate}
-        onChange={(date: Date | null) => date && setStartDate(date)}
+        selected={selectedDate}
+        onChange={(date: Date | null) => {
+          if (date) onDateChange(date);
+        }}
         dateFormat="yyyy/MM/dd"
         inline // Takvimi sayfa üzerinde doğrudan göstermek için
       />
@@ -30,6 +37,10 @@ const styles = StyleSheet.create({
     backgroundColor: "blue",
     padding: 10,
     borderRadius: 5,
+  },
+  h4: {
+    fontSize: 20,
+    textAlign: "center",
   },
 });
 

@@ -5,21 +5,25 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import { useRoute } from "@react-navigation/native";
 import { auth, db } from "@/config/firebaseConfig";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore"; // Firebase importları
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import Takvim from "@/components/ui/takvim";
 import DateDaily from "./dateDaily";
+import "react-datepicker/dist/react-datepicker.css";
 
-const DrRandevuButton = () => {
+const PtRandevuButton = () => {
   const [selectedOption, setSelectedOption] = useState<string>("none");
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
   const [hour, setHour] = useState<string>("");
+  const [randevuTarihi, setRandevuTarihi] = useState(new Date());
+
   interface Appointment {
     hastaId: string;
     doktorId: string;
@@ -29,7 +33,7 @@ const DrRandevuButton = () => {
     doktorAd: string;
   }
 
-  const [appointments, setAppointments] = useState<Appointment[]>([]); // Randevuların listeleneceği state
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const route = useRoute();
   const { patientName, doctorName, patientId, doctorId } = route.params as {
     patientName: string;
@@ -53,7 +57,6 @@ const DrRandevuButton = () => {
     setSelectedOption(selectedOption === option ? "none" : option);
   };
 
-  // Firebase'den randevuları çekmek için bir fonksiyon
   const fetchAppointments = React.useCallback(async () => {
     try {
       const q = query(
@@ -71,12 +74,11 @@ const DrRandevuButton = () => {
     } catch (error) {
       console.error("Randevular alınırken hata oluştu: ", error);
     }
-  }, [patientId, doctorId]); // ← bağımlılıkları buraya yazmalısın
+  }, [patientId, doctorId]);
 
-  // Randevu oluşturma işlemi
   const handleCreateAppointment = async () => {
     console.log("Randevu oluşturuluyor...");
-    if (!hour || !date) {
+    if (!hour || !randevuTarihi) {
       alert("Lütfen tarih ve saat seçiniz.");
       return;
     }
@@ -86,23 +88,22 @@ const DrRandevuButton = () => {
       await addDoc(appointmentRef, {
         hastaId: patientId,
         doktorId: doctorId,
-        tarih: date.toISOString().split("T")[0], // Yalnızca YYYY-MM-DD
+        tarih: randevuTarihi.toISOString().split("T")[0],
         saat: hour,
         hastaAd: patientName,
         doktorAd: doctorName,
       });
       alert("Randevu başarıyla oluşturuldu.");
-      setHour(""); // Formu sıfırla
+      setHour("");
     } catch (error) {
       console.error("Randevu oluşturulamadı:", error);
       alert("Randevu oluşturulamadı.");
     }
   };
 
-  // `selectedOption` değiştiğinde, güncel randevuları almak için fetch fonksiyonu çalıştırılıyor
   useEffect(() => {
     if (selectedOption === "guncelRandevular") {
-      fetchAppointments(); // Randevuları al
+      fetchAppointments();
     }
   }, [selectedOption, fetchAppointments]);
 
@@ -145,24 +146,22 @@ const DrRandevuButton = () => {
 
         {selectedOption === "randevuAl" && (
           <ScrollView style={styles.accordionPanel}>
-            <Takvim />
-            {showPicker && (
-              <DateTimePicker
-                value={date}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  setShowPicker(false);
-                  if (selectedDate) setDate(selectedDate);
-                }}
-                minimumDate={new Date()} // Geçmiş tarihleri seçmeyi engeller
-              />
-            )}
+            <Takvim
+              selectedDate={randevuTarihi}
+              onDateChange={setRandevuTarihi}
+            />
+
+            <Text style={styles.selectedDateText}>
+              Seçilen Tarih: {randevuTarihi.toLocaleDateString("tr-TR")}
+            </Text>
+
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={hour || ""}
-                style={styles.picker}
-                onValueChange={(itemValue: string) => setHour(itemValue)}
+                onValueChange={(itemValue: string) => {
+                  console.log("Seçilen saat:", itemValue); // 🔥 Saat seçimi konsola yazılır
+                  setHour(itemValue);
+                }}
               >
                 <Picker.Item label="Saat Seç" value="" />
                 {availableHours.map((availableHour) => (
@@ -174,6 +173,7 @@ const DrRandevuButton = () => {
                 ))}
               </Picker>
             </View>
+
             <TouchableOpacity
               style={styles.createButton}
               onPress={handleCreateAppointment}
@@ -322,6 +322,14 @@ const styles = StyleSheet.create({
     height: 40,
     width: "100%",
   },
+  selectedDateText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginTop: 10,
+    textAlign: "center",
+  },
+
   placeholderText: {
     fontSize: 10,
     color: "#888",
@@ -340,4 +348,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DrRandevuButton;
+export default PtRandevuButton;
