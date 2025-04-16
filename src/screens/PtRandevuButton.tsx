@@ -14,10 +14,20 @@ import "react-datepicker/dist/react-datepicker.css";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import { useRoute } from "@react-navigation/native";
 import { auth, db } from "@/config/firebaseConfig";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import Takvim from "@/components/ui/takvim";
 import DateDaily from "./dateDaily";
 import "react-datepicker/dist/react-datepicker.css";
+import Icon from "react-native-vector-icons/FontAwesome"; // ya da MaterialIcons gibi
+import { Ionicons } from "@expo/vector-icons";
 
 const PtRandevuButton = () => {
   const [selectedOption, setSelectedOption] = useState<string>("none");
@@ -25,15 +35,21 @@ const PtRandevuButton = () => {
   const [randevuTarihi, setRandevuTarihi] = useState(new Date());
 
   interface Appointment {
+    id?: string;
     hastaId: string;
     doktorId: string;
     tarih: string;
     saat: string;
     hastaAd: string;
     doktorAd: string;
+    isApproved: boolean; // Onay durumu ekledik
   }
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<
+    Appointment[]
+  >([]);
+
   const route = useRoute();
   const { patientName, doctorName, patientId, doctorId } = route.params as {
     patientName: string;
@@ -65,11 +81,23 @@ const PtRandevuButton = () => {
         where("doktorId", "==", doctorId),
       );
       const querySnapshot = await getDocs(q);
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      const fetchedAppointments: any[] = [];
-      for (const doc of querySnapshot.docs) {
-        fetchedAppointments.push(doc.data());
+      const fetchedAppointments: Appointment[] = [];
+
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data() as Appointment;
+        fetchedAppointments.push({
+          ...data,
+          id: docSnap.id, // burada Firestore doküman ID'sini ekliyoruz
+        });
       }
+
+      // BURASI ÖNEMLİ: fetchedAppointments dizisini sıralıyoruz
+      fetchedAppointments.sort((a, b) => {
+        const dateA = new Date(`${a.tarih}T${a.saat}`);
+        const dateB = new Date(`${b.tarih}T${b.saat}`);
+        return dateA.getTime() - dateB.getTime(); // En yakın en başta
+      });
+
       setAppointments(fetchedAppointments);
     } catch (error) {
       console.error("Randevular alınırken hata oluştu: ", error);
@@ -77,7 +105,6 @@ const PtRandevuButton = () => {
   }, [patientId, doctorId]);
 
   const handleCreateAppointment = async () => {
-    console.log("Randevu oluşturuluyor...");
     if (!hour || !randevuTarihi) {
       alert("Lütfen tarih ve saat seçiniz.");
       return;
@@ -92,6 +119,7 @@ const PtRandevuButton = () => {
         saat: hour,
         hastaAd: patientName,
         doktorAd: doctorName,
+        isApproved: false, // Başlangıçta onay durumu false
       });
       alert("Randevu başarıyla oluşturuldu.");
       setHour("");
@@ -102,10 +130,53 @@ const PtRandevuButton = () => {
   };
 
   useEffect(() => {
-    if (selectedOption === "guncelRandevular") {
+    if (
+      selectedOption === "guncelRandevular" ||
+      selectedOption === "gecmisRandevular"
+    ) {
       fetchAppointments();
     }
   }, [selectedOption, fetchAppointments]);
+
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // sadece tarih kıyaslaması için
+
+    if (selectedOption === "guncelRandevular") {
+      const filtered = appointments.filter((randevu) => {
+        const randevuDate = new Date(randevu.tarih);
+        return randevuDate >= today;
+      });
+      setFilteredAppointments(filtered);
+    }
+
+    if (selectedOption === "gecmisRandevular") {
+      const filtered = appointments.filter((randevu) => {
+        const randevuDate = new Date(randevu.tarih);
+        return randevuDate < today;
+      });
+      setFilteredAppointments(filtered);
+    }
+  }, [selectedOption, appointments]);
+
+  const handleApprovalToggle = async (appointment: Appointment) => {
+    try {
+      if (!appointment.id) {
+        throw new Error("Appointment ID is undefined.");
+      }
+      const appointmentRef = doc(db, "randevu", appointment.id); // appointment.id veritabanındaki randevunun id'si
+      await updateDoc(appointmentRef, {
+        isApproved: !appointment.isApproved, // Onay durumunu değiştiriyoruz
+      });
+      alert(
+        appointment.isApproved
+          ? "Randevu onayı iptal edildi."
+          : "Randevu onaylandı.",
+      );
+    } catch (error) {
+      console.error("Randevu onaylanırken hata oluştu: ", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -183,38 +254,53 @@ const PtRandevuButton = () => {
           </ScrollView>
         )}
 
-        {selectedOption === "guncelRandevular" && (
+        {(selectedOption === "guncelRandevular" ||
+          selectedOption === "gecmisRandevular") && (
           <View style={styles.accordionPanel}>
-            {appointments.length > 0 ? (
+            {filteredAppointments.length > 0 ? (
               <ScrollView
-                style={{ maxHeight: 300 }}
+                style={{ maxHeight: 200 }}
                 showsVerticalScrollIndicator={false}
               >
-                {appointments.map((appointment, index) => (
+                {filteredAppointments.map((appointment, index) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                   <View key={index} style={styles.appointmentCard}>
-                    <Text style={styles.appointmentText}>
-                      {appointment.tarih} - {appointment.saat}
+                    <Text
+                      style={[
+                        styles.appointmentText,
+                        selectedOption === "gecmisRandevular" &&
+                          styles.appointmentPastText,
+                      ]}
+                    >
+                      {appointment.saat} -{" "}
+                      {new Date(appointment.tarih).toLocaleDateString("tr-TR")}
                     </Text>
+                    {/* Onay Simgesi */}
+                    <View style={styles.checkboxContainer}>
+                      <Text
+                        style={{
+                          color: appointment.isApproved ? "green" : "#ccc",
+                          fontSize: 18,
+                          marginLeft: 8,
+                        }}
+                      >
+                        ✔
+                      </Text>
+                    </View>
                   </View>
                 ))}
               </ScrollView>
             ) : (
               <Text style={styles.noAppointmentText}>
-                Güncel randevunuz bulunmamaktadır.
+                {selectedOption === "guncelRandevular"
+                  ? "Güncel randevunuz bulunmamaktadır."
+                  : "Geçmiş randevunuz bulunmamaktadır."}
               </Text>
             )}
           </View>
         )}
-
-        {selectedOption === "gecmisRandevular" && (
-          <View style={styles.accordionPanel}>
-            <Text style={styles.noAppointmentText}>
-              Geçmiş randevunuz bulunmamaktadır.
-            </Text>
-          </View>
-        )}
       </View>
+
       <BottomMenu />
     </View>
   );
@@ -315,8 +401,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: "italic",
     fontWeight: "100", // İnce yazı tipi
-    color: "rgba(0, 0, 0, 0.6)", // Soluk renk
+    color: "#888", // biraz soluk görünür
     textAlign: "center",
+    textDecorationLine: "line-through",
   },
   pickerContainer: {
     width: "100%",
@@ -368,10 +455,27 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3, // Android gölgesi
   },
-
   appointmentText: {
     fontSize: 16,
     color: "#333",
+  },
+  appointmentPastText: {
+    textDecorationLine: "line-through",
+    color: "#888", // soluk gri tonu
+  },
+  checked: {
+    color: "green",
+    fontSize: 20,
+    marginLeft: 10,
+  },
+  unchecked: {
+    color: "gray",
+    fontSize: 20,
+    marginLeft: 10,
+  },
+  checkboxContainer: {
+    marginLeft: "auto", // simgeyi sağa yaslamak için
+    paddingHorizontal: 10,
   },
 });
 
