@@ -199,13 +199,13 @@ const PtRandevuButton = () => {
             style={styles.optionButton}
             onPress={() => handleOptionPress("randevuAl")}
           >
-            <Text style={styles.optionButtonText}>Randevu Al</Text>
+            <Text style={styles.optionButtonText}>Randevu Talebi Oluştur</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.optionButton}
             onPress={() => handleOptionPress("guncelRandevular")}
           >
-            <Text style={styles.optionButtonText}>Güncel Randevularım</Text>
+            <Text style={styles.optionButtonText}>Güncel Randevu Taleplerim</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.optionButton}
@@ -389,6 +389,9 @@ const styles = StyleSheet.create({
   optionButtonText: {
     fontSize: 14,
     fontWeight: "bold",
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
   },
   accordionPanel: {
     width: "100%",
