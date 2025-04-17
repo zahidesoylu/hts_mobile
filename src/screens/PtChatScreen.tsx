@@ -7,6 +7,7 @@ import { collection, serverTimestamp, doc, getDoc, query, where, addDoc, orderBy
 import { useRoute } from '@react-navigation/native';
 
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const PtChatScreen = ({ route }: { route: any }) => {
     const [messages, setMessages] = useState<{ id: string; sender: string; text: string; time: string; timestamp?: { seconds: number; nanoseconds: number } }[]>([]);
     const [message, setMessage] = useState("");
@@ -39,7 +40,7 @@ const PtChatScreen = ({ route }: { route: any }) => {
 
                 setMessage("");  // Mesaj kutusunu sıfırlıyoruz
                 // Yeni mesaj gönderildiğinde, FlatList'in en altına kaydırıyoruz
-            flatListRef.current?.scrollToEnd({ animated: true });
+                flatListRef.current?.scrollToEnd({ animated: true });
 
             } catch (error) {
                 console.error("Mesaj gönderme hatası:", error);
@@ -61,13 +62,13 @@ const PtChatScreen = ({ route }: { route: any }) => {
             const messagesData = querySnapshot.docs.map((doc) => {
                 const data = doc.data();
                 const timestamp = data.timestamp;
-        
+
                 let timeString = "Bilinmeyen zaman";
                 if (timestamp?.seconds) {
                     const date = new Date(timestamp.seconds * 1000);
                     timeString = date.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
                 }
-        
+
                 return {
                     id: doc.id,
                     sender: data.senderName || "Unknown",
@@ -75,18 +76,18 @@ const PtChatScreen = ({ route }: { route: any }) => {
                     time: timeString,
                 };
             });
-        
+
             setMessages(messagesData);
         });
-        
+
 
         return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
-        }, [selectedPatient]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
+    }, [selectedPatient]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
 
-        useEffect(() => {
-            setSelectedPatient(patientName); // hasta adı aslında ID ise
-          }, [patientName]);
-          
+    useEffect(() => {
+        setSelectedPatient(patientName); // hasta adı aslında ID ise
+    }, [patientName]);
+
 
     return (
         <View style={styles.container}>
@@ -103,13 +104,13 @@ const PtChatScreen = ({ route }: { route: any }) => {
                 </View>
 
                 <View style={styles.infoBox}>
-                {/* Doktor adı hastanın bağlı olduğu doktorun adı olacak */}
-                <Text style={styles.doctorName}>{doctorName || "Doktor adı bulunamadı"}</Text>
-                
-                {/* Hasta adı giriş yapan kullanıcının adı olacak */}
-                <Text style={styles.infoText}>Hasta: {patientName || "Hasta adı bulunamadı"}</Text>
+                    {/* Doktor adı hastanın bağlı olduğu doktorun adı olacak */}
+                    <Text style={styles.doctorName}>{doctorName || "Doktor adı bulunamadı"}</Text>
 
-                 </View>
+                    {/* Hasta adı giriş yapan kullanıcının adı olacak */}
+                    <Text style={styles.infoText}>Hasta: {patientName || "Hasta adı bulunamadı"}</Text>
+
+                </View>
 
                 <View style={styles.messagesContainer}>
                     <FlatList
@@ -203,12 +204,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "500",
         marginBottom: 4,
-      },
+    },
     doctorName: {
         fontSize: 18,
         fontWeight: "bold",
         marginBottom: 10,
-    },  
+    },
     doctorMessage: {
         backgroundColor: "#e1f5fe", // Doktor mesajları için mavi tonları
         alignSelf: "flex-start",

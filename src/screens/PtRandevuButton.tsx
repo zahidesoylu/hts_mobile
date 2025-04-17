@@ -34,6 +34,7 @@ const PtRandevuButton = () => {
   const [hour, setHour] = useState<string>("");
   const [randevuTarihi, setRandevuTarihi] = useState(new Date());
 
+
   interface Appointment {
     id?: string;
     hastaId: string;
@@ -143,17 +144,19 @@ const PtRandevuButton = () => {
     today.setHours(0, 0, 0, 0); // sadece tarih kıyaslaması için
 
     if (selectedOption === "guncelRandevular") {
+      const now = new Date(); // şu anki tarih ve saat
       const filtered = appointments.filter((randevu) => {
-        const randevuDate = new Date(randevu.tarih);
-        return randevuDate >= today;
+        const randevuDateTime = new Date(`${randevu.tarih}T${randevu.saat}`);
+        return randevuDateTime >= now;
       });
       setFilteredAppointments(filtered);
     }
 
     if (selectedOption === "gecmisRandevular") {
+      const now = new Date();
       const filtered = appointments.filter((randevu) => {
-        const randevuDate = new Date(randevu.tarih);
-        return randevuDate < today;
+        const randevuDateTime = new Date(`${randevu.tarih}T${randevu.saat}`);
+        return randevuDateTime < now;
       });
       setFilteredAppointments(filtered);
     }
@@ -256,49 +259,55 @@ const PtRandevuButton = () => {
 
         {(selectedOption === "guncelRandevular" ||
           selectedOption === "gecmisRandevular") && (
-          <View style={styles.accordionPanel}>
-            {filteredAppointments.length > 0 ? (
-              <ScrollView
-                style={{ maxHeight: 200 }}
-                showsVerticalScrollIndicator={false}
-              >
-                {filteredAppointments.map((appointment, index) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                  <View key={index} style={styles.appointmentCard}>
-                    <Text
-                      style={[
-                        styles.appointmentText,
-                        selectedOption === "gecmisRandevular" &&
-                          styles.appointmentPastText,
-                      ]}
-                    >
-                      {appointment.saat} -{" "}
-                      {new Date(appointment.tarih).toLocaleDateString("tr-TR")}
-                    </Text>
-                    {/* Onay Simgesi */}
-                    <View style={styles.checkboxContainer}>
+            <View style={styles.accordionPanel}>
+              {filteredAppointments.length > 0 ? (
+                <ScrollView
+                  style={{ maxHeight: 200 }}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {filteredAppointments.map((appointment, index) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                    <View key={index} style={styles.appointmentCard}>
                       <Text
-                        style={{
-                          color: appointment.isApproved ? "green" : "#ccc",
-                          fontSize: 18,
-                          marginLeft: 8,
-                        }}
+                        style={[
+                          styles.appointmentText,
+                          selectedOption === "gecmisRandevular" &&
+                          styles.appointmentPastText,
+                        ]}
                       >
-                        ✔
+                        {appointment.saat} -{" "}
+                        {new Date(appointment.tarih).toLocaleDateString("tr-TR")}
                       </Text>
+                      {/* Onay Simgesi */}
+                      <View style={styles.checkboxContainer}>
+                        <Text
+                          style={{
+                            color: appointment.isApproved ? "green" : "gray",
+                            fontSize: 14,
+                            marginLeft: 8,
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          {selectedOption === "gecmisRandevular"
+                            ? "Geçmiş Randevu"
+                            : appointment.isApproved
+                              ? "Onaylandı"
+                              : "Beklemede"}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                ))}
-              </ScrollView>
-            ) : (
-              <Text style={styles.noAppointmentText}>
-                {selectedOption === "guncelRandevular"
-                  ? "Güncel randevunuz bulunmamaktadır."
-                  : "Geçmiş randevunuz bulunmamaktadır."}
-              </Text>
-            )}
-          </View>
-        )}
+                  ))}
+                </ScrollView>
+              ) : (
+                <Text style={styles.noAppointmentText}>
+                  {selectedOption === "guncelRandevular"
+                    ? "Güncel randevunuz bulunmamaktadır."
+                    : "Geçmiş randevunuz bulunmamaktadır."}
+                </Text>
+              )}
+            </View>
+          )}
       </View>
 
       <BottomMenu />
@@ -457,11 +466,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3, // Android gölgesi
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   appointmentText: {
     fontSize: 16,
     color: "#333",
+    lineHeight: 24, // Metnin dikeyde daha rahat ortalanması için
+    justifyContent: "center", // Dikeyde ortalama
+    alignItems: "center", // Dikeyde ortalama
+    height: 10, // Yükseklik vererek ortalanacak alanı sağlıyoruz
   },
+
   appointmentPastText: {
     textDecorationLine: "line-through",
     color: "#888", // soluk gri tonu
@@ -479,6 +495,10 @@ const styles = StyleSheet.create({
   checkboxContainer: {
     marginLeft: "auto", // simgeyi sağa yaslamak için
     paddingHorizontal: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+
   },
 });
 
