@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import { auth, db } from "@/config/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { updateDoc, doc, getDoc } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 
@@ -11,24 +11,19 @@ const DrRandevuButton = () => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     const [appointments, setAppointments] = useState<any[]>([]);
+    const [pressed, setPressed] = useState(false);
 
+    const formatDate = (dateString: string) => {
+        const [year, month, day] = dateString.split("-");
+        return `${day}.${month}.${year}`;
+    };
 
-    appointments.forEach((item) => {
-        console.log("item.tarih:", item.tarih);
-    });
-
-    appointments.forEach((item) => {
-        console.log("item.doktorId:", item.doktorId);
-        console.log("typeof item.doktorId:", typeof item.doktorId);
-        console.log("eşit mi:", item.doktorId === auth.currentUser?.uid);
-        console.log("item.doktorId === user.uid?", item.doktorId === auth.currentUser?.uid);
-        console.log("TRIM eşit mi?", item.doktorId?.trim() === auth.currentUser?.uid.trim());
-    });
 
     const filteredAppointments = appointments.filter((item) => {
         const today = new Date();
-        const itemDate = new Date(item.tarih + "T00:00:00");
+        const itemDate = new Date(`${item.tarih}T${item.saat}:00`); // saat de eklendi
 
 
         // doktor ID eşleşmesi
@@ -38,11 +33,16 @@ const DrRandevuButton = () => {
         }
 
         if (selectedDate === "Bugün") {
-            return itemDate.toDateString() === today.toDateString();
+            return (
+                itemDate.toDateString() === today.toDateString() &&
+                itemDate.getTime() >= today.getTime()
+            );
+            // biome-ignore lint/style/noUselessElse: <explanation>
         } else if (selectedDate === "Dün") {
             const yesterday = new Date(today);
             yesterday.setDate(today.getDate() - 1);
             return itemDate.toDateString() === yesterday.toDateString();
+            // biome-ignore lint/style/noUselessElse: <explanation>
         } else if (selectedDate === "Yarın") {
             const tomorrow = new Date(today);
             tomorrow.setDate(today.getDate() + 1);
@@ -59,8 +59,11 @@ const DrRandevuButton = () => {
         const fetchAppointments = async () => {
             try {
                 const userId = auth.currentUser?.uid;
-                console.error("Kullanıcı girişi yapılmamış.");
-                if (!userId) return;
+                if (!userId) {
+                    console.error("Kullanıcı girişi yapılmamış.");
+                    return;
+                }
+
 
                 const q = query(
                     collection(db, "randevu"),
@@ -121,6 +124,27 @@ const DrRandevuButton = () => {
         fetchDoctorData(); // Veri çekme fonksiyonunu çağırıyoruz
     }, []);
 
+    //Randevuyu güncelle
+    const handleApprove = async (appointmentId: string) => {
+        try {
+            const appointmentRef = doc(db, "randevu", appointmentId);
+            await updateDoc(appointmentRef, {
+                isApproved: true,
+            });
+
+            // Local state'i güncelle
+            setAppointments((prev) =>
+                prev.map((item) =>
+                    item.id === appointmentId ? { ...item, isApproved: true } : item
+                )
+            );
+        } catch (error) {
+            console.error("Randevu onaylama hatası:", error);
+        }
+    };
+
+
+
 
     return (
         <View style={styles.container}>
@@ -160,20 +184,30 @@ const DrRandevuButton = () => {
                     renderItem={({ item }) => (
                         <View style={styles.appointmentRow}>
                             <Text style={styles.appointmentText}>
-                                {item.hastaAd} - {item.tarih} - {item.saat}
+                                {item.hastaAd}{"\n"}
+                                {formatDate(item.tarih)}{"\n"}
+                                {item.saat}
                             </Text>
-                            <TouchableOpacity style={styles.cancelButtonStyle}>
-                                <Text style={styles.cancelButtonText}>İptal</Text>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.confirmButtonStyle,
+                                    item.isApproved
+                                        ? { backgroundColor: "#4CAF50", opacity: 0.6 } // Onaylandıysa yeşil ve yarı saydam
+                                        : { backgroundColor: "#4CAF50" },              // Onaylanmadıysa canlı yeşil
+                                ]}
+                                disabled={item.isApproved} // Onaylandıysa buton pasif
+                                onPress={() => handleApprove(item.id)}
+                            >
+                                <Text style={styles.confirmButtonText}>
+                                    {item.isApproved ? "ONAYLANDI" : "ONAYLA"}
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     )}
                     style={styles.appointmentsContainer}
-
                 />
             </View>
-
-
-
             <BottomMenu />
         </View>
     );
@@ -227,7 +261,6 @@ const styles = StyleSheet.create({
     doctorName: {
         fontSize: 14,
         color: "black",
-        marginTop: 10,
         fontWeight: "bold",
     },
     dateSelector: {
@@ -254,29 +287,37 @@ const styles = StyleSheet.create({
         width: "90%",
     },
     appointmentRow: {
+        backgroundColor: "#fff",
+        padding: 16,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        borderRadius: 12,
+        elevation: 2, // Android için gölge
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.41, // iOS için gölge
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginVertical: 15,
-        paddingHorizontal: 10,
-        width: "100%",
     },
+
     appointmentText: {
         fontSize: 14,
         fontWeight: "bold",
         marginLeft: 20,
         marginRight: 40,
     },
-    cancelButtonStyle: {
+    confirmButtonStyle: {
         width: 50,
         height: 20,
-        backgroundColor: "#FF0000",
+        backgroundColor: "#A8E6A1",
         borderRadius: 10,
         alignItems: "center",
         justifyContent: "center",
         marginLeft: 30,
     },
-    cancelButtonText: {
+    confirmButtonText: {
         color: "#FFFFFF",
         fontWeight: "bold",
         fontSize: 8,
