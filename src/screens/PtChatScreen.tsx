@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     },
     innerContainer: {
         width: 400,  // Genişliği küçülterek içerik alanını daraltıyoruz
-        height: 550, // Yüksekliği belirleyerek sabit tutuyoruz
+        height: 600, // Yüksekliği belirleyerek sabit tutuyoruz
         backgroundColor: "white",
         padding: 20,
         borderTopLeftRadius: 10,

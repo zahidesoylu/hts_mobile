@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { auth, db } from "@/config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const PatientMenu = ({ navigation, route }: any) => {
   const [doctorName, setDoctorName] = useState<string | null>(null);
   const [patientName, setPatientName] = useState<string | null>(null);
@@ -96,22 +97,22 @@ const PatientMenu = ({ navigation, route }: any) => {
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('PtRandevuButton',{
+            onPress={() => navigation.navigate('PtRandevuButton', {
               patientName,
               doctorName,
               patientId,
               doctorId,
             })
-          }
+            }
           >
             <Text style={styles.cardText}>Randevular</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('')}
+            onPress={() => navigation.navigate('Bildirimler')}
           >
-            <Text style={styles.cardText}>Hatırlatmalar</Text>
+            <Text style={styles.cardText}>Bildirimler</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -178,7 +179,6 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: "space-evenly",
     width: "100%",
-    marginTop: 20,
   },
   card: {
     width: '35%',

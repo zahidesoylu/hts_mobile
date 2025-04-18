@@ -6,6 +6,7 @@ import { doc, getDoc, query, where, deleteDoc, getDocs, collection } from 'fireb
 import { getAuth } from "firebase/auth";
 
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const DrHastalar = ({ navigation, route }: any) => {
 
     const [patients, setPatients] = useState<{ id: string, ad: string, soyad: string }[]>([]);
@@ -22,6 +23,7 @@ const DrHastalar = ({ navigation, route }: any) => {
     const doctorId = auth.currentUser?.uid;
 
     //Doktor bilgilerini çekiyoruz
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
         const fetchDoctorData = async () => {
             try {
@@ -52,6 +54,7 @@ const DrHastalar = ({ navigation, route }: any) => {
     }, []);
 
     // Hastaları Firestore'dan çekiyoruz
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
         const fetchPatients = async () => {
             try {
@@ -131,6 +134,7 @@ const DrHastalar = ({ navigation, route }: any) => {
                 {isPanelVisible && (
                     <View style={styles.patientPanel}>
                         {patients.map((patient, index) => (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                             <Text key={index} style={styles.patientText}>
                                 {patient.ad} {patient.soyad}
                             </Text>

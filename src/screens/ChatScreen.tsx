@@ -7,6 +7,7 @@ import { collection, serverTimestamp, doc, getDoc, getDocs, query, where, addDoc
 import { orderBy, onSnapshot } from "firebase/firestore";
 
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const ChatScreen = ({ route }: { route: any }) => {
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -17,13 +18,13 @@ const ChatScreen = ({ route }: { route: any }) => {
     const [selectedPatient, setSelectedPatient] = useState<string | null>(null); // Selected patient state
     const myPatient = route.params.patient; // myPatient'ı route'dan alıyoruz
     const flatListRef = useRef<FlatList>(null);
-/*
-console.log("Seçilen hasta:", myPatient); // Seçilen hasta bilgisini konsola yazdırıyoruz
-console.log("Seçilen hasta ID'si:", myPatient.id); // Seçilen hasta ID'sini konsola yazdırıyoruz
-console.log("Seçilen hasta ID'si:", patientId); // Seçilen hasta ID'sini konsola yazdırıyoruz
-*/
+    /*
+    console.log("Seçilen hasta:", myPatient); // Seçilen hasta bilgisini konsola yazdırıyoruz
+    console.log("Seçilen hasta ID'si:", myPatient.id); // Seçilen hasta ID'sini konsola yazdırıyoruz
+    console.log("Seçilen hasta ID'si:", patientId); // Seçilen hasta ID'sini konsola yazdırıyoruz
+    */
 
-console.log("Route params:", route.params);
+    console.log("Route params:", route.params);
 
     // Mesaj gönderme fonksiyonu
     const handleSendMessage = async () => {
@@ -45,7 +46,7 @@ console.log("Route params:", route.params);
 
                 setMessage("");  // Mesaj kutusunu sıfırlıyoruz
                 // Yeni mesaj gönderildiğinde, FlatList'in en altına kaydırıyoruz
-            flatListRef.current?.scrollToEnd({ animated: true });
+                flatListRef.current?.scrollToEnd({ animated: true });
 
             } catch (error) {
                 console.error("Mesaj gönderme hatası:", error);
@@ -67,13 +68,13 @@ console.log("Route params:", route.params);
             const messagesData = querySnapshot.docs.map((doc) => {
                 const data = doc.data();
                 const timestamp = data.timestamp;
-        
+
                 let timeString = "Bilinmeyen zaman";
                 if (timestamp?.seconds) {
                     const date = new Date(timestamp.seconds * 1000);
                     timeString = date.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
                 }
-        
+
                 return {
                     id: doc.id,
                     sender: data.senderName || "Unknown",
@@ -81,13 +82,13 @@ console.log("Route params:", route.params);
                     time: timeString,
                 };
             });
-        
+
             setMessages(messagesData);
         });
-        
 
-return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
-}, [selectedPatient]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
+
+        return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
+    }, [selectedPatient]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
 
 
     //Hasta verisi
@@ -118,36 +119,36 @@ return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyor
         fetchPatients();
     }, []);
 
-//Doktor verisi
-useEffect(() => {
-    const fetchDoctorData = async () => {
-        try {
-            const userId = auth.currentUser?.uid;
-            if (!userId) {
-                setErrorMessage("Kullanıcı girişi yapılmamış.");
+    //Doktor verisi
+    useEffect(() => {
+        const fetchDoctorData = async () => {
+            try {
+                const userId = auth.currentUser?.uid;
+                if (!userId) {
+                    setErrorMessage("Kullanıcı girişi yapılmamış.");
+                    setLoading(false);
+                    return;
+                }
+
+                const userRef = doc(db, "users", userId);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+                    setDoctorName(fullName);
+                } else {
+                    setErrorMessage("Doktor verisi bulunamadı.");
+                }
+            } catch (error) {
+                setErrorMessage("Veri çekme hatası oluştu.");
+            } finally {
                 setLoading(false);
-                return;
             }
+        };
 
-            const userRef = doc(db, "users", userId);
-            const userDoc = await getDoc(userRef);
-
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
-                setDoctorName(fullName);
-            } else {
-                setErrorMessage("Doktor verisi bulunamadı.");
-            }
-        } catch (error) {
-            setErrorMessage("Veri çekme hatası oluştu.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    fetchDoctorData();
-}, []);
+        fetchDoctorData();
+    }, []);
 
 
 
@@ -167,7 +168,7 @@ useEffect(() => {
 
                 <View style={styles.infoBox}>
                     <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
-                    <Text style={styles.infoText}>Hasta: {myPatient ? myPatient.name : 'Seçilen hasta yok'}</Text>
+                    <Text style={styles.infoText}> Mesaj Gönderilecek Hasta: {myPatient ? myPatient.name : 'Seçilen hasta yok'}</Text>
                 </View>
 
                 <View style={styles.messagesContainer}>
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     },
     innerContainer: {
         width: 400,  // Genişliği küçülterek içerik alanını daraltıyoruz
-        height: 550, // Yüksekliği belirleyerek sabit tutuyoruz
+        height: 600, // Yüksekliği belirleyerek sabit tutuyoruz
         backgroundColor: "white",
         padding: 20,
         borderTopLeftRadius: 10,
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 18,
         fontWeight: "bold",
-        
+
     },
     infoBox: {
         width: "100%",
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexGrow: 1,
         marginBottom: 20,
-    },    
+    },
     messageBox: {
         maxWidth: "80%",
         marginBottom: 10,

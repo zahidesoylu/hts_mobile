@@ -12,6 +12,7 @@ import PtReport from "../../src/screens/PtReport";
 import PatientRegister from "../../src/screens/PatientRegister";
 import ChatScreen from "../../src/screens/ChatScreen";
 import PtChatScreen from "../../src/screens/PtChatScreen";
+import Bildirimler from "../../src/screens/Bildirimler";
 
 
 export type RootStackParamList = {
@@ -28,6 +29,7 @@ export type RootStackParamList = {
   PatientRegister: undefined;
   ChatScreen: undefined;
   PtChatScreen: undefined;
+  Bildirimler: undefined;
 
 };
 
@@ -35,21 +37,22 @@ const Stack = createNativeStackNavigator<RootStackParamList>(); // Doğru Stack 
 
 const Navigation = () => {
   return (
-      <Stack.Navigator initialRouteName="LoginScreen">
-        <Stack.Screen name="LoginScreen" component={LoginScreen} />
-        <Stack.Screen name="DoctorMenu" component={DoctorMenu} />
-        <Stack.Screen name="PatientMenu" component={PatientMenu} />
-        <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
-        <Stack.Screen name="DrRandevuButton" component={DrRandevuButton} />
-        <Stack.Screen name="PtRandevuButton" component={PtRandevuButton} />
-        <Stack.Screen name="DrHastalar" component={DrHastalar} />
-        <Stack.Screen name="DrMessageScreen" component={DrMessageScreen} />
-        <Stack.Screen name="DrMessage" component={DoctorMessage} />
-        <Stack.Screen name="PtReport" component={PtReport} />
-        <Stack.Screen name="PatientRegister" component={PatientRegister} />
-        <Stack.Screen name="ChatScreen" component={ChatScreen} />
-        <Stack.Screen name="PtChatScreen" component={PtChatScreen} />
-      </Stack.Navigator>
+    <Stack.Navigator initialRouteName="LoginScreen">
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="DoctorMenu" component={DoctorMenu} />
+      <Stack.Screen name="PatientMenu" component={PatientMenu} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+      <Stack.Screen name="DrRandevuButton" component={DrRandevuButton} />
+      <Stack.Screen name="PtRandevuButton" component={PtRandevuButton} />
+      <Stack.Screen name="DrHastalar" component={DrHastalar} />
+      <Stack.Screen name="DrMessageScreen" component={DrMessageScreen} />
+      <Stack.Screen name="DrMessage" component={DoctorMessage} />
+      <Stack.Screen name="PtReport" component={PtReport} />
+      <Stack.Screen name="PatientRegister" component={PatientRegister} />
+      <Stack.Screen name="ChatScreen" component={ChatScreen} />
+      <Stack.Screen name="PtChatScreen" component={PtChatScreen} />
+      <Stack.Screen name="Bildirimler" component={Bildirimler} />
+    </Stack.Navigator>
   );
 };
 

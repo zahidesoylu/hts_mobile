@@ -8,6 +8,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from "../../src/config/firebaseConfig";
 
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const DoctorMenu = ({ navigation, route }: any) => {
 
   const [doctorName, setDoctorName] = useState<string | null>(null);
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: 400,
-    height: 550,
+    height: 600,
     backgroundColor: "white",
     padding: 30,
     borderTopLeftRadius: 10,
@@ -156,6 +157,9 @@ const styles = StyleSheet.create({
     color: "black",
     marginTop: 10,
     fontWeight: "bold",
+    textAlign: "center", // ortalamak istersen
+    flexShrink: 1,       // metni sığdırmak için küçültebilir
+    flexWrap: 'nowrap',  // alt satıra geçmesini engeller
   },
   card: {
     width: '35%',

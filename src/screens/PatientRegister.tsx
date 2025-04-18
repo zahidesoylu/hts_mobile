@@ -8,6 +8,7 @@ import firestore from '@react-native-firebase/firestore';
 import { Picker } from "@react-native-picker/picker"; // Picker bileşenini içe aktarıyoruz
 
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const PatientRegister = ({ navigation }: any) => {
 
     interface Hastalik {
@@ -152,7 +153,7 @@ const PatientRegister = ({ navigation }: any) => {
         const newPatientData = {
             ...patientData,
             doktor: doctorName,
-            doctorId:userId,
+            doctorId: userId,
         };
 
         try {
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
     },
     innerContainer: {
         width: 400,
-        height: 550,
+        height: 600,
         backgroundColor: "white",
         padding: 30,
         borderTopLeftRadius: 10,

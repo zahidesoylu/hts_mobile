@@ -19,6 +19,7 @@ type Message = {
     timestamp: string;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
     const [patients, setPatients] = useState<Patient[]>([]);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     },
     innerContainer: {
         width: 400,
-        height: 550,
+        height: 600,
         backgroundColor: "white",
         padding: 30,
         borderTopLeftRadius: 10,
