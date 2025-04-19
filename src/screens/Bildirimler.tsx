@@ -4,6 +4,8 @@ import BottomMenu from "../../src/components/ui/BottomMenu";
 import { useEffect, useState } from "react";
 import { db, auth } from "@/config/firebaseConfig";
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { useRoute } from "@react-navigation/native";
+import type { RouteProp } from "@react-navigation/native";
 
 interface Notification {
     id: string;
@@ -14,11 +16,25 @@ interface Notification {
     patientId: string;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const Bildirimler = ({ navigation }: any) => {
+// Bildirimler ekranı için route parametrelerinin tipi
+type RootStackParamList = {
+    Bildirimler: {
+        patientId: string;
+        doctorName: string;
+        patientName: string;
+        doctorId: string;
+    };
+};
+type BildirimlerRouteProp = RouteProp<RootStackParamList, 'Bildirimler'>;
+
+
+const Bildirimler = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]); // Notifications tipi Notification[]
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const route = useRoute<BildirimlerRouteProp>(); // useRoute ile route nesnesini alıyoruz
+    const { patientId, doctorName, patientName, doctorId } = route.params;
+    console.log("Route params:", route.params); // Burada route parametrelerini kontrol ediyoruz
 
     // Bildirimleri okundu olarak işaretleme fonksiyonu
     const markAsRead = async (notificationId: string) => {
@@ -40,15 +56,17 @@ const Bildirimler = ({ navigation }: any) => {
     // Bildirimleri çekme fonksiyonu
     const fetchNotifications = async () => {
         try {
-            const userId = auth.currentUser?.uid;
-            console.log("Aktif kullanıcı UID:", userId); // UID kontrolü
-            if (!userId) {
-                console.error("Kullanıcı girişi yapılmamış.");
+            // `patientId`'yi route params üzerinden alıyoruz
+            const { patientId } = route.params;
+            console.log("Hasta ID:", patientId);  // Burada patientId'yi kontrol ediyoruz
+
+            if (!patientId) {
+                console.error("Hasta ID'si bulunamadı.");
                 return;
             }
 
             // Sadece o kullanıcıya ait bildirimleri çekiyoruz
-            const q = query(collection(db, "bildirimler"), where("userId", "==", userId));
+            const q = query(collection(db, "bildirimler"), where("patientId", "==", patientId));
             const querySnapshot = await getDocs(q);
             const fetchedNotifications = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
@@ -60,7 +78,7 @@ const Bildirimler = ({ navigation }: any) => {
 
             console.log("Fetched Notifications:", fetchedNotifications);  // Burada verileri kontrol ediyoruz
 
-            setNotifications(fetchedNotifications.filter(notification => notification.read === true));
+            setNotifications(fetchedNotifications);
         } catch (error) {
             console.error("Bildirimler çekilirken hata:", error);
         } finally {
@@ -99,7 +117,7 @@ const Bildirimler = ({ navigation }: any) => {
                             <View
                                 style={[
                                     styles.notificationCard,
-                                    item.read ? { backgroundColor: "#e0e0e0" } : {},
+                                    item.read ? { backgroundColor: "#e0e0e0" } : { backgroundColor: "#fff" },
                                 ]}
                             >
                                 <Text style={styles.notificationText}>{item.message}</Text>

@@ -110,7 +110,12 @@ const PatientMenu = ({ navigation, route }: any) => {
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('Bildirimler')}
+            onPress={() => navigation.navigate('Bildirimler', {
+              patientName,
+              doctorName,
+              patientId,
+              doctorId,
+            })}
           >
             <Text style={styles.cardText}>Bildirimler</Text>
           </TouchableOpacity>
