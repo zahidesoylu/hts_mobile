@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from "react-native";
 import BottomMenu from "../components/ui/BottomMenu";
 import { db, auth } from "../../src/config/firebaseConfig";
 import { doc, getDoc, query, where, deleteDoc, getDocs, collection } from 'firebase/firestore';
@@ -111,6 +111,7 @@ const DrHastalar = ({ navigation, route }: any) => {
 
     return (
         <View style={styles.container}>
+
             <View style={styles.innerContainer}>
                 <Text style={styles.dateText}>
                     {new Date().toLocaleDateString("tr-TR", {
@@ -124,56 +125,61 @@ const DrHastalar = ({ navigation, route }: any) => {
                     <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
                 </View>
 
-                <TouchableOpacity
-                    style={styles.hastalarButton}
-                    onPress={() => setIsPanelVisible(!isPanelVisible)}
-                >
-                    <Text style={styles.hastalarButtonText}>Hastaları Listele</Text>
-                </TouchableOpacity>
-
-                {isPanelVisible && (
-                    <View style={styles.patientPanel}>
-                        {patients.map((patient, index) => (
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                            <Text key={index} style={styles.patientText}>
-                                {patient.ad} {patient.soyad}
-                            </Text>
-
-                        ))}
-                    </View>
-                )}
-
-                <TouchableOpacity
-                    style={styles.addPatientButton}
-                    onPress={() => navigation.navigate("PatientRegister")} // Mesajlar sayfasına yönlendir
-                >
-                    <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.hastalarButton}
-                    onPress={() => setIsDeletePanelVisible(!isDeletePanelVisible)}
-                >
-                    <Text style={styles.hastalarButtonText}>Hasta Kayıt Sil</Text>
-                </TouchableOpacity>
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
 
-                {isDeletePanelVisible && (
-                    <View style={styles.patientPanel}>
-                        {patients.map((patient) => (
-                            <View key={patient.id} style={styles.patientItem}>
-                                <Text style={styles.patientText}>{patient.ad} {patient.soyad}</Text>
-                                <TouchableOpacity
-                                    style={styles.deleteButton}
-                                    onPress={() => handleDeletePatient(patient.id)}
-                                >
-                                    <Text style={styles.deleteButtonText}>Sil</Text>
-                                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.addPatientButton}
+                        onPress={() => navigation.navigate("PatientRegister")} // Mesajlar sayfasına yönlendir
+                    >
+                        <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
+                    </TouchableOpacity>
 
-                            </View>
-                        ))}
-                    </View>
-                )}
+
+                    <TouchableOpacity
+                        style={styles.hastalarButton}
+                        onPress={() => setIsPanelVisible(!isPanelVisible)}
+                    >
+                        <Text style={styles.hastalarButtonText}>Hastaları Listele</Text>
+                    </TouchableOpacity>
+
+                    {isPanelVisible && (
+                        <View style={styles.patientPanel}>
+                            {patients.map((patient, index) => (
+                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                <Text key={index} style={styles.patientText}>
+                                    {patient.ad} {patient.soyad}
+                                </Text>
+
+                            ))}
+                        </View>
+                    )}
+
+                    <TouchableOpacity
+                        style={styles.hastalarButton}
+                        onPress={() => setIsDeletePanelVisible(!isDeletePanelVisible)}
+                    >
+                        <Text style={styles.hastalarButtonText}>Hasta Kayıt Sil</Text>
+                    </TouchableOpacity>
+
+                    {isDeletePanelVisible && (
+                        <View style={styles.patientPanel}>
+                            {patients.map((patient) => (
+                                <View key={patient.id} style={styles.patientItem}>
+                                    <Text style={styles.patientText}>{patient.ad} {patient.soyad}</Text>
+                                    <TouchableOpacity
+                                        style={styles.deleteButton}
+                                        onPress={() => handleDeletePatient(patient.id)}
+                                    >
+                                        <Text style={styles.deleteButtonText}>Sil</Text>
+                                    </TouchableOpacity>
+
+                                </View>
+                            ))}
+                        </View>
+                    )}
+                </ScrollView>
+
             </View>
             <BottomMenu />
         </View>
@@ -202,6 +208,11 @@ const styles = StyleSheet.create({
         overflow: "hidden", // Taşan içeriği gizler
         flexShrink: 0,      // İçeriğe bağlı olarak küçülmeyi engeller
     },
+    scrollContent: {
+        width: "100%",
+        padding: 16,
+    },
+
     label: {
         fontSize: 16,
         fontWeight: "bold",

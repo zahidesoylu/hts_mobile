@@ -110,7 +110,7 @@ const DrRandevuButton = () => {
             const appointmentRef = doc(db, "randevu", appointmentId);
             await updateDoc(appointmentRef, { isApproved: true });
 
-            await addNotification(patientId, "Randevu talebiniz onaylan.");
+            await addNotification(patientId, "Randevu talebiniz onaylandı.");
 
             setAppointments((prev) =>
                 prev.map((item) =>

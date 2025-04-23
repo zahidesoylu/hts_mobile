@@ -117,7 +117,7 @@ const Bildirimler = () => {
                             <View
                                 style={[
                                     styles.notificationCard,
-                                    item.read ? { backgroundColor: "#e0e0e0" } : { backgroundColor: "#fff" },
+                                    { backgroundColor: "#e0e0e0" },
                                 ]}
                             >
                                 <Text style={styles.notificationText}>{item.message}</Text>
@@ -125,14 +125,6 @@ const Bildirimler = () => {
                                     {new Date(item.timestamp?.toDate()).toLocaleString()}
                                 </Text>
 
-                                {!item.read && (
-                                    <Text
-                                        style={styles.markAsReadText}
-                                        onPress={() => markAsRead(item.id)}
-                                    >
-                                        Okundu olarak işaretle
-                                    </Text>
-                                )}
                             </View>
                         )}
                     />
