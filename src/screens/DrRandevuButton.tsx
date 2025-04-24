@@ -181,11 +181,11 @@ const DrRandevuButton = () => {
                             <TouchableOpacity
                                 style={[
                                     styles.confirmButtonStyle,
-                                    item.isApproved
+                                    (item.isApproved || selectedDate === "Dün")
                                         ? { backgroundColor: "#4CAF50", opacity: 0.6 }
                                         : { backgroundColor: "#4CAF50" },
                                 ]}
-                                disabled={item.isApproved}
+                                disabled={item.isApproved || selectedDate === "Dün"}
                                 onPress={() => handleApprove(item.id, item.hastaId)}
                             >
                                 <Text style={styles.confirmButtonText}>

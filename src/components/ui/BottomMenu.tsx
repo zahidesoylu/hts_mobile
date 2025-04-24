@@ -1,10 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import styles from "../../styles/BottomMenuStyles"; 
-
-
-
+import styles from "../../styles/BottomMenuStyles";
 
 const BottomMenu = () => {
   return (

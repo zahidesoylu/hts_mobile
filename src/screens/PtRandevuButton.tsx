@@ -110,6 +110,36 @@ const PtRandevuButton = () => {
       alert("Lütfen tarih ve saat seçiniz.");
       return;
     }
+    // Seçilen tarih ve saat birleştirilip Date objesi oluşturuluyor
+    const [hourStr, minuteStr] = hour.split(":");
+    const selectedDateTime = new Date(randevuTarihi);
+    selectedDateTime.setHours(Number.parseInt(hourStr));
+    selectedDateTime.setMinutes(Number.parseInt(minuteStr));
+    selectedDateTime.setSeconds(0);
+    selectedDateTime.setMilliseconds(0);
+
+    const now = new Date();
+
+    if (selectedDateTime < now) {
+      alert("Geçmiş bir saat için randevu alınamaz.");
+      return;
+    } const selectedDate = randevuTarihi.toISOString().split("T")[0];
+
+    // Önce aynı tarih ve saatte daha önce alınmış bir randevu var mı kontrol ediyoruz
+    const q = query(
+      collection(db, "randevu"),
+      where("hastaId", "==", patientId),
+      where("doktorId", "==", doctorId),
+      where("tarih", "==", selectedDate),
+      where("saat", "==", hour)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      alert("Bu tarih ve saatte zaten bir randevunuz mevcut.");
+      return;
+    }
 
     try {
       const appointmentRef = collection(db, "randevu");
@@ -282,7 +312,11 @@ const PtRandevuButton = () => {
                       <View style={styles.checkboxContainer}>
                         <Text
                           style={{
-                            color: appointment.isApproved ? "green" : "gray",
+                            color: selectedOption === "gecmisRandevular"
+                              ? "gray"
+                              : appointment.isApproved
+                                ? "green"
+                                : "gray",
                             fontSize: 14,
                             marginLeft: 8,
                             justifyContent: "center",
