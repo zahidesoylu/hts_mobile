@@ -23,7 +23,10 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const LoginScreen = ({ navigation }: any) => {
   const [eposta, setEposta] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +35,8 @@ const LoginScreen = ({ navigation }: any) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const firestore = getFirestore();
+
+
 
   const handleLogin = async () => {
     if (!eposta || !password) {
@@ -52,6 +57,10 @@ const LoginScreen = ({ navigation }: any) => {
         }
 
         const userRole = userDoc.data()?.role;
+
+        await AsyncStorage.setItem("userRole", userRole);
+
+
         if (userRole === "doctor") {
           navigation.navigate("DoctorMenu");
         } else if (userRole === "patient") {
@@ -75,14 +84,18 @@ const LoginScreen = ({ navigation }: any) => {
 
         let patientName = "";
         let patientId = "";
+        // biome-ignore lint/complexity/noForEach: <explanation>
         querySnapshot.forEach((doc) => {
           const patientData = doc.data();
           patientName = `${patientData.ad} ${patientData.soyad}`;
           patientId = doc.id;
         });
 
+        await AsyncStorage.setItem("userRole", "patient");
+
         navigation.navigate("PatientMenu", { patientName, patientId });
       }
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     } catch (error: any) {
       console.log("Giriş hatası:", error);
       setErrorMessage("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
@@ -105,6 +118,7 @@ const LoginScreen = ({ navigation }: any) => {
       });
 
       navigation.navigate("RegisterScreen", { eposta, password });
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     } catch (error: any) {
       console.log("Kayıt hatası:", error);
       setErrorMessage("Kayıt başarısız. Lütfen tekrar deneyin.");
@@ -141,20 +155,20 @@ const LoginScreen = ({ navigation }: any) => {
           />
 
           <View style={styles.passwordContainer}>
-          <TextInput
-        style={styles.passwordInput}
-        placeholder="Şifre"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={!passwordVisible}
-      />
-      <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
-        <Ionicons
-          name={passwordVisible ? "eye-off" : "eye"}
-          size={20}
-          color="#555"
-        />
-      </TouchableOpacity>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Şifre"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!passwordVisible}
+            />
+            <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+              <Ionicons
+                name={passwordVisible ? "eye-off" : "eye"}
+                size={20}
+                color="#555"
+              />
+            </TouchableOpacity>
           </View>
 
           {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}

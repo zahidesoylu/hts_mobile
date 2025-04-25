@@ -18,7 +18,6 @@ const PatientMenu = ({ navigation, route }: any) => {
   const patientNameFromRoute = route?.params?.name;
 
   console.log("Route params:", route.params);
-  console.log("Aktif kullanıcı UID:", auth.currentUser?.uid);
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -127,6 +126,7 @@ const PatientMenu = ({ navigation, route }: any) => {
                 patientName,
                 doctorName,
                 patientId,
+                doctorId,
               })
             }
           >
@@ -139,7 +139,6 @@ const PatientMenu = ({ navigation, route }: any) => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

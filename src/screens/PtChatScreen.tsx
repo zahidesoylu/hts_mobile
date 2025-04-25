@@ -11,13 +11,36 @@ import { useRoute } from '@react-navigation/native';
 const PtChatScreen = ({ route }: { route: any }) => {
     const [messages, setMessages] = useState<{ id: string; sender: string; text: string; time: string; timestamp?: { seconds: number; nanoseconds: number } }[]>([]);
     const [message, setMessage] = useState("");
+    const [patientName, setPatientName] = useState<string>("");
+    const [doctorName, setDoctorName] = useState<string>("");
     const [selectedPatient, setSelectedPatient] = useState<string | null>(null); // Selected patient state
     const flatListRef = useRef<FlatList>(null);
-    const { patientName, doctorName, patientId, doctorId } = route.params;
+    const { patientId, doctorId } = route.params;
 
 
     console.log("Route params:", route.params);
 
+
+    // Veritabanından hasta ve doktor adlarını çek
+    useEffect(() => {
+        const fetchNames = async () => {
+            try {
+                const patientSnap = await getDoc(doc(db, "patients", patientId));
+                const doctorSnap = await getDoc(doc(db, "users", doctorId));
+
+                if (patientSnap.exists()) {
+                    setPatientName(`${patientSnap.data().ad} ${patientSnap.data().soyad}` || "Hasta");
+                }
+                if (doctorSnap.exists()) {
+                    setDoctorName(`${doctorSnap.data().unvan} ${doctorSnap.data().ad} ${doctorSnap.data().soyad}` || "Doktor");
+                }
+            } catch (err) {
+                console.error("Adları getirirken hata:", err);
+            }
+        };
+
+        fetchNames();
+    }, [patientId, doctorId]);
 
     // Mesaj gönderme fonksiyonu
     const handleSendMessage = async () => {
@@ -25,23 +48,19 @@ const PtChatScreen = ({ route }: { route: any }) => {
             try {
                 // Mesaj verilerini Firestore'a kaydediyoruz
                 const messageData = {
-                    senderId: selectedPatient,
-                    receiverId: auth.currentUser?.uid,// Burada hasta ID'si seçili olmalı
+                    senderId: patientId,
+                    receiverId: doctorId,// Burada hasta ID'si seçili olmalı
                     text: message,
                     timestamp: serverTimestamp(),
-                    senderName: doctorName || "Doktor",
+                    senderName: patientName || "Hasta",
+                    receiverName: doctorName || "Doktor",
                 };
 
                 // messages koleksiyonuna yeni bir mesaj ekliyoruz
                 await addDoc(collection(db, "messages"), messageData);
 
                 setMessage("");  // Mesaj kutusunu sıfırlıyoruz
-
-
-                setMessage("");  // Mesaj kutusunu sıfırlıyoruz
-                // Yeni mesaj gönderildiğinde, FlatList'in en altına kaydırıyoruz
                 flatListRef.current?.scrollToEnd({ animated: true });
-
             } catch (error) {
                 console.error("Mesaj gönderme hatası:", error);
             }
@@ -50,10 +69,14 @@ const PtChatScreen = ({ route }: { route: any }) => {
 
     // Mesajları çekme fonksiyonu
     useEffect(() => {
+
+        if (!doctorId || !patientId) return; // id'ler hazır değilse çalıştırma ❌
+
         const messagesRef = collection(db, "messages");
+
         const q = query(messagesRef,
-            where("senderId", "in", [auth.currentUser?.uid, selectedPatient]),  // Kullanıcı ve hasta arasında iletişim
-            where("receiverId", "in", [auth.currentUser?.uid, selectedPatient]),
+            where("senderId", "in", [doctorId, patientId]),
+            where("receiverId", "in", [doctorId, patientId]),
             orderBy("timestamp") // Mesajları zaman sırasına göre sıralıyoruz
         );
 
@@ -82,12 +105,17 @@ const PtChatScreen = ({ route }: { route: any }) => {
 
 
         return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
-    }, [selectedPatient]); // Hasta ID'si değiştiğinde yeniden veri çekeriz
+    }, [doctorId, patientId]);
 
     useEffect(() => {
-        setSelectedPatient(patientName); // hasta adı aslında ID ise
-    }, [patientName]);
+        console.log("doctorId:", doctorId);
+        console.log("patientId:", patientId);
+    }, [doctorId, patientId]);
 
+    /* useEffect(() => {
+         setSelectedPatient(patientId); // hasta adı aslında ID ise
+     }, [patientId]);
+ */
 
     return (
         <View style={styles.container}>

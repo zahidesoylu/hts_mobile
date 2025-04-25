@@ -114,7 +114,10 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
                 <View style={styles.messageContainer}>
                     <TouchableOpacity onPress={() => {
                         if (selectedPatient) {
-                            navigation.navigate("ChatScreen", { patient: selectedPatient });
+                            navigation.navigate("ChatScreen", {
+                                patient: selectedPatient,
+
+                            });
                         } else {
                             alert("Lütfen önce bir hasta seçin.");
                         }

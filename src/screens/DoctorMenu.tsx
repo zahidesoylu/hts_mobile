@@ -90,7 +90,11 @@ const DoctorMenu = ({ navigation, route }: any) => {
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('DrRandevuButton')} // Randevular sayfasına yönlendir
+            onPress={() => navigation.navigate('DrRandevuButton', {
+              doctorName: doctorName, // Doktor adını geçiyoruz
+              doctorId: auth.currentUser?.uid, // Doktorun UID'sini geçiyoruz
+
+            })} // Randevular sayfasına yönlendir
           >
             <Text style={styles.cardText}>Randevular</Text>
           </TouchableOpacity>
@@ -104,7 +108,11 @@ const DoctorMenu = ({ navigation, route }: any) => {
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('DrMessage')} // Mesajlar sayfasına yönlendir
+            onPress={() => navigation.navigate('DrMessage', {
+              doctorName: doctorName, // Doktor adını geçiyoruz
+              doctorId: auth.currentUser?.uid, // Doktorun UID'sini geçiyoruz
+
+            })} // Mesajlar sayfasına yönlendir
           >
             <Text style={styles.cardText}>Mesajlar</Text>
           </TouchableOpacity>
