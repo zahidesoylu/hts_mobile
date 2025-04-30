@@ -1,125 +1,131 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ScrollView, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { useRoute, type RouteProp } from "@react-navigation/native";
+import BottomMenu from "../../src/components/ui/BottomMenu";
+import { useEffect, useState } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../src/config/firebaseConfig"; // Firestore yapılandırmanızı içe aktarın
+import Ionicons from 'react-native-vector-icons/Ionicons'; // en üste ekle
 
-// Rapor tipi tanımlanıyor
-interface Report {
-    id: string;
-    name: string;
-    date: string;
-    content: string;
-}
 
-const PtReport = () => {
-    const [reports, setReports] = useState<Report[]>([
-        { id: '1', name: 'Geçmiş Rapor 1', date: '01.03.2025', content: 'Raporda yer alan içerik...'},
-        { id: '2', name: 'Geçmiş Rapor 2', date: '28.02.2025', content: 'Başka bir rapor içeriği...'}
-    ]);
-        
-    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-    const [reportTitle, setReportTitle] = useState('');
-    const [reportContent, setReportContent] = useState('');
+type PtReportRouteParams = {
+    PtReport: {
+        patientId: string;
+        patientName: string;
+        doctorName: string;
+        doctorId: string;
+    };
+};
 
-    const saveReport = () => {
-        const newReport: Report = {
-            id: Math.random().toString(),
-            name: reportTitle,  // title yerine name kullanıyoruz
-            date: new Date().toLocaleDateString(),
-            content: reportContent
+// biome-ignore lint/suspicious/noExplicitAny: <açıklama>
+const PtReport = ({ navigation }: any) => {
+    const route = useRoute<RouteProp<PtReportRouteParams, "PtReport">>();
+    const { patientId, patientName, doctorName } = route.params;
+
+    const [todayReportFilled, setTodayReportFilled] = useState(false);
+    const [reportList, setReportList] = useState<string[]>([]);
+
+    useEffect(() => {
+        const checkTodayReport = async () => {
+            try {
+                const today = new Date().toISOString().split("T")[0];
+                const reportsRef = collection(db, "reports");
+                const q = query(
+                    reportsRef,
+                    where("patientId", "==", patientId),
+                    where("date", "==", today)
+                );
+                const snapshot = await getDocs(q);
+                setTodayReportFilled(!snapshot.empty);
+            } catch (error) {
+                console.log("Bugünkü rapor kontrolü başarısız:", error);
+            }
         };
-        setReports([...reports, newReport]);
-        setReportTitle('');
-        setReportContent('');
-    };
+        const fetchReports = async () => {
+            try {
+                const reportsRef = collection(db, "reports");
+                const q = query(
+                    reportsRef,
+                    where("patientId", "==", patientId)
+                );
+                const snapshot = await getDocs(q);
+                const reports = snapshot.docs.map((doc) => doc.data().date);
+                const sorted = reports.sort().reverse(); // yeni raporlar başta
+                setReportList(sorted);
+            } catch (error) {
+                console.log("Geçmiş raporlar alınamadı:", error);
+            }
+        };
 
-    const handleReportPress = (item: Report) => {
-        setSelectedReport(item);
-    };
+        checkTodayReport();
+        fetchReports();
+    }, [patientId]);
 
-    const navigateToNewReport = () => {
-        setSelectedReport(null);  // Clear the selected report to navigate to new report
-    };
+    useEffect(() => {
+        setTodayReportFilled(true);  // Manuel olarak raporun doldurulmuş olduğunu işaretliyoruz
+    }, []);
 
-    const downloadReport = () => {
-        console.log('Download Report');
-    };
 
-    const shareReport = () => {
-        console.log('Share Report');
-    };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.headerText}>Raporlar</Text>
+            <View style={styles.innerContainer}>
+                <Text style={styles.dateText}>
+                    {new Date().toLocaleDateString("tr-TR", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                    })}
+                </Text>
 
-            {/* Bugünün Raporunu Doldur */}
-            <TouchableOpacity style={styles.newReportButton} onPress={navigateToNewReport}>
-                <Text style={styles.buttonText}>Bugünün Raporunu Doldur</Text>
-            </TouchableOpacity>
+                <View style={styles.infoBox}>
+                    <Text style={styles.pFullName}>{patientName || 'Hasta adı bulunamadı'}</Text>
+                    <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+                </View>
 
-            {/* Geçmiş Raporlar Listesi */}
-            <Text style={styles.subHeader}>Geçmiş Raporlar</Text>
-            <FlatList
-                data={reports}
-                renderItem={({ item }: { item: Report }) => (
+                <Text style={styles.sectionTitle}>Günlük Rapor</Text>
+
+                {!todayReportFilled ? (
                     <TouchableOpacity
-                        style={styles.reportItem}
-                        onPress={() => handleReportPress(item)}
+                        style={styles.reportButton}
+                        onPress={() => navigation.navigate("PtDailyReport", route.params)}
                     >
-                        <Text style={styles.reportTitle}>{item.name}</Text> {/* title yerine name kullanıldı */}
-                        <Text style={styles.reportDate}>{item.date}</Text>
+                        <Ionicons name="checkmark-circle" size={24} color="gray" style={{ marginRight: 8 }} /> {/* Tik işareti gri olacak */}
+                        <Text style={styles.reportButtonText}>Günlük Raporu Doldur</Text>
                     </TouchableOpacity>
-                )}
-                keyExtractor={(item) => item.id}
-            />
-
-            {/* Eğer seçilen rapor varsa, detayları göster */}
-            {selectedReport && (
-                <View style={styles.reportDetailContainer}>
-                    <Text style={styles.reportTitle}>{selectedReport.name}</Text> {/* title yerine name kullanıldı */}
-                    <Text style={styles.reportDate}>{selectedReport.date}</Text>
-
-                    <ScrollView style={styles.reportContent}>
-                        <Text>{selectedReport.content}</Text>
-                    </ScrollView>
-
-                    <View style={styles.buttonsContainer}>
-                        <Button title="İndir" onPress={downloadReport} />
-                        <Button title="Paylaş" onPress={shareReport} />
+                ) : (
+                    <View style={styles.reportButton}>
+                        <Ionicons name="checkmark-circle" size={24} color="white" style={{ marginRight: 8 }} /> {/* Tik işareti beyaz olacak */}
+                        <Text style={styles.reportButtonText}>Bugünkü rapor dolduruldu</Text>
                     </View>
-                </View>
-            )}
+                )}
 
-            {/* Eğer yeni rapor ekleniyorsa, formu göster */}
-            {!selectedReport && (
-                <View style={styles.newReportForm}>
-                    <Text style={styles.headerText}>Bugünün Raporunu Doldur</Text>
 
-                    {/* Rapor Başlık */}
-                    <TextInput
-                        style={styles.inputField}
-                        placeholder="Rapor Başlığı"
-                        value={reportTitle}
-                        onChangeText={setReportTitle}
-                    />
 
-                    {/* Rapor İçeriği */}
-                    <TextInput
-                        style={[styles.inputField, styles.textArea]}
-                        placeholder="Rapor İçeriği"
-                        value={reportContent}
-                        onChangeText={setReportContent}
-                        multiline
-                    />
+                <Text style={styles.sectionTitle}>Geçmiş Raporlar</Text>
+                <ScrollView style={{ width: "100%" }}>
+                    {reportList.length === 0 ? (
+                        <Text style={styles.infoText}>Geçmiş bir raporunuz bulunmamaktadır.</Text>
+                    ) : (
+                        reportList.map((reportDate, index) => (
+                            <TouchableOpacity
+                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                key={index}
+                                style={styles.reportCard}
+                                onPress={() =>
+                                    navigation.navigate("ReportDetail", {
+                                        patientId,
+                                        date: reportDate,
+                                    })
+                                }
+                            >
+                                <Text>{reportDate}</Text>
+                            </TouchableOpacity>
+                        ))
+                    )}
+                </ScrollView>
+            </View>
 
-                    {/* Tarih */}
-                    <Text style={styles.dateLabel}>Tarih: {new Date().toLocaleDateString()}</Text>
-
-                    {/* Kaydet Butonu */}
-                    <TouchableOpacity style={styles.saveButton} onPress={saveReport}>
-                        <Text style={styles.buttonText}>Kaydet</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
+            <BottomMenu />
         </View>
     );
 };
@@ -127,85 +133,88 @@ const PtReport = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#f5f5f5",
+        alignItems: "center",
+    },
+    innerContainer: {
+        width: 400,
+        height: 600,
+        backgroundColor: "white",
         padding: 20,
-        backgroundColor: "#fff",
+        marginTop: 20,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        alignItems: "center",
     },
-    headerText: {
-        fontSize: 24,
+    dateText: {
+        fontSize: 20,
         fontWeight: "bold",
-        marginBottom: 20,
+        marginBottom: 10,
     },
-    subHeader: {
+    infoBox: {
+        backgroundColor: '#e6f0ff',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginVertical: 15,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+    },
+    pFullName: {
         fontSize: 18,
         fontWeight: "bold",
-        marginTop: 20,
     },
-    newReportButton: {
-        backgroundColor: "#4CAF50",
-        padding: 15,
-        borderRadius: 8,
-        marginBottom: 20,
+    doctorName: {
+        fontSize: 14,
+        color: "gray",
+        marginBottom: 15,
     },
-    buttonText: {
-        color: "#fff",
+    sectionTitle: {
         fontSize: 16,
-        textAlign: "center",
-    },
-    reportItem: {
-        padding: 15,
-        backgroundColor: "#f9f9f9",
-        marginVertical: 5,
-        borderRadius: 8,
-        elevation: 3,
-    },
-    reportTitle: {
-        fontSize: 18,
         fontWeight: "bold",
+        alignSelf: "flex-start",
+        marginVertical: 10,
     },
-    reportDate: {
-        fontSize: 14,
-        color: "#777",
-    },
-    newReportForm: {
-        marginTop: 30,
-    },
-    inputField: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 8,
-        marginBottom: 20,
-    },
-    textArea: {
-        height: 100,
-        textAlignVertical: "top",
-    },
-    saveButton: {
-        backgroundColor: "#4CAF50",
+    reportButton: {
+        backgroundColor: "#336699", // Aynı mavi renk
         padding: 15,
         borderRadius: 8,
+        marginBottom: 10,
+        width: "100%",
+        alignItems: "center",
+        flexDirection: "row", // İçeriği yatayda hizalamak için
+        justifyContent: "center", // İçeriği ortalamak için
+        position: "relative", // İçeriği ortalamak için
     },
-    dateLabel: {
-        fontSize: 14,
-        color: "#777",
-        marginBottom: 20,
+    reportButtonText: {
+        color: "white",
+        fontWeight: "bold",
+        fontSize: 16,  // Aynı yazı tipi boyutu
     },
-    reportContent: {
-        marginTop: 20,
-    },
-    reportDetailContainer: {
-        marginTop: 20,
-        padding: 20,
-        backgroundColor: "#f0f0f0",
+    reportCard: {
+        backgroundColor: "#eee",
+        padding: 15,
         borderRadius: 8,
-        elevation: 3,
+        marginBottom: 10,
     },
-    buttonsContainer: {
+    infoText: {
+        fontStyle: "italic",
+        color: "gray",
+        marginBottom: 10,
+    },
+    reportFilledBox: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 20,
+        alignItems: "center",
+        backgroundColor: "#2e7d32",
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 10,
+        width: "100%",
     },
+
 });
 
 export default PtReport;

@@ -206,7 +206,8 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
         elevation: 5,
         overflow: "hidden", // Taşan içeriği gizler
-        flexShrink: 0,      // İçeriğe bağlı olarak küçülmeyi engeller
+        flexShrink: 0,
+        justifyContent: "center"
     },
     scrollContent: {
         width: "100%",
@@ -230,6 +231,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#f0f0f0",
         borderRadius: 8,
         marginVertical: 20,
+        alignItems: "center", // Bu zaten var, yatayda ortalamayı sağlar
+        justifyContent: "center",
+        flexDirection: "column", // Dikeyde ortalamak için
     },
     infoText: {
         fontSize: 16,
@@ -278,8 +282,9 @@ const styles = StyleSheet.create({
     doctorName: {
         fontSize: 14,
         color: "black",
-        marginTop: 10,
         fontWeight: "bold",
+        textAlign: "center", // Metni yatayda ortalar
+        marginTop: 10,
     },
     input: {
         width: "100%",

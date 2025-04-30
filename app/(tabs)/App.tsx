@@ -13,6 +13,7 @@ import PatientRegister from "../../src/screens/PatientRegister";
 import ChatScreen from "../../src/screens/ChatScreen";
 import PtChatScreen from "../../src/screens/PtChatScreen";
 import Bildirimler from "../../src/screens/Bildirimler";
+import PtDailyReport from "../../src/screens/PtDailyReport"; // Rapor ekranı için yeni bir ekran ekleyin
 
 
 export type RootStackParamList = {
@@ -30,6 +31,7 @@ export type RootStackParamList = {
   ChatScreen: undefined;
   PtChatScreen: undefined;
   Bildirimler: undefined;
+  PtDailyReport: undefined; // Rapor ekranı için yeni bir ekran ekleyin
 
 };
 
@@ -52,6 +54,7 @@ const Navigation = () => {
       <Stack.Screen name="ChatScreen" component={ChatScreen} />
       <Stack.Screen name="PtChatScreen" component={PtChatScreen} />
       <Stack.Screen name="Bildirimler" component={Bildirimler} />
+      <Stack.Screen name="PtDailyReport" component={PtDailyReport} />
     </Stack.Navigator>
   );
 };

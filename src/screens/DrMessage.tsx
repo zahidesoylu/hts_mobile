@@ -26,6 +26,9 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [showPatientList, setShowPatientList] = useState(false);
+    const [doctorName, setDoctorName] = useState<string | null>(null);
+    const [doctorId, setDoctorId] = useState<string | null>(null);
+
 
     // Firestore'dan hasta verilerini çek
     useEffect(() => {
@@ -116,6 +119,7 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
                         if (selectedPatient) {
                             navigation.navigate("ChatScreen", {
                                 patient: selectedPatient,
+
 
                             });
                         } else {

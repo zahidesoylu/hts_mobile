@@ -1,4 +1,3 @@
-import React from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
 
 const Button = ({ children, onPress, style }: { children: React.ReactNode; onPress?: () => void; style?: any }) => {

@@ -89,7 +89,12 @@ const PatientMenu = ({ navigation, route }: any) => {
         <View style={styles.menuContainer}>
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('PtReport')}
+            onPress={() => navigation.navigate('PtReport', {
+              patientName,
+              doctorName,
+              patientId,
+              doctorId,
+            })}
           >
             <Text style={styles.cardText}>Raporlar</Text>
           </TouchableOpacity>
