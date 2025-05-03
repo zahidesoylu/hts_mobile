@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import { useEffect, useState } from "react";
@@ -13,57 +13,66 @@ type PtReportRouteParams = {
         patientName: string;
         doctorName: string;
         doctorId: string;
+        hastalikId: string;
+        hastalik: string;
     };
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: <açıklama>
 const PtReport = ({ navigation }: any) => {
     const route = useRoute<RouteProp<PtReportRouteParams, "PtReport">>();
-    const { patientId, patientName, doctorName } = route.params;
 
     const [todayReportFilled, setTodayReportFilled] = useState(false);
     const [reportList, setReportList] = useState<string[]>([]);
+    const today = new Date().toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+    });
 
+    const {
+        patientName,
+        doctorName,
+        patientId,
+        doctorId,
+        hastalikId,
+        hastalik
+    } = route.params;
+    console.log("Route params in PtReport:", route.params);  // Parametreleri kontrol etmek için
+
+
+    // Bugün raporu doldurulmuş mu kontrol et
     useEffect(() => {
         const checkTodayReport = async () => {
             try {
-                const today = new Date().toISOString().split("T")[0];
-                const reportsRef = collection(db, "reports");
+                // Bugünün tarihi formatını oluştur
+                const todayDate = new Date(today);
+                const todayStart = new Date(todayDate.setHours(0, 0, 0, 0));
+                const todayEnd = new Date(todayDate.setHours(23, 59, 59, 999));
+
+                // Raporları sorgula
                 const q = query(
-                    reportsRef,
+                    collection(db, "reports"),
                     where("patientId", "==", patientId),
-                    where("date", "==", today)
+                    where("doctorId", "==", doctorId),
+                    where("hastalikId", "==", hastalikId),
+                    where("date", ">=", todayStart),
+                    where("date", "<=", todayEnd)
                 );
-                const snapshot = await getDocs(q);
-                setTodayReportFilled(!snapshot.empty);
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    setTodayReportFilled(true);  // Rapor varsa, doldurulmuş olarak işaretle
+                } else {
+                    setTodayReportFilled(false); // Rapor yoksa, doldurulmamış olarak işaretle
+                }
             } catch (error) {
-                console.log("Bugünkü rapor kontrolü başarısız:", error);
-            }
-        };
-        const fetchReports = async () => {
-            try {
-                const reportsRef = collection(db, "reports");
-                const q = query(
-                    reportsRef,
-                    where("patientId", "==", patientId)
-                );
-                const snapshot = await getDocs(q);
-                const reports = snapshot.docs.map((doc) => doc.data().date);
-                const sorted = reports.sort().reverse(); // yeni raporlar başta
-                setReportList(sorted);
-            } catch (error) {
-                console.log("Geçmiş raporlar alınamadı:", error);
+                console.error("Rapor kontrolü sırasında bir hata oluştu:", error);
+                Alert.alert("Hata", "Rapor kontrolü sırasında bir hata oluştu.");
             }
         };
 
-        checkTodayReport();
-        fetchReports();
-    }, [patientId]);
-
-    useEffect(() => {
-        setTodayReportFilled(true);  // Manuel olarak raporun doldurulmuş olduğunu işaretliyoruz
-    }, []);
-
+        checkTodayReport(); // Raporu kontrol et
+    }, [today, patientId, doctorId, hastalikId]);
 
 
     return (
@@ -87,19 +96,26 @@ const PtReport = ({ navigation }: any) => {
                 {!todayReportFilled ? (
                     <TouchableOpacity
                         style={styles.reportButton}
-                        onPress={() => navigation.navigate("PtDailyReport", route.params)}
+                        onPress={() => navigation.navigate("PtDailyReport", {
+                            patientId: patientId,
+                            patientName: patientName,
+                            doctorName: doctorName,
+                            doctorId: doctorId,
+                            hastalikId: hastalikId,
+                            hastalik: hastalik,
+                            date: today,
+
+                        })}
                     >
-                        <Ionicons name="checkmark-circle" size={24} color="gray" style={{ marginRight: 8 }} /> {/* Tik işareti gri olacak */}
+                        <Ionicons name="checkmark-circle" size={24} color="gray" style={{ marginRight: 8 }} />
                         <Text style={styles.reportButtonText}>Günlük Raporu Doldur</Text>
                     </TouchableOpacity>
                 ) : (
                     <View style={styles.reportButton}>
-                        <Ionicons name="checkmark-circle" size={24} color="white" style={{ marginRight: 8 }} /> {/* Tik işareti beyaz olacak */}
+                        <Ionicons name="checkmark-circle" size={24} color="white" style={{ marginRight: 8 }} />
                         <Text style={styles.reportButtonText}>Bugünkü rapor dolduruldu</Text>
                     </View>
                 )}
-
-
 
                 <Text style={styles.sectionTitle}>Geçmiş Raporlar</Text>
                 <ScrollView style={{ width: "100%" }}>
@@ -114,7 +130,7 @@ const PtReport = ({ navigation }: any) => {
                                 onPress={() =>
                                     navigation.navigate("ReportDetail", {
                                         patientId,
-                                        date: reportDate,
+                                        date: reportDate,  // Burada 'reportDate' doğru şekilde kullanılıyor
                                     })
                                 }
                             >
@@ -122,6 +138,7 @@ const PtReport = ({ navigation }: any) => {
                             </TouchableOpacity>
                         ))
                     )}
+
                 </ScrollView>
             </View>
 
@@ -177,6 +194,8 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         alignSelf: "flex-start",
         marginVertical: 10,
+        alignItems: "center",
+        justifyContent: "center",
     },
     reportButton: {
         backgroundColor: "#336699", // Aynı mavi renk

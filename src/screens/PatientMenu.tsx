@@ -15,9 +15,13 @@ const PatientMenu = ({ navigation, route }: any) => {
   const [doctorId, setDoctorId] = useState<string | null>(null); // <- Yeni eklendi
 
   const patientId = route?.params?.patientId;
-  const patientNameFromRoute = route?.params?.name;
+  const hastalikId = route?.params?.hastalikId;
+  const hastalik = route?.params?.hastalik;
 
   console.log("Route params:", route.params);
+  console.log("Hasta ID'si:", patientId);
+  console.log("Hasta adı:", patientName);
+
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -94,6 +98,8 @@ const PatientMenu = ({ navigation, route }: any) => {
               doctorName,
               patientId,
               doctorId,
+              hastalikId,
+              hastalik,
             })}
           >
             <Text style={styles.cardText}>Raporlar</Text>
@@ -106,6 +112,8 @@ const PatientMenu = ({ navigation, route }: any) => {
               doctorName,
               patientId,
               doctorId,
+              hastalikId,
+              hastalik,
             })
             }
           >
@@ -119,6 +127,8 @@ const PatientMenu = ({ navigation, route }: any) => {
               doctorName,
               patientId,
               doctorId,
+              hastalikId,
+              hastalik,
             })}
           >
             <Text style={styles.cardText}>Bildirimler</Text>

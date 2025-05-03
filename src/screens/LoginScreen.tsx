@@ -84,16 +84,31 @@ const LoginScreen = ({ navigation }: any) => {
 
         let patientName = "";
         let patientId = "";
+        let hastalikId = "";
+        let doktor = "";
+        let hastalik = "";
+        let patientDoctorId = ""; // Yeni değişken
         // biome-ignore lint/complexity/noForEach: <explanation>
         querySnapshot.forEach((doc) => {
           const patientData = doc.data();
           patientName = `${patientData.ad} ${patientData.soyad}`;
           patientId = doc.id;
+          hastalikId = patientData.hastalikId;
+          doktor = patientData.doktor;
+          hastalik = patientData.hastalik;
+          patientDoctorId = patientData.doctorId; // Doktor ID'sini alıyoruz
         });
 
         await AsyncStorage.setItem("userRole", "patient");
 
-        navigation.navigate("PatientMenu", { patientName, patientId });
+        navigation.navigate("PatientMenu", {
+          patientName,
+          patientId,
+          hastalikId,
+          patientDoctorId,
+          doktor,
+          hastalik,
+        });
       }
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     } catch (error: any) {

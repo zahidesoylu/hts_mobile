@@ -1,84 +1,146 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useRoute, type RouteProp } from "@react-navigation/native";
-import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { doc, getDoc, addDoc, collection } from "firebase/firestore";
 import { db } from "../../src/config/firebaseConfig";
 import BottomMenu from "@/components/ui/BottomMenu";
 
-type PtDailyReportRouteParams = {
+type PtDailyReportParams = {
     PtDailyReport: {
         patientId: string;
         patientName: string;
-        doctorName: string;
         doctorId: string;
+        doctorName: string;
+        hastalikId: string;
+        date: string;
     };
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const PtDailyReport = ({ navigation }: any) => {
-    const route = useRoute<RouteProp<PtDailyReportRouteParams, "PtDailyReport">>();
-    const { patientId, doctorId } = route.params;
+    const route = useRoute<RouteProp<PtDailyReportParams, "PtDailyReport">>();
+    const { patientId, patientName, doctorId, doctorName, hastalikId, date } = route.params;
 
-    const [feeling, setFeeling] = useState("");
-    const [painLevel, setPainLevel] = useState("");
-    const [medication, setMedication] = useState("");
+    const [questions, setQuestions] = useState<string[]>([]);
+    const [answers, setAnswers] = useState<string[]>([]);
+    const [hastalikName, setHastalikName] = useState<string>("");
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchQuestions = async () => {
+            try {
+                const ref = doc(db, "hastaliklar", hastalikId);
+                const snap = await getDoc(ref);
+
+                if (snap.exists()) {
+                    const data = snap.data();
+
+                    // Eğer soruListesi bir dizi değilse, onu diziye çevir
+                    let questionList = data.soruListesi;
+                    if (typeof questionList === 'string') {
+                        questionList = questionList.split(","); // Veriyi virgülle ayırarak bir diziye dönüştür
+                    }
+
+                    if (Array.isArray(questionList)) {
+                        setQuestions(questionList);
+                        setAnswers(new Array(questionList.length).fill(""));
+                    } else {
+                        console.error("soruListesi bir dizi değil:", questionList);
+                        Alert.alert("Hata", "Hastalık soruları uygun formatta değil.");
+                    }
+
+                    setHastalikName(data.hastalik || "");
+                } else {
+                    Alert.alert("Hata", "Hastalık bilgisi bulunamadı.");
+                }
+            } catch (err) {
+                console.error("Hastalık verisi alınamadı:", err);
+                Alert.alert("Hata", "Veri alınırken sorun oluştu.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchQuestions();
+    }, [hastalikId]);
 
     const handleSave = async () => {
-        const today = new Date().toISOString().split("T")[0];
+        if (answers.some((ans) => ans.trim() === "")) {
+            Alert.alert("Uyarı", "Lütfen tüm soruları cevaplayınız.");
+            return;
+        }
+
         try {
             await addDoc(collection(db, "reports"), {
                 patientId,
+                patientName,
                 doctorId,
-                date: today,
-                feeling,
-                painLevel,
-                medication,
-                createdAt: new Date(),
+                doctorName,
+                date,
+                hastalikId,
+                hastalik: hastalikName,
+                cevapListesi: answers,
+                soruListesi: questions,
+                reportDate: new Date().toISOString(),  // Raporun kaydedildiği tarih
             });
 
-            Alert.alert("Başarılı", "Günlük rapor kaydedildi.");
-            navigation.goBack(); // veya navigation.navigate("PtReport")
+            Alert.alert("Başarılı", "Rapor kaydedildi.");
+            navigation.goBack();
         } catch (error) {
-            Alert.alert("Hata", "Rapor kaydedilirken bir hata oluştu.");
+            console.error("Rapor kaydı başarısız:", error);
+            Alert.alert("Hata", "Rapor kaydedilirken sorun oluştu.");
         }
     };
+
+    if (loading) {
+        return (
+            <View style={styles.center}>
+                <ActivityIndicator size="large" color="#007AFF" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
             <View style={styles.innerContainer}>
-                <Text style={styles.title}>Günlük Rapor</Text>
+                <View style={styles.infoBox}>
+                    <Text style={styles.title}>Günlük Rapor - {date}</Text>
+                    <Text style={styles.subtitle}>Doktor: {doctorName}</Text>
+                    <Text style={styles.subtitle}>Hasta: {patientName}</Text>
+                    <Text style={styles.subtitle}>Hastalık: {hastalikName}</Text>
+                </View>
 
-                <Text style={styles.label}>Bugün nasılsınız?</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="İyi, kötü, orta..."
-                    value={feeling}
-                    onChangeText={setFeeling}
-                />
+                <ScrollView style={styles.questionsContainer} contentContainerStyle={{ paddingBottom: 20 }}>
+                    {questions.map((question, index) => {
+                        const cleanedQuestion = question.trim().replace(/^"|"$/g, "");
+                        return (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                            <View key={index} style={styles.questionBox}>
+                                <Text style={styles.question}>
+                                    {index + 1}. {cleanedQuestion}
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Cevabınızı yazınız"
+                                    value={answers[index]}
+                                    onChangeText={(text) => {
+                                        const newAnswers = [...answers];
+                                        newAnswers[index] = text;
+                                        setAnswers(newAnswers);
+                                    }}
+                                />
+                            </View>
+                        );
+                    })}
+                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                        <Text style={styles.saveButtonText}>Kaydet</Text>
+                    </TouchableOpacity>
+                </ScrollView>
 
-                <Text style={styles.label}>Ağrı seviyeniz (0-10):</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Örn: 5"
-                    value={painLevel}
-                    onChangeText={setPainLevel}
-                    keyboardType="numeric"
-                />
-
-                <Text style={styles.label}>İlaç kullandınız mı?</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Evet / Hayır"
-                    value={medication}
-                    onChangeText={setMedication}
-                />
-
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                    <Text style={styles.saveButtonText}>Kaydet</Text>
-                </TouchableOpacity>
+                <BottomMenu />
             </View>
-            <BottomMenu /> {/* BottomMenu bileşenini ekleyin */}
         </View>
+
     );
 };
 
@@ -87,6 +149,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#f5f5f5",
         alignItems: "center",
+        justifyContent: "center",
     },
     innerContainer: {
         width: 400,
@@ -97,39 +160,78 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
         alignItems: "center",
+        justifyContent: "space-between",
+    },
+    infoBox: {
+        backgroundColor: '#e6f0ff',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        width: '100%',
+        height: 120,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+        marginBottom: 20, // Bilgi kutusu ile sorular arasında boşluk
     },
     title: {
-        fontSize: 20,
-        fontWeight: "bold",
+        fontSize: 18,
+        fontWeight: "700",
+        color: "#333", // Başlık için daha koyu bir renk
+        marginBottom: 5,
+    },
+    questionsContainer: {
+        maxHeight: 420,
+        width: "100%",
+        padding: 10,
+    },
+    subtitle: {
+        fontSize: 12,
+        color: "#555", // Alt başlıklar için daha hafif bir gri
+        marginBottom: 8,
+    },
+    questionBox: {
         marginBottom: 20,
     },
-    label: {
-        alignSelf: "flex-start",
-        marginTop: 10,
-        fontWeight: "bold",
-        fontSize: 14,
+    question: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#333", // Sorular için daha dikkat çekici bir renk
     },
     input: {
-        width: "100%",
         borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        padding: 10,
-        marginTop: 5,
-        marginBottom: 10,
-        backgroundColor: "#f9f9f9",
+        borderColor: "#ddd", // Daha açık bir kenarlık rengi
+        borderRadius: 12, // Yumuşak köşeler
+        padding: 12,
+        marginTop: 10,
+        fontSize: 12,
+        color: "#333",
     },
     saveButton: {
-        backgroundColor: "#4CAF50",
-        padding: 15,
-        borderRadius: 8,
-        width: "100%",
+        backgroundColor: "#336699", // Canlı bir mor renk
+        padding: 6,
+        borderRadius: 12,
         alignItems: "center",
-        marginTop: 20,
+        width: "50%", // Buton genişliğini %50 ile sınırladık
+        alignSelf: "center", // Butonu ortaladık
+        shadowColor: "#000", // Buton için gölge efekti
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
     },
     saveButtonText: {
-        color: "white",
-        fontWeight: "bold",
+        color: "#fff",
+        fontWeight: "700", // Daha belirgin bir yazı tipi
+        fontSize: 12,
+    },
+    center: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    activityIndicator: {
+        paddingTop: 20, // ActivityIndicator'a biraz boşluk
     },
 });
 
