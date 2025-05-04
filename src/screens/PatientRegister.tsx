@@ -28,6 +28,7 @@ const PatientRegister = ({ navigation }: any) => {
         adres: "",
         cinsiyet: "Kadın",
         hastalik: "",
+        hastalikId: "",
         acilDurumKisiAd: "",
         acilDurumKisiSoyad: "",
         acilDurumKisiYakinlik: "",
@@ -174,6 +175,7 @@ const PatientRegister = ({ navigation }: any) => {
                 adres: "",
                 cinsiyet: "Kadın",
                 hastalik: "",
+                hastalikId: "",
                 acilDurumKisiAd: "",
                 acilDurumKisiSoyad: "",
                 acilDurumKisiYakinlik: "",
@@ -270,20 +272,21 @@ const PatientRegister = ({ navigation }: any) => {
 
                     <View style={styles.pickerContainer}>
                         <Picker
-                            selectedValue={patientData.hastalik}
-                            onValueChange={(itemValue) => setPatientData({ ...patientData, hastalik: itemValue })}
+                            selectedValue={patientData.hastalikId}
+                            onValueChange={(itemValue) => setPatientData({ ...patientData, hastalikId: itemValue })}
                             style={styles.picker}
                             dropdownIconColor="#007bff"
                         >
                             <Picker.Item label="Hastalık Seçiniz" value="" />
-                            {hastaliklar.map((hastaliklar) => (
+                            {hastaliklar.map((hastalik) => (
                                 <Picker.Item
-                                    key={hastaliklar.id}
-                                    label={hastaliklar.hastalik}
-                                    value={hastaliklar.hastalik}
+                                    key={hastalik.id}
+                                    label={hastalik.hastalik}
+                                    value={hastalik.id}
                                 />
                             ))}
                         </Picker>
+
                     </View>
 
                     <TextInput

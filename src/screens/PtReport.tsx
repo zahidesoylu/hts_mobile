@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "rea
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "../../src/config/firebaseConfig"; // Firestore yapılandırmanızı içe aktarın
 import Ionicons from 'react-native-vector-icons/Ionicons'; // en üste ekle
 
@@ -50,6 +50,9 @@ const PtReport = ({ navigation }: any) => {
                 const todayStart = new Date(todayDate.setHours(0, 0, 0, 0));
                 const todayEnd = new Date(todayDate.setHours(23, 59, 59, 999));
 
+                console.log("Bugün başlangıç tarihi:", todayStart);
+                console.log("Bugün bitiş tarihi:", todayEnd);
+
                 // Raporları sorgula
                 const q = query(
                     collection(db, "reports"),
@@ -57,9 +60,14 @@ const PtReport = ({ navigation }: any) => {
                     where("doctorId", "==", doctorId),
                     where("hastalikId", "==", hastalikId),
                     where("date", ">=", todayStart),
-                    where("date", "<=", todayEnd)
+                    where("date", "<=", todayEnd),
+                    where("isFilled", "==", true) // Raporun doldurulmuş olduğunu kontrol et
                 );
                 const querySnapshot = await getDocs(q);
+
+                console.log("Firestore'dan gelen veriler:", querySnapshot.docs.map(doc => doc.data()));
+
+
                 if (!querySnapshot.empty) {
                     setTodayReportFilled(true);  // Rapor varsa, doldurulmuş olarak işaretle
                 } else {
@@ -74,6 +82,55 @@ const PtReport = ({ navigation }: any) => {
         checkTodayReport(); // Raporu kontrol et
     }, [today, patientId, doctorId, hastalikId]);
 
+    // Geçmiş raporları çekme
+    useEffect(() => {
+        const fetchPastReports = async () => {
+            try {
+                const q = query(
+                    collection(db, "reports"),
+                    where("patientId", "==", patientId),
+                    where("doctorId", "==", doctorId),
+                    where("hastalikId", "==", hastalikId)
+                );
+
+                const querySnapshot = await getDocs(q);
+                const reports: string[] = [];
+
+                // biome-ignore lint/complexity/noForEach: <explanation>
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const date = data.date; // Burada date'yi alıyoruz
+
+                    console.log("Raw date:", date);  // Raw date'i kontrol et
+
+                    // Eğer date bir Firestore Timestamp ise, onu JavaScript Date objesine çeviriyoruz
+                    // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
+                    let reportDate;
+                    if (date instanceof Timestamp) {
+                        // Firestore Timestamp'ı UTC'ye çeviriyoruz
+                        reportDate = date.toDate(); // Bu adımda date UTC'ye dönüşmüş olacak
+                    } else {
+                        reportDate = new Date(date); // Date objesi, UTC'ye çevrilecek
+                    }
+
+                    console.log("JavaScript Date objesi:", reportDate);
+
+                    // Tarihi 'DD.MM.YYYY' formatına çevirelim
+                    const formattedDate = reportDate.toLocaleDateString("tr-TR"); // Yerel tarih formatında alalım
+
+                    reports.push(date);
+                    console.log("Formatted report date:", formattedDate); // Formatlanmış tarihi kontrol et
+                });
+
+                setReportList(reports);
+            } catch (error) {
+                console.error("Geçmiş raporlar çekilirken hata oluştu:", error);
+                Alert.alert("Hata", "Geçmiş raporlar çekilirken bir hata oluştu.");
+            }
+        };
+
+        fetchPastReports(); // Geçmiş raporları al
+    }, [patientId, doctorId, hastalikId]);
 
     return (
         <View style={styles.container}>
@@ -104,7 +161,6 @@ const PtReport = ({ navigation }: any) => {
                             hastalikId: hastalikId,
                             hastalik: hastalik,
                             date: today,
-
                         })}
                     >
                         <Ionicons name="checkmark-circle" size={24} color="gray" style={{ marginRight: 8 }} />
@@ -116,6 +172,7 @@ const PtReport = ({ navigation }: any) => {
                         <Text style={styles.reportButtonText}>Bugünkü rapor dolduruldu</Text>
                     </View>
                 )}
+
 
                 <Text style={styles.sectionTitle}>Geçmiş Raporlar</Text>
                 <ScrollView style={{ width: "100%" }}>
@@ -130,7 +187,7 @@ const PtReport = ({ navigation }: any) => {
                                 onPress={() =>
                                     navigation.navigate("ReportDetail", {
                                         patientId,
-                                        date: reportDate,  // Burada 'reportDate' doğru şekilde kullanılıyor
+                                        date: reportDate, // Burada 'reportDate' doğru şekilde kullanılıyor
                                     })
                                 }
                             >
@@ -138,8 +195,8 @@ const PtReport = ({ navigation }: any) => {
                             </TouchableOpacity>
                         ))
                     )}
-
                 </ScrollView>
+
             </View>
 
             <BottomMenu />

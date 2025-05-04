@@ -1,9 +1,10 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { doc, getDoc, addDoc, collection } from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../src/config/firebaseConfig";
 import BottomMenu from "@/components/ui/BottomMenu";
+
 
 type PtDailyReportParams = {
     PtDailyReport: {
@@ -25,6 +26,41 @@ const PtDailyReport = ({ navigation }: any) => {
     const [answers, setAnswers] = useState<string[]>([]);
     const [hastalikName, setHastalikName] = useState<string>("");
     const [loading, setLoading] = useState(true);
+    const [todayReportFilled, setTodayReportFilled] = useState(false);
+
+    useEffect(() => {
+        checkTodayReport(); // Sayfa yüklendiğinde rapor durumu kontrolü yapılacak
+    }, []);
+
+    const checkTodayReport = async () => {
+        try {
+            const todayDate = new Date();
+            const todayStart = new Date(todayDate.setHours(0, 0, 0, 0)); // Bugün saat 00:00
+            const todayEnd = new Date(todayDate.setHours(23, 59, 59, 999)); // Bugün saat 23:59
+
+            const q = query(
+                collection(db, "reports"),
+                where("patientId", "==", patientId),
+                where("doctorId", "==", doctorId),
+                where("hastalikId", "==", hastalikId),
+                where("date", ">=", todayStart),
+                where("date", "<=", todayEnd),
+                where("isFilled", "==", true) // Raporun doldurulup doldurulmadığını kontrol et
+            );
+
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                setTodayReportFilled(true); // Eğer rapor doldurulmuşsa
+            } else {
+                setTodayReportFilled(false); // Eğer rapor doldurulmamışsa
+            }
+        } catch (error) {
+            console.error("Rapor kontrolü sırasında bir hata oluştu:", error);
+            Alert.alert("Hata", "Rapor kontrolü sırasında bir hata oluştu.");
+        }
+    };
+
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -71,6 +107,7 @@ const PtDailyReport = ({ navigation }: any) => {
         }
 
         try {
+            // Raporu Firestore'a kaydet
             await addDoc(collection(db, "reports"), {
                 patientId,
                 patientName,
@@ -81,7 +118,8 @@ const PtDailyReport = ({ navigation }: any) => {
                 hastalik: hastalikName,
                 cevapListesi: answers,
                 soruListesi: questions,
-                reportDate: new Date().toISOString(),  // Raporun kaydedildiği tarih
+                reportDate: new Date(),
+                isFilled: true, // Rapor tamamlandı
             });
 
             Alert.alert("Başarılı", "Rapor kaydedildi.");
@@ -91,6 +129,7 @@ const PtDailyReport = ({ navigation }: any) => {
             Alert.alert("Hata", "Rapor kaydedilirken sorun oluştu.");
         }
     };
+
 
     if (loading) {
         return (
@@ -104,7 +143,7 @@ const PtDailyReport = ({ navigation }: any) => {
         <View style={styles.container}>
             <View style={styles.innerContainer}>
                 <View style={styles.infoBox}>
-                    <Text style={styles.title}>Günlük Rapor - {date}</Text>
+                    <Text style={styles.title}>{date} - Günlük Rapor</Text>
                     <Text style={styles.subtitle}>Doktor: {doctorName}</Text>
                     <Text style={styles.subtitle}>Hasta: {patientName}</Text>
                     <Text style={styles.subtitle}>Hastalık: {hastalikName}</Text>
