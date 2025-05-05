@@ -167,36 +167,46 @@ const DrRandevuButton = () => {
                         </TouchableOpacity>
                     ))}
                 </View>
-                <FlatList
-                    data={filteredAppointments}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.appointmentRow}>
-                            <Text style={styles.appointmentText}>
-                                {item.hastaAd}{"\n"}
-                                {formatDate(item.tarih)}{"\n"}
-                                {item.saat}
-                            </Text>
 
-                            <TouchableOpacity
-                                style={[
-                                    styles.confirmButtonStyle,
-                                    (item.isApproved || selectedDate === "Dün")
-                                        ? { backgroundColor: "#4CAF50", opacity: 0.6 }
-                                        : { backgroundColor: "#4CAF50" },
-                                ]}
-                                disabled={item.isApproved || selectedDate === "Dün"}
-                                onPress={() => handleApprove(item.id, item.hastaId)}
-                            >
-                                <Text style={styles.confirmButtonText}>
-                                    {item.isApproved ? "ONAYLANDI" : "ONAYLA"}
+
+                {filteredAppointments.length === 0 ? (
+                    <Text style={styles.emptyText}>
+                        {selectedDate === "Bugün" && "Bugüne ait randevu bulunmamaktadır."}
+                        {selectedDate === "Dün" && "Düne ait randevu bulunmamaktadır."}
+                        {selectedDate === "Yarın" && "Yarına ait randevu bulunmamaktadır."}
+                    </Text>
+                ) : (
+
+                    <FlatList
+                        data={filteredAppointments}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <View style={styles.appointmentRow}>
+                                <Text style={styles.appointmentText}>
+                                    {item.hastaAd}{"\n"}
+                                    {formatDate(item.tarih)}{"\n"}
+                                    {item.saat}
                                 </Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                    style={styles.appointmentsContainer}
-                />
-            </View>
+
+                                <TouchableOpacity
+                                    style={[
+                                        styles.confirmButtonStyle,
+                                        (item.isApproved || selectedDate === "Dün")
+                                            ? { backgroundColor: "#4CAF50", opacity: 0.6 }
+                                            : { backgroundColor: "#4CAF50" },
+                                    ]}
+                                    disabled={item.isApproved || selectedDate === "Dün"}
+                                    onPress={() => handleApprove(item.id, item.hastaId)}
+                                >
+                                    <Text style={styles.confirmButtonText}>
+                                        {item.isApproved ? "ONAYLANDI" : "ONAYLA"}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        style={styles.appointmentsContainer}
+                    />
+                )} </View>
             <BottomMenu />
         </View>
     );
@@ -305,6 +315,13 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 14,
     },
+    emptyText: {
+        textAlign: "center",
+        marginTop: 20,
+        color: "#777",
+        fontSize: 16,
+    },
+
 });
 
 export default DrRandevuButton;

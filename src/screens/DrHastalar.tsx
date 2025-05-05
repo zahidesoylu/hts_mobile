@@ -17,8 +17,6 @@ const DrHastalar = ({ navigation, route }: any) => {
 
     const [isDeletePanelVisible, setIsDeletePanelVisible] = useState(false);
 
-
-
     const auth = getAuth();
     const doctorId = auth.currentUser?.uid;
 
@@ -126,58 +124,66 @@ const DrHastalar = ({ navigation, route }: any) => {
                 </View>
 
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    <View style={{ gap: 1 }}>
 
 
-                    <TouchableOpacity
-                        style={styles.addPatientButton}
-                        onPress={() => navigation.navigate("PatientRegister")} // Mesajlar sayfasına yönlendir
-                    >
-                        <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.addPatientButton}
+                            onPress={() => navigation.navigate("PatientRegister")} // Mesajlar sayfasına yönlendir
+                        >
+                            <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
+                        </TouchableOpacity>
 
 
-                    <TouchableOpacity
-                        style={styles.hastalarButton}
-                        onPress={() => setIsPanelVisible(!isPanelVisible)}
-                    >
-                        <Text style={styles.hastalarButtonText}>Hastaları Listele</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.hastalarButton}
+                            onPress={() => setIsPanelVisible(!isPanelVisible)}
+                        >
+                            <Text style={styles.hastalarButtonText}>Hastaları Listele</Text>
+                        </TouchableOpacity>
 
-                    {isPanelVisible && (
-                        <View style={styles.patientPanel}>
-                            {patients.map((patient, index) => (
-                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                                <Text key={index} style={styles.patientText}>
-                                    {patient.ad} {patient.soyad}
-                                </Text>
+                        {isPanelVisible && (
+                            <View style={styles.patientPanel}>
+                                {patients.length === 0 ? (
+                                    <Text style={styles.patientText}>Henüz kayıtlı hasta yok.</Text>
+                                ) : (
+                                    patients.map((patient, index) => (
+                                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                        <Text key={index} style={styles.patientText}>
+                                            {patient.ad} {patient.soyad}
+                                        </Text>
+                                    ))
+                                )}
+                            </View>
+                        )}
 
-                            ))}
-                        </View>
-                    )}
+                        <TouchableOpacity
+                            style={styles.hastalarButton}
+                            onPress={() => setIsDeletePanelVisible(!isDeletePanelVisible)}
+                        >
+                            <Text style={styles.hastalarButtonText}>Hasta Kayıt Sil</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.hastalarButton}
-                        onPress={() => setIsDeletePanelVisible(!isDeletePanelVisible)}
-                    >
-                        <Text style={styles.hastalarButtonText}>Hasta Kayıt Sil</Text>
-                    </TouchableOpacity>
-
-                    {isDeletePanelVisible && (
-                        <View style={styles.patientPanel}>
-                            {patients.map((patient) => (
-                                <View key={patient.id} style={styles.patientItem}>
-                                    <Text style={styles.patientText}>{patient.ad} {patient.soyad}</Text>
-                                    <TouchableOpacity
-                                        style={styles.deleteButton}
-                                        onPress={() => handleDeletePatient(patient.id)}
-                                    >
-                                        <Text style={styles.deleteButtonText}>Sil</Text>
-                                    </TouchableOpacity>
-
-                                </View>
-                            ))}
-                        </View>
-                    )}
+                        {isDeletePanelVisible && (
+                            <View style={styles.patientPanel}>
+                                {patients.length === 0 ? (
+                                    <Text style={styles.patientText}>Silinecek hasta bulunamadı.</Text>
+                                ) : (
+                                    patients.map((patient) => (
+                                        <View key={patient.id} style={styles.patientItem}>
+                                            <Text style={styles.patientText}>{patient.ad} {patient.soyad}</Text>
+                                            <TouchableOpacity
+                                                style={styles.deleteButton}
+                                                onPress={() => handleDeletePatient(patient.id)}
+                                            >
+                                                <Text style={styles.deleteButtonText}>Sil</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))
+                                )}
+                            </View>
+                        )}
+                    </View>
                 </ScrollView>
 
             </View>
