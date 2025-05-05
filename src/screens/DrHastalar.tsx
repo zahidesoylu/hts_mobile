@@ -12,44 +12,12 @@ const DrHastalar = ({ navigation, route }: any) => {
     const [patients, setPatients] = useState<{ id: string, ad: string, soyad: string }[]>([]);
     const [isPanelVisible, setIsPanelVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null); // Hata mesajı için state
-    const [doctorName, setDoctorName] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // Yükleniyor durumu için state
-
+    const [searchText, setSearchText] = useState<string>("");
+    const { doctorId, doctorName } = route.params; // Doktor ID'sini route parametrelerinden alıyoruz
     const [isDeletePanelVisible, setIsDeletePanelVisible] = useState(false);
 
     const auth = getAuth();
-    const doctorId = auth.currentUser?.uid;
-
-    //Doktor bilgilerini çekiyoruz
-    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-    useEffect(() => {
-        const fetchDoctorData = async () => {
-            try {
-                // Giriş yapan doktorun UID'sini alıyoruz
-                const userId = auth.currentUser?.uid;
-
-                if (!userId) {
-                    setLoading(false);
-                    return;
-                }
-
-                const userRef = doc(db, "users", userId);
-                const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
-                    setDoctorName(fullName);
-                }
-            } catch (error) {
-                console.error("Doktor verisi çekilirken hata:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDoctorData();
-    }, []);
 
     // Hastaları Firestore'dan çekiyoruz
     // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -82,14 +50,12 @@ const DrHastalar = ({ navigation, route }: any) => {
         fetchPatients();
     }, []);
 
-
     // Hastaları silme işlemi
     const handleDeletePatient = (id: string) => {
         console.log("Silme butonuna tıklandı. ID:", id);
         // Alert olmadan doğrudan silmeyi test edelim
         deletePatient(id);
     };
-
 
     const deletePatient = async (id: string) => {
         try {
@@ -104,7 +70,6 @@ const DrHastalar = ({ navigation, route }: any) => {
             console.error("Hasta silinirken hata oluştu:", error);
         }
     };
-
 
 
     return (
@@ -129,7 +94,10 @@ const DrHastalar = ({ navigation, route }: any) => {
 
                         <TouchableOpacity
                             style={styles.addPatientButton}
-                            onPress={() => navigation.navigate("PatientRegister")} // Mesajlar sayfasına yönlendir
+                            onPress={() => navigation.navigate("PatientRegister", {
+                                doctorId: doctorId,
+                                doctorName: doctorName
+                            })}
                         >
                             <Text style={styles.addPatientButtonText}>Yeni Hasta Kaydı</Text>
                         </TouchableOpacity>

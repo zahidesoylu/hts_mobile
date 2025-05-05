@@ -50,6 +50,7 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
                     };
                 });
 
+                console.log("Hasta listesi:", patientList); // Konsola hasta listesini yazdır
                 setPatients(patientList);
             } catch (error) {
                 console.error("Hastalar alınırken hata oluştu:", error);
@@ -85,23 +86,30 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
 
                     {/* Hastalar Listesini Göster */}
                     {showPatientList && (
-                        <FlatList
-                            data={patients}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    style={[
-                                        styles.patientButton,
-                                        selectedPatient?.id === item.id && styles.selectedPatientButton,
-                                    ]}
-                                    onPress={() => setSelectedPatient(item)}
-                                >
-                                    <Text style={styles.patientButtonText}>{item.name}</Text>
-                                </TouchableOpacity>
+                        <View style={styles.scrollableList}>
+                            {patients.length === 0 ? (
+                                <Text style={styles.noPatientsText}>Kayıtlı hasta bulunamadı.</Text>
+                            ) : (
+                                <FlatList
+                                    data={patients}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.patientButton,
+                                                selectedPatient?.id === item.id && styles.selectedPatientButton,
+                                            ]}
+                                            onPress={() => setSelectedPatient(item)}
+                                        >
+                                            <Text style={styles.patientButtonText}>{item.name}</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    keyExtractor={(item) => item.id}
+                                />
                             )}
-                            keyExtractor={(item) => item.id}
-                            style={styles.scrollableList}
-                        />
+                        </View>
                     )}
+
+
                 </View>
 
                 {/* Seçilen Hasta Bilgisi */}
@@ -222,6 +230,14 @@ const styles = StyleSheet.create({
         color: "#007BFF", // Mesaj yaz kısmı mavi renkte
         textAlign: "center",
     },
+    noPatientsText: {
+        textAlign: "center",
+        color: "gray",
+        marginTop: 10,
+        fontSize: 16,
+        fontStyle: "italic",
+    },
+
 });
 
 export default DoctorMessageScreen;

@@ -5,6 +5,8 @@ import SearchBar from "../../src/components/ui/SearchBar";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
+
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const PatientMenu = ({ navigation, route }: any) => {
@@ -13,6 +15,15 @@ const PatientMenu = ({ navigation, route }: any) => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [doctorId, setDoctorId] = useState<string | null>(null); // <- Yeni eklendi
+  const [searchText, setSearchText] = useState<string>("");
+
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  const [patients, setPatients] = useState<any[]>([]);  // Hastaların tam listesi
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  const [filteredPatients, setFilteredPatients] = useState<any[]>([]);  // Filtrelenmiş hastalar
+
+  // Hastaları ve aramayı gerçekleştiren
+
 
   const patientId = route?.params?.patientId;
   const hastalikId = route?.params?.hastalikId;
@@ -68,6 +79,40 @@ const PatientMenu = ({ navigation, route }: any) => {
     }
   }, [patientId]);
 
+
+
+  // Firebase'den hastaların alınması
+  const fetchDoctorPatients = async (doctorId: string) => {
+    try {
+      const patientsRef = collection(db, "patients");
+      const q = query(patientsRef, where("doctorId", "==", doctorId));
+      const querySnapshot = await getDocs(q);
+
+      const patients = querySnapshot.docs.map(doc => doc.data());
+      return patients;
+    } catch (error) {
+      console.error("Hastalar alınamadı: ", error);
+    }
+  };
+
+
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+
+    // Veritabanından alınan hastaları filtreleme
+    const filteredPatients = patients.filter((patient) =>
+      patient?.ad?.toLowerCase().includes(text.toLowerCase()) ||
+      patient?.soyad?.toLowerCase().includes(text.toLowerCase())
+    );
+
+    setFilteredPatients(filteredPatients);  // Filtrelenmiş hastaları duruma kaydet
+  };
+
+
+  // Verileri filtreleme
+  const filteredDoctorName = doctorName?.toLowerCase().includes(searchText.toLowerCase()) || false;
+  const filteredPatientName = patientName?.toLowerCase().includes(searchText.toLowerCase()) || false;
+
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
@@ -84,11 +129,13 @@ const PatientMenu = ({ navigation, route }: any) => {
 
         {loading ? (
           <Text style={styles.doctorName}>Yükleniyor...</Text>
-        ) : (
+        ) : filteredDoctorName && filteredPatientName ? (
           <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+        ) : (
+          <Text style={styles.doctorName}>Eşleşen veri bulunamadı</Text>
         )}
 
-        <SearchBar />
+        <SearchBar onSearch={handleSearch} />  {/* SearchBar'dan gelen metni alıyoruz */}
 
         <View style={styles.menuContainer}>
           <TouchableOpacity

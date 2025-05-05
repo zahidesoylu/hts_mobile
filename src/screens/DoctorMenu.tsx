@@ -77,13 +77,21 @@ const DoctorMenu = ({ navigation, route }: any) => {
         <FontAwesome name="user-circle" size={50} color="gray" style={styles.profileIcon} />
         <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
         {/* Arama Çubuğu */}
-        <SearchBar />
+        <SearchBar onSearch={(text: string): void => {
+          // Arama işlemleri burada yapılabilir
+          console.log("Arama metni:", text);
+        }} />
+
 
         {/* Menü Butonları */}
         <View style={styles.menuContainer}>
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('DrHastalar')} // Hastalar sayfasına yönlendir
+            onPress={() => navigation.navigate('DrHastalar', {
+              doctorName: doctorName, // Doktor adını geçiyoruz
+              doctorId: auth.currentUser?.uid, // Doktorun UID'sini geçiyoruz
+
+            })} // Hastalar sayfasına yönlendir
           >
             <Text style={styles.cardText}>Hasta İşlemleri</Text>
           </TouchableOpacity>
@@ -101,7 +109,10 @@ const DoctorMenu = ({ navigation, route }: any) => {
 
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('Reports')} // Raporlar sayfasına yönlendir
+            onPress={() => navigation.navigate('Reports', {
+              doctorName: doctorName,
+              doctorId: auth.currentUser?.uid,
+            })}
           >
             <Text style={styles.cardText}>Raporlar</Text>
           </TouchableOpacity>
