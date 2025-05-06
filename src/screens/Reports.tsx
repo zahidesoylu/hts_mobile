@@ -1,147 +1,144 @@
-import React, { useEffect, useState, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { getDocs, collection, query, where } from "firebase/firestore";
 import { db, auth } from "../../src/config/firebaseConfig";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import BottomMenu from "../../src/components/ui/BottomMenu";
+import BottomMenu from "@/components/ui/BottomMenu";
 
-interface Report {
-    id: string;
-    title: string;
-    date: string;
-}
-
-interface Patient {
-    id: string;
-    ad: string;
-    soyad: string;
-}
-
-const Reports = () => {
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [expandedPatientId, setExpandedPatientId] = useState<string | null>(null);
-    const [reportsMap, setReportsMap] = useState<Record<string, Report[]>>({});
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+const Reports = ({ navigation, route }: any) => {
+    const [expanded, setExpanded] = useState<string | null>(null);
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    const [patients, setPatients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-
-    // Mount durumunu izlemek için useRef
-    const isMounted = useRef(true);
-
-    useEffect(() => {
-        // Cleanup fonksiyonu bileşen unmount olduğunda isMounted'i false yapar
-        return () => {
-            isMounted.current = false;
-        };
-    }, []);
+    const { doctorName, doctorId } = route.params; // route.params'dan doktor adını alıyoruz
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    const [patientReports, setPatientReports] = useState<{ [patientId: string]: any[] }>({});
 
     useEffect(() => {
         const fetchPatients = async () => {
             try {
-                const doctorId = auth.currentUser?.uid;
-                if (!doctorId) return;
+                const userId = auth.currentUser?.uid;
+                if (!userId) {
+                    console.error("Doktor kimliği alınamadı.");
+                    return;
+                }
+                console.log("Giriş yapan doktor ID'si:", userId);
 
+                // Firestore'dan hastaları çekmek için query oluşturuyoruz
                 const patientsRef = collection(db, "patients");
-                const q = query(patientsRef, where("doctorId", "==", doctorId));
+                const q = query(patientsRef, where("doctorId", "==", userId));
                 const querySnapshot = await getDocs(q);
 
-                const fetchedPatients: Patient[] = [];
-                // biome-ignore lint/complexity/noForEach: <explanation>
-                querySnapshot.forEach((doc) => {
+                // Verileri mapleyip hastaların listesini oluşturuyoruz
+                const patientList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
-                    fetchedPatients.push({ id: doc.id, ad: data.ad, soyad: data.soyad });
+                    return {
+                        id: doc.id,
+                        ad: data.ad,
+                        soyad: data.soyad,
+                    };
                 });
 
-                if (isMounted.current) {
-                    setPatients(fetchedPatients);
-                }
-            } catch (err) {
-                console.log("Hasta verisi alınamadı:", err);
+                setPatients(patientList); // Hastalar listesini state'e set ediyoruz
+            } catch (error) {
+                console.error("Hastalar alınırken hata oluştu:", error);
             } finally {
-                if (isMounted.current) {
-                    setLoading(false);
-                }
+                setLoading(false); // Yükleme işlemi tamamlandı
             }
         };
 
-        fetchPatients();
-    }, []); // Sadece ilk renderda çalıştırılır
+        fetchPatients(); // Hastaları çekme fonksiyonunu çağırıyoruz
+    }, []); // Boş bağımlılık dizisi, component mount olduğunda çalışır
 
-    const fetchReportsForPatient = async (patientId: string) => {
+
+
+    // Bir hastanın raporlarını çekme fonksiyonu
+    const fetchReports = async (patientId: string) => {
         try {
             const reportsRef = collection(db, "reports");
             const q = query(reportsRef, where("patientId", "==", patientId));
             const querySnapshot = await getDocs(q);
 
-            const reports: Report[] = [];
-            // biome-ignore lint/complexity/noForEach: <explanation>
-            querySnapshot.forEach((doc) => {
+            const reportList = querySnapshot.docs.map(doc => {
                 const data = doc.data();
-                reports.push({
+                return {
                     id: doc.id,
-                    title: data.title,
-                    date: data.date,
-                });
+                    raporTarihi: data.raporTarihi || "Tarih belirtilmemiş",
+                    sorular: data.soruListe || [],
+                    cevaplar: data.cevapListe || [],
+                };
             });
 
-            if (isMounted.current) {
-                setReportsMap((prev) => ({ ...prev, [patientId]: reports }));
-            }
-        } catch (err) {
-            console.log("Raporlar alınamadı:", err);
+            // Her hasta ID'sine göre state'e ekle
+            setPatientReports(prev => ({
+                ...prev,
+                [patientId]: reportList,
+            }));
+        } catch (error) {
+            console.error("Raporlar alınırken hata oluştu:", error);
         }
     };
 
-    const handlePatientPress = (patientId: string) => {
-        if (expandedPatientId === patientId) {
-            setExpandedPatientId(null); // kapat
+
+    // Hasta adına tıklandığında raporları açma veya kapama işlemi
+    // biome-ignore lint/suspicious/noRedeclare: <explanation>
+    const handleExpand = (id: string) => {
+        if (expanded === id) {
+            setExpanded(null);  // Aynı hastaya tekrar tıklanırsa kapanacak
         } else {
-            setExpandedPatientId(patientId); // aç
-            if (!reportsMap[patientId]) {
-                fetchReportsForPatient(patientId);
-            }
+            setExpanded(id);  // Raporları açmak için hastanın ID'si ile genişletiyoruz
+            fetchReports(id);  // Raporları almak için fetchReports fonksiyonunu çağırıyoruz
         }
     };
 
     if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
-                <Text>Yükleniyor...</Text>
-            </View>
-        );
+        return <ActivityIndicator size="large" color="#0000ff" />;  // Yükleme yapılırken gösterilen spinner
     }
+
 
     return (
         <View style={styles.container}>
             <View style={styles.innerContainer}>
-                <Text style={styles.header}>Hasta Raporları</Text>
-                <ScrollView style={{ width: '100%' }}>
-                    {patients.map((patient) => (
-                        <View key={patient.id} style={styles.patientContainer}>
-                            <TouchableOpacity onPress={() => handlePatientPress(patient.id)} style={styles.patientButton}>
-                                <Text style={styles.patientName}>{patient.ad} {patient.soyad}</Text>
-                                <Text style={styles.toggleIcon}>
-                                    {expandedPatientId === patient.id ? "🔽" : "➕"}
-                                </Text>
-                            </TouchableOpacity>
 
-                            {expandedPatientId === patient.id && (
-                                <View style={styles.reportList}>
-                                    {reportsMap[patient.id]?.length > 0 ? (
-                                        reportsMap[patient.id].map((report) => (
-                                            <View key={report.id} style={styles.reportItem}>
-                                                <Text style={styles.reportTitle}>{report.title}</Text>
-                                                <Text style={styles.reportDate}>{report.date}</Text>
+                {/* Info Box */}
+                <View style={styles.infoBox}>
+                    <Text style={styles.doctorName}>{doctorName}</Text>
+                </View>
+
+
+                <View style={styles.patientListContainer}>
+                    <FlatList
+                        data={patients}
+                        renderItem={({ item }) => (
+                            <View style={styles.patientItem}>
+                                <TouchableOpacity onPress={() => handleExpand(item.id)}>
+                                    <Text style={styles.patientName}>{item.ad} {item.soyad}</Text>
+                                </TouchableOpacity>
+
+                                {expanded === item.id && (
+                                    patientReports.length > 0 ? (
+                                        patientReports.map((report) => (
+                                            <View key={report.id}>
+                                                <Text style={styles.reportDate}>Rapor Tarihi: {report.raporTarihi}</Text>
+                                                <Text style={styles.reportDate}>Detay: {report.raporDetay}</Text>
                                             </View>
                                         ))
                                     ) : (
-                                        <Text style={styles.noReportText}>Henüz rapor bulunmamaktadır.</Text>
-                                    )}
-                                </View>
-                            )}
-                        </View>
-                    ))}
-                </ScrollView>
+                                        <Text style={styles.reportDate}>Bu hastaya ait rapor bulunamadı.</Text>
+                                    )
+                                )}
+                            </View>
+                        )}
+                        keyExtractor={(item) => item.id}
+                    />
+                </View>
+
+
+
+
+                {/* Bottom Menu */}
+                <BottomMenu />
             </View>
-            <BottomMenu />
         </View>
     );
 };
@@ -157,66 +154,57 @@ const styles = StyleSheet.create({
         width: 400,
         height: 600,
         backgroundColor: "white",
-        padding: 20,
-        borderRadius: 10,
+        padding: 30,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    header: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 15,
-        textAlign: "center",
-    },
-    patientContainer: {
-        marginBottom: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
-        paddingBottom: 5,
-    },
-    patientButton: {
-        flexDirection: "row",
-        justifyContent: "space-between",
+    infoBox: {
+        padding: 15,
+        backgroundColor: "#2F4F4F",
+        marginBottom: 20,
+        borderRadius: 8,
         alignItems: "center",
-        paddingVertical: 10,
+        width: "100%",
+    },
+    doctorName: {
+        color: "#fff",
+        fontSize: 18,
+        fontWeight: "bold",
+    },
+    patientListContainer: {
+        flex: 1,
+        marginTop: 20,
+        width: "100%",
+    },
+    patientItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderColor: "#ddd",
     },
     patientName: {
         fontSize: 16,
         fontWeight: "bold",
     },
-    toggleIcon: {
-        fontSize: 18,
-    },
-    reportList: {
-        paddingLeft: 10,
+    reportDate: {
+        fontSize: 14,
+        color: "#888",
         marginTop: 5,
     },
-    reportItem: {
-        backgroundColor: "#f0f0f0",
-        padding: 10,
-        marginBottom: 5,
-        borderRadius: 5,
+    menuItem: {
+        alignItems: "center",
     },
-    reportTitle: {
-        fontSize: 15,
-        fontWeight: "600",
-    },
-    reportDate: {
-        fontSize: 13,
-        color: "gray",
-    },
-    noReportText: {
-        fontStyle: "italic",
-        color: "#888",
-        padding: 5,
+    menuText: {
+        color: "white",
+        marginTop: 5,
     },
 });
 
 export default Reports;
+

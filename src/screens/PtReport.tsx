@@ -41,37 +41,33 @@ const PtReport = ({ navigation }: any) => {
     console.log("Route params in PtReport:", route.params);  // Parametreleri kontrol etmek için
 
 
-    // Bugün raporu doldurulmuş mu kontrol et
     useEffect(() => {
         const checkTodayReport = async () => {
             try {
-                // Bugünün tarihi formatını oluştur
-                const todayDate = new Date(today);
-                const todayStart = new Date(todayDate.setHours(0, 0, 0, 0));
-                const todayEnd = new Date(todayDate.setHours(23, 59, 59, 999));
+                const now = new Date();
+                const todayStart = new Date(now.setHours(0, 0, 0, 0));
+                const todayEnd = new Date(now.setHours(23, 59, 59, 999));
 
                 console.log("Bugün başlangıç tarihi:", todayStart);
                 console.log("Bugün bitiş tarihi:", todayEnd);
 
-                // Raporları sorgula
                 const q = query(
                     collection(db, "reports"),
                     where("patientId", "==", patientId),
                     where("doctorId", "==", doctorId),
                     where("hastalikId", "==", hastalikId),
-                    where("date", ">=", todayStart),
-                    where("date", "<=", todayEnd),
-                    where("isFilled", "==", true) // Raporun doldurulmuş olduğunu kontrol et
+                    where("reportDate", ">=", todayStart),
+                    where("reportDate", "<=", todayEnd),
+                    where("isFilled", "==", true)
                 );
-                const querySnapshot = await getDocs(q);
 
+                const querySnapshot = await getDocs(q);
                 console.log("Firestore'dan gelen veriler:", querySnapshot.docs.map(doc => doc.data()));
 
-
                 if (!querySnapshot.empty) {
-                    setTodayReportFilled(true);  // Rapor varsa, doldurulmuş olarak işaretle
+                    setTodayReportFilled(true);
                 } else {
-                    setTodayReportFilled(false); // Rapor yoksa, doldurulmamış olarak işaretle
+                    setTodayReportFilled(false);
                 }
             } catch (error) {
                 console.error("Rapor kontrolü sırasında bir hata oluştu:", error);
@@ -79,8 +75,9 @@ const PtReport = ({ navigation }: any) => {
             }
         };
 
-        checkTodayReport(); // Raporu kontrol et
-    }, [today, patientId, doctorId, hastalikId]);
+        checkTodayReport();
+    }, [patientId, doctorId, hastalikId]);
+
 
     // Geçmiş raporları çekme
     useEffect(() => {
@@ -99,24 +96,21 @@ const PtReport = ({ navigation }: any) => {
                 // biome-ignore lint/complexity/noForEach: <explanation>
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const date = data.date; // Burada date'yi alıyoruz
+                    const date = data.date;
 
-                    console.log("Raw date:", date);  // Raw date'i kontrol et
+                    console.log("Raw date:", date);
 
-                    // Eğer date bir Firestore Timestamp ise, onu JavaScript Date objesine çeviriyoruz
                     // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
                     let reportDate;
                     if (date instanceof Timestamp) {
-                        // Firestore Timestamp'ı UTC'ye çeviriyoruz
-                        reportDate = date.toDate(); // Bu adımda date UTC'ye dönüşmüş olacak
+                        reportDate = date.toDate();
                     } else {
-                        reportDate = new Date(date); // Date objesi, UTC'ye çevrilecek
+                        reportDate = new Date(date);
                     }
 
                     console.log("JavaScript Date objesi:", reportDate);
 
-                    // Tarihi 'DD.MM.YYYY' formatına çevirelim
-                    const formattedDate = reportDate.toLocaleDateString("tr-TR"); // Yerel tarih formatında alalım
+                    const formattedDate = reportDate.toISOString().slice(0, 10);  // YYYY-MM-DD formatında
 
                     reports.push(date);
                     console.log("Formatted report date:", formattedDate); // Formatlanmış tarihi kontrol et
@@ -129,7 +123,7 @@ const PtReport = ({ navigation }: any) => {
             }
         };
 
-        fetchPastReports(); // Geçmiş raporları al
+        fetchPastReports();
     }, [patientId, doctorId, hastalikId]);
 
     return (
@@ -144,37 +138,39 @@ const PtReport = ({ navigation }: any) => {
                 </Text>
 
                 <View style={styles.infoBox}>
-                    <Text style={styles.pFullName}>{patientName || 'Hasta adı bulunamadı'}</Text>
-                    <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+                    <Text style={styles.pFullName}>{patientName || "Hasta adı bulunamadı"}</Text>
+                    <Text style={styles.doctorName}>{doctorName || "Doktor adı bulunamadı"}</Text>
                 </View>
 
                 <Text style={styles.sectionTitle}>Günlük Rapor</Text>
 
-                {!todayReportFilled ? (
-                    <TouchableOpacity
-                        style={styles.reportButton}
-                        onPress={() => navigation.navigate("PtDailyReport", {
-                            patientId: patientId,
-                            patientName: patientName,
-                            doctorName: doctorName,
-                            doctorId: doctorId,
-                            hastalikId: hastalikId,
-                            hastalik: hastalik,
-                            date: today,
-                        })}
-                    >
-                        <Ionicons name="checkmark-circle" size={24} color="gray" style={{ marginRight: 8 }} />
-                        <Text style={styles.reportButtonText}>Günlük Raporu Doldur</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <View style={styles.reportButton}>
+                {todayReportFilled ? (
+                    <View style={[styles.reportButton, { backgroundColor: "#4caf50" }]}>
                         <Ionicons name="checkmark-circle" size={24} color="white" style={{ marginRight: 8 }} />
                         <Text style={styles.reportButtonText}>Bugünkü rapor dolduruldu</Text>
                     </View>
+                ) : (
+                    <TouchableOpacity
+                        style={styles.reportButton}
+                        onPress={() =>
+                            navigation.navigate("PtDailyReport", {
+                                patientId,
+                                patientName,
+                                doctorName,
+                                doctorId,
+                                hastalikId,
+                                hastalik,
+                                date: today,
+                            })
+                        }
+                    >
+                        <Ionicons name="create" size={24} color="gray" style={{ marginRight: 8 }} />
+                        <Text style={styles.reportButtonText}>Günlük Raporu Doldur</Text>
+                    </TouchableOpacity>
                 )}
 
-
                 <Text style={styles.sectionTitle}>Geçmiş Raporlar</Text>
+
                 <ScrollView style={{ width: "100%" }}>
                     {reportList.length === 0 ? (
                         <Text style={styles.infoText}>Geçmiş bir raporunuz bulunmamaktadır.</Text>
@@ -187,7 +183,7 @@ const PtReport = ({ navigation }: any) => {
                                 onPress={() =>
                                     navigation.navigate("ReportDetail", {
                                         patientId,
-                                        date: reportDate, // Burada 'reportDate' doğru şekilde kullanılıyor
+                                        date: reportDate,
                                     })
                                 }
                             >
@@ -196,12 +192,12 @@ const PtReport = ({ navigation }: any) => {
                         ))
                     )}
                 </ScrollView>
-
             </View>
 
             <BottomMenu />
         </View>
     );
+
 };
 
 const styles = StyleSheet.create({

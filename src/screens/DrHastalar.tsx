@@ -153,7 +153,6 @@ const DrHastalar = ({ navigation, route }: any) => {
                         )}
                     </View>
                 </ScrollView>
-
             </View>
             <BottomMenu />
         </View>

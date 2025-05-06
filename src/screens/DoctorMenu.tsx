@@ -2,10 +2,10 @@ import React from "react";
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import BottomMenu from "../../src/components/ui/BottomMenu";
-import SearchBar from "../../src/components/ui/SearchBar";
+import BottomMenu from "../components/ui/BottomMenu";
+import SearchBar from "../components/ui/SearchBar";
 import { doc, getDoc } from 'firebase/firestore';
-import { db, auth } from "../../src/config/firebaseConfig";
+import { db, auth } from "../config/firebaseConfig";
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -81,7 +81,6 @@ const DoctorMenu = ({ navigation, route }: any) => {
           // Arama işlemleri burada yapılabilir
           console.log("Arama metni:", text);
         }} />
-
 
         {/* Menü Butonları */}
         <View style={styles.menuContainer}>
@@ -206,7 +205,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
     width: "100%",
   },
-
   menuButton: {
     width: "40%",
     height: "70%",

@@ -43,8 +43,8 @@ const PtDailyReport = ({ navigation }: any) => {
                 where("patientId", "==", patientId),
                 where("doctorId", "==", doctorId),
                 where("hastalikId", "==", hastalikId),
-                where("date", ">=", todayStart),
-                where("date", "<=", todayEnd),
+                where("reportDate", ">=", todayStart), // 'date' yerine 'reportDate' kullanılmalı
+                where("reportDate", "<=", todayEnd),
                 where("isFilled", "==", true) // Raporun doldurulup doldurulmadığını kontrol et
             );
 
@@ -71,10 +71,9 @@ const PtDailyReport = ({ navigation }: any) => {
                 if (snap.exists()) {
                     const data = snap.data();
 
-                    // Eğer soruListesi bir dizi değilse, onu diziye çevir
                     let questionList = data.soruListesi;
                     if (typeof questionList === 'string') {
-                        questionList = questionList.split(","); // Veriyi virgülle ayırarak bir diziye dönüştür
+                        questionList = questionList.split(",");
                     }
 
                     if (Array.isArray(questionList)) {
@@ -113,14 +112,14 @@ const PtDailyReport = ({ navigation }: any) => {
                 patientName,
                 doctorId,
                 doctorName,
-                date,
+                reportDate: new Date(), // yalnızca bu yeterli
                 hastalikId,
                 hastalik: hastalikName,
                 cevapListesi: answers,
                 soruListesi: questions,
-                reportDate: new Date(),
-                isFilled: true, // Rapor tamamlandı
+                isFilled: true,
             });
+
 
             Alert.alert("Başarılı", "Rapor kaydedildi.");
             navigation.goBack();
