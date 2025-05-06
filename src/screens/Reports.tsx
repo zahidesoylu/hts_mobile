@@ -47,10 +47,8 @@ const Reports = ({ navigation, route }: any) => {
             }
         };
 
-        fetchPatients(); // Hastaları çekme fonksiyonunu çağırıyoruz
-    }, []); // Boş bağımlılık dizisi, component mount olduğunda çalışır
-
-
+        fetchPatients();
+    }, []);
 
     // Bir hastanın raporlarını çekme fonksiyonu
     const fetchReports = async (patientId: string) => {
@@ -61,13 +59,19 @@ const Reports = ({ navigation, route }: any) => {
 
             const reportList = querySnapshot.docs.map(doc => {
                 const data = doc.data();
+                console.log("Rapor verisi:", data); // 👈 Burada konsola yazdırıyoruz
+
                 return {
                     id: doc.id,
-                    raporTarihi: data.raporTarihi || "Tarih belirtilmemiş",
-                    sorular: data.soruListe || [],
-                    cevaplar: data.cevapListe || [],
+                    raporTarihi: data.reportDate?.toDate().toLocaleDateString("tr-TR") || "Tarih belirtilmemiş",
+                    sorular: data.soruListesi || [],
+                    cevaplar: data.cevapListesi || [],
+                    doktorAdi: data.doctorName || "Doktor adı yok",
+                    hastaAdi: data.patientName || "Hasta adı yok",
+                    hastalik: data.hastalik || "Hastalık belirtilmemiş"
                 };
             });
+
 
             // Her hasta ID'sine göre state'e ekle
             setPatientReports(prev => ({
@@ -78,7 +82,6 @@ const Reports = ({ navigation, route }: any) => {
             console.error("Raporlar alınırken hata oluştu:", error);
         }
     };
-
 
     // Hasta adına tıklandığında raporları açma veya kapama işlemi
     // biome-ignore lint/suspicious/noRedeclare: <explanation>
@@ -116,17 +119,17 @@ const Reports = ({ navigation, route }: any) => {
                                 </TouchableOpacity>
 
                                 {expanded === item.id && (
-                                    patientReports.length > 0 ? (
-                                        patientReports.map((report) => (
+                                    patientReports[item.id]?.length > 0 ? (
+                                        patientReports[item.id].map((report) => (
                                             <View key={report.id}>
-                                                <Text style={styles.reportDate}>Rapor Tarihi: {report.raporTarihi}</Text>
-                                                <Text style={styles.reportDate}>Detay: {report.raporDetay}</Text>
+                                                <Text style={styles.reportDate}>{report.raporTarihi}</Text>
                                             </View>
                                         ))
                                     ) : (
                                         <Text style={styles.reportDate}>Bu hastaya ait rapor bulunamadı.</Text>
                                     )
                                 )}
+
                             </View>
                         )}
                         keyExtractor={(item) => item.id}
