@@ -11,14 +11,16 @@ import { useRoute } from '@react-navigation/native';
 const PtChatScreen = ({ route }: { route: any }) => {
     const [messages, setMessages] = useState<{ id: string; sender: string; text: string; time: string; timestamp?: { seconds: number; nanoseconds: number } }[]>([]);
     const [message, setMessage] = useState("");
-    const [patientName, setPatientName] = useState<string>("");
-    const [doctorName, setDoctorName] = useState<string>("");
-    const [selectedPatient, setSelectedPatient] = useState<string | null>(null); // Selected patient state
+    const [patientName, setPatientName] = useState<string>("");  // Firestore'dan gelecek hasta adı
+    const [doctorName, setDoctorName] = useState<string>("");    // Firestore'dan gelecek doktor adı
     const flatListRef = useRef<FlatList>(null);
     const { patientId, doctorId } = route.params;
 
 
     console.log("Route params:", route.params);
+    console.log("Hasta ID'si:", patientId);
+    console.log("Doktor ID'si:", doctorId);
+
 
 
     // Veritabanından hasta ve doktor adlarını çek
@@ -29,10 +31,19 @@ const PtChatScreen = ({ route }: { route: any }) => {
                 const doctorSnap = await getDoc(doc(db, "users", doctorId));
 
                 if (patientSnap.exists()) {
-                    setPatientName(`${patientSnap.data().ad} ${patientSnap.data().soyad}` || "Hasta");
+                    const patientData = patientSnap.data();
+                    setPatientName(`${patientData.ad} ${patientData.soyad}` || "Hasta");
+                    console.log("Hasta adı:", patientData.ad, patientData.soyad);
+                } else {
+                    console.error("Hasta bulunamadı");
                 }
+
                 if (doctorSnap.exists()) {
-                    setDoctorName(`${doctorSnap.data().unvan} ${doctorSnap.data().ad} ${doctorSnap.data().soyad}` || "Doktor");
+                    const doctorData = doctorSnap.data();
+                    setDoctorName(`${doctorData.unvan} ${doctorData.ad} ${doctorData.soyad}` || "Doktor");
+                    console.log("Doktor adı:", doctorData.unvan, doctorData.ad, doctorData.soyad);
+                } else {
+                    console.error("Doktor bulunamadı");
                 }
             } catch (err) {
                 console.error("Adları getirirken hata:", err);
@@ -41,6 +52,7 @@ const PtChatScreen = ({ route }: { route: any }) => {
 
         fetchNames();
     }, [patientId, doctorId]);
+
 
     // Mesaj gönderme fonksiyonu
     const handleSendMessage = async () => {
@@ -117,6 +129,11 @@ const PtChatScreen = ({ route }: { route: any }) => {
      }, [patientId]);
  */
 
+    // Burada, doktor adı ve hasta adı yüklenene kadar "Veriler yükleniyor..." mesajı gösterilir
+    if (!patientName || !doctorName) {
+        return <Text>Veriler yükleniyor...</Text>;  // Yükleniyor mesajı
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.innerContainer}>
@@ -132,12 +149,8 @@ const PtChatScreen = ({ route }: { route: any }) => {
                 </View>
 
                 <View style={styles.infoBox}>
-                    {/* Doktor adı hastanın bağlı olduğu doktorun adı olacak */}
                     <Text style={styles.doctorName}>{doctorName || "Doktor adı bulunamadı"}</Text>
-
-                    {/* Hasta adı giriş yapan kullanıcının adı olacak */}
                     <Text style={styles.infoText}>Hasta: {patientName || "Hasta adı bulunamadı"}</Text>
-
                 </View>
 
                 <View style={styles.messagesContainer}>

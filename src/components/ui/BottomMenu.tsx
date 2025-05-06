@@ -24,7 +24,9 @@ const BottomMenu = () => {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('userRole');
     await auth.signOut();
-    navigation.navigate('LoginScreen');
+
+    // navigation.replace() ile eski ekranın yerine LoginScreen'i koyuyoruz
+    navigation.replace('LoginScreen');
   };
 
 
