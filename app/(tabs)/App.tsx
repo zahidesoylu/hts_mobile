@@ -15,6 +15,7 @@ import PtChatScreen from "../../src/screens/PtChatScreen";
 import Bildirimler from "../../src/screens/Bildirimler";
 import PtDailyReport from "../../src/screens/PtDailyReport";
 import Reports from "../../src/screens/Reports";
+import ReportDetail from "@/screens/ReportDetail";
 
 export type RootStackParamList = {
   LoginScreen: undefined;
@@ -31,8 +32,19 @@ export type RootStackParamList = {
   ChatScreen: undefined;
   PtChatScreen: undefined;
   Bildirimler: undefined;
-  PtDailyReport: undefined; // Rapor ekranı için yeni bir ekran ekleyin
-  Reports: undefined; // Rapor ekranı için yeni bir ekran ekleyin
+  PtDailyReport: undefined;
+  Reports: undefined;
+  ReportDetail: {
+    report: {
+      raporTarihi: string;
+      hastalik: string;
+      sorular: string[];
+      cevaplar: string[];
+    };
+    doctorName: string;
+    patientName: string;
+    hastalik: string;
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>(); // Doğru Stack tanımı
@@ -56,6 +68,7 @@ const Navigation = () => {
       <Stack.Screen name="Bildirimler" component={Bildirimler} />
       <Stack.Screen name="PtDailyReport" component={PtDailyReport} />
       <Stack.Screen name="Reports" component={Reports} />
+      <Stack.Screen name="ReportDetail" component={ReportDetail} />
     </Stack.Navigator>
   );
 };

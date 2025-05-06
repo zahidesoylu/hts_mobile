@@ -84,7 +84,6 @@ const Reports = ({ navigation, route }: any) => {
     };
 
     // Hasta adına tıklandığında raporları açma veya kapama işlemi
-    // biome-ignore lint/suspicious/noRedeclare: <explanation>
     const handleExpand = (id: string) => {
         if (expanded === id) {
             setExpanded(null);  // Aynı hastaya tekrar tıklanırsa kapanacak
@@ -121,22 +120,28 @@ const Reports = ({ navigation, route }: any) => {
                                 {expanded === item.id && (
                                     patientReports[item.id]?.length > 0 ? (
                                         patientReports[item.id].map((report) => (
-                                            <View key={report.id}>
-                                                <Text style={styles.reportDate}>{report.raporTarihi}</Text>
-                                            </View>
+                                            <TouchableOpacity
+                                                key={report.id}
+                                                style={styles.reportTouchable}
+                                                onPress={() =>
+                                                    navigation.navigate("ReportDetail", {
+                                                        report,
+                                                        doctorName,
+                                                    })
+                                                }
+                                            >
+                                                <Text style={styles.reportDate}>📄 {report.raporTarihi}</Text>
+                                            </TouchableOpacity>
                                         ))
                                     ) : (
                                         <Text style={styles.reportDate}>Bu hastaya ait rapor bulunamadı.</Text>
                                     )
                                 )}
-
                             </View>
                         )}
                         keyExtractor={(item) => item.id}
                     />
                 </View>
-
-
 
 
                 {/* Bottom Menu */}
@@ -175,6 +180,13 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: "center",
         width: "100%",
+    },
+    reportTouchable: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: "#f0f0f0",
+        borderRadius: 8,
+        marginTop: 4,
     },
     doctorName: {
         color: "#fff",
