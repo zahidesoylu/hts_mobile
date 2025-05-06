@@ -32,8 +32,9 @@ const BottomMenu = () => {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.menuItem}
-        onPress={() => navigation.navigate("DoctorMenu")} // Menü ekranının adı neyse onu yaz
+        onPress={handleMenuPress}
       >
+
         <MaterialCommunityIcons name="menu" size={24} color="black" />
         <Text style={styles.menuText}>Menü</Text>
       </TouchableOpacity>

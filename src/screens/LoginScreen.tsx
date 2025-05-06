@@ -100,6 +100,7 @@ const LoginScreen = ({ navigation }: any) => {
         });
 
         await AsyncStorage.setItem("userRole", "patient");
+        await AsyncStorage.setItem("patientId", patientId); // <<< bunu ekliyorsun
 
         navigation.navigate("PatientMenu", {
           patientName,

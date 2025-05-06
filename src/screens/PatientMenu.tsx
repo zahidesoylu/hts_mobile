@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { auth, db } from "@/config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -21,9 +22,6 @@ const PatientMenu = ({ navigation, route }: any) => {
   const [patients, setPatients] = useState<any[]>([]);  // Hastaların tam listesi
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const [filteredPatients, setFilteredPatients] = useState<any[]>([]);  // Filtrelenmiş hastalar
-
-  // Hastaları ve aramayı gerçekleştiren
-
 
   const patientId = route?.params?.patientId;
   const hastalikId = route?.params?.hastalikId;
@@ -79,6 +77,51 @@ const PatientMenu = ({ navigation, route }: any) => {
     }
   }, [patientId]);
 
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    const getPatientIdFromStorage = async () => {
+      try {
+        let pid = route?.params?.patientId;
+
+        if (!pid) {
+          const storedId = await AsyncStorage.getItem("patientId");
+          if (storedId) {
+            pid = storedId;
+          } else {
+            setErrorMessage("Hasta ID'si bulunamadı.");
+            setLoading(false);
+            return;
+          }
+        }
+
+        const patientRef = doc(db, "patients", pid);
+        const patientDoc = await getDoc(patientRef);
+
+        if (patientDoc.exists()) {
+          const patientData = patientDoc.data();
+
+          const pFullName = `${patientData?.ad} ${patientData?.soyad}`;
+          setPatientName(pFullName);
+
+          setDoctorName(patientData?.doktor || "Doktor adı bulunamadı");
+          setDoctorId(patientData?.doctorId || null);
+
+          console.log("Hasta verisi:", patientData);
+        } else {
+          setErrorMessage("Hasta verisi bulunamadı.");
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.log("Hasta verisi çekme hatası:", error);
+        setErrorMessage("Hasta verisi alınamadı.");
+        setLoading(false);
+      }
+    };
+
+    getPatientIdFromStorage();
+  }, []);
 
 
   // Firebase'den hastaların alınması
