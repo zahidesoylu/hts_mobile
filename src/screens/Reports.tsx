@@ -10,9 +10,9 @@ const Reports = ({ navigation, route }: any) => {
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     const [patients, setPatients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const { doctorName, doctorId } = route.params; // route.params'dan doktor adını alıyoruz
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     const [patientReports, setPatientReports] = useState<{ [patientId: string]: any[] }>({});
+    const { doctorName } = route.params;
 
     useEffect(() => {
         const fetchPatients = async () => {
@@ -22,14 +22,11 @@ const Reports = ({ navigation, route }: any) => {
                     console.error("Doktor kimliği alınamadı.");
                     return;
                 }
-                console.log("Giriş yapan doktor ID'si:", userId);
 
-                // Firestore'dan hastaları çekmek için query oluşturuyoruz
                 const patientsRef = collection(db, "patients");
                 const q = query(patientsRef, where("doctorId", "==", userId));
                 const querySnapshot = await getDocs(q);
 
-                // Verileri mapleyip hastaların listesini oluşturuyoruz
                 const patientList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
                     return {
@@ -39,18 +36,17 @@ const Reports = ({ navigation, route }: any) => {
                     };
                 });
 
-                setPatients(patientList); // Hastalar listesini state'e set ediyoruz
+                setPatients(patientList);
             } catch (error) {
                 console.error("Hastalar alınırken hata oluştu:", error);
             } finally {
-                setLoading(false); // Yükleme işlemi tamamlandı
+                setLoading(false);
             }
         };
 
         fetchPatients();
     }, []);
 
-    // Bir hastanın raporlarını çekme fonksiyonu
     const fetchReports = async (patientId: string) => {
         try {
             const reportsRef = collection(db, "reports");
@@ -59,8 +55,6 @@ const Reports = ({ navigation, route }: any) => {
 
             const reportList = querySnapshot.docs.map(doc => {
                 const data = doc.data();
-                console.log("Rapor verisi:", data); // 👈 Burada konsola yazdırıyoruz
-
                 return {
                     id: doc.id,
                     raporTarihi: data.reportDate?.toDate().toLocaleDateString("tr-TR") || "Tarih belirtilmemiş",
@@ -72,8 +66,6 @@ const Reports = ({ navigation, route }: any) => {
                 };
             });
 
-
-            // Her hasta ID'sine göre state'e ekle
             setPatientReports(prev => ({
                 ...prev,
                 [patientId]: reportList,
@@ -83,34 +75,30 @@ const Reports = ({ navigation, route }: any) => {
         }
     };
 
-    // Hasta adına tıklandığında raporları açma veya kapama işlemi
     const handleExpand = (id: string) => {
         if (expanded === id) {
-            setExpanded(null);  // Aynı hastaya tekrar tıklanırsa kapanacak
+            setExpanded(null);
         } else {
-            setExpanded(id);  // Raporları açmak için hastanın ID'si ile genişletiyoruz
-            fetchReports(id);  // Raporları almak için fetchReports fonksiyonunu çağırıyoruz
+            setExpanded(id);
+            fetchReports(id);
         }
     };
 
     if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;  // Yükleme yapılırken gösterilen spinner
+        return <ActivityIndicator size="large" color="#0000ff" />;
     }
-
 
     return (
         <View style={styles.container}>
             <View style={styles.innerContainer}>
-
-                {/* Info Box */}
                 <View style={styles.infoBox}>
                     <Text style={styles.doctorName}>{doctorName}</Text>
                 </View>
 
-
                 <View style={styles.patientListContainer}>
                     <FlatList
                         data={patients}
+                        keyExtractor={(item) => item.id}
                         renderItem={({ item }) => (
                             <View style={styles.patientItem}>
                                 <TouchableOpacity onPress={() => handleExpand(item.id)}>
@@ -123,12 +111,10 @@ const Reports = ({ navigation, route }: any) => {
                                             <TouchableOpacity
                                                 key={report.id}
                                                 style={styles.reportTouchable}
-                                                onPress={() =>
-                                                    navigation.navigate("ReportDetail", {
-                                                        report,
-                                                        doctorName,
-                                                    })
-                                                }
+                                                onPress={() => navigation.navigate("ReportDetail", {
+                                                    report,
+                                                    doctorName,
+                                                })}
                                             >
                                                 <Text style={styles.reportDate}>📄 {report.raporTarihi}</Text>
                                             </TouchableOpacity>
@@ -139,14 +125,11 @@ const Reports = ({ navigation, route }: any) => {
                                 )}
                             </View>
                         )}
-                        keyExtractor={(item) => item.id}
                     />
                 </View>
-
-
-                {/* Bottom Menu */}
-                <BottomMenu />
             </View>
+            <BottomMenu />
+
         </View>
     );
 };
@@ -181,13 +164,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "100%",
     },
-    reportTouchable: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        backgroundColor: "#f0f0f0",
-        borderRadius: 8,
-        marginTop: 4,
-    },
     doctorName: {
         color: "#fff",
         fontSize: 18,
@@ -207,19 +183,18 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
+    reportTouchable: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: "#f0f0f0",
+        borderRadius: 8,
+        marginTop: 4,
+    },
     reportDate: {
         fontSize: 14,
         color: "#888",
         marginTop: 5,
     },
-    menuItem: {
-        alignItems: "center",
-    },
-    menuText: {
-        color: "white",
-        marginTop: 5,
-    },
 });
 
 export default Reports;
-

@@ -2,9 +2,21 @@ import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import BottomMenu from "../../src/components/ui/BottomMenu";
 
+
+interface ReportParams {
+    report: {
+        raporTarihi: string;
+        hastaAdi: string;
+        hastalik?: string;
+        sorular: string[];
+        cevaplar: string[];
+    };
+    doctorName: string;
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const ReportDetail = ({ route }: any) => {
-    const { report, doctorName, patientName, hastalik } = route.params;
+    const { report, doctorName } = route.params;
     console.log("ReportDetail route params:", route.params); // route.params'ı konsola yazdırıyoruz
 
     return (
@@ -12,29 +24,39 @@ const ReportDetail = ({ route }: any) => {
             <View style={styles.innerContainer}>
                 {/* Üstte Doktor/Hasta Bilgisi */}
                 <View style={styles.infoBox}>
-                    <Text style={styles.doctorName}>Doktor: {doctorName}</Text>
-                    <Text style={styles.patientName}>Hasta: {patientName || "Seçim yapılmadı"}</Text>
-                    <Text style={styles.patientName}>Hastalık: {hastalik || "-"}</Text>
+                    <Text style={styles.title}>{report.raporTarihi} Rapor Detayı</Text>
+                    <Text style={styles.subtitle}>{doctorName}</Text>
+                    <Text style={styles.subtitle}>Hasta: {report.hastaAdi}</Text>
+                    <Text style={styles.subtitle}>Kronik Hastalık: {report.hastalik || "-"}</Text>
+
                 </View>
 
                 {/* Sayfa İçeriği */}
-                <ScrollView style={styles.content}>
-                    <Text style={styles.title}>Rapor Detayı</Text>
-                    <Text style={styles.subtitle}>Rapor Tarihi: {report.raporTarihi}</Text>
-                    <Text style={styles.subtitle}>Hastalık: {report.hastalik}</Text>
+                <View style={styles.scrollContainer}>
+                    <ScrollView contentContainerStyle={styles.content}>
 
-                    {report.sorular.map((soru: string, index: number) => (
-                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                        <View key={index} style={styles.qaContainer}>
-                            <Text style={styles.question}>• {soru}</Text>
-                            <Text style={styles.answer}>Cevap: {report.cevaplar[index]}</Text>
-                        </View>
-                    ))}
-                </ScrollView>
+                        {report.sorular.map((soru: string, index: number) => (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                            <View key={index} style={styles.qaContainer}>
+                                <Text style={styles.question}>
+                                    Soru {index + 1}: {soru.replace(/["\n]/g, "").trim()}
+                                </Text>
+                                <Text style={styles.answer}>Cevap: {report.cevaplar[index]}</Text>
+                            </View>
+                        ))}
+                    </ScrollView>
+                </View>
+                <View style={styles.resultContainer}>
+                    <Text style={styles.resultTitle}>Rapor Sonucu</Text>
+
+                    <View style={[styles.resultBox, styles.resultFollowUp]}>
+                        <Text style={styles.resultText}>Takip Gerektiriyor</Text>
+                    </View>
+                </View>
 
                 {/* En Altta Menü */}
-                <BottomMenu />
             </View>
+            <BottomMenu />
         </View>
     );
 };
@@ -43,50 +65,50 @@ const ReportDetail = ({ route }: any) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#E3F2FD",
+        backgroundColor: "#f5f5f5",
         alignItems: "center",
         justifyContent: "center",
     },
     innerContainer: {
         width: 400,
         height: 600,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        overflow: "hidden",
-        paddingBottom: 60, // BottomMenu için yer bırak
+        backgroundColor: "white",
+        padding: 30,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 5,
     },
     infoBox: {
         backgroundColor: '#e6f0ff',
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginVertical: 15,
-        width: '100%',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
+        borderRadius: 8,
+        alignItems: "center",
+        width: "100%",
+    },
+    scrollContainer: {
+        flex: 1,
+        marginTop: 20,
+        width: "100%",
     },
     content: {
         padding: 16,
         flex: 1,
     },
     title: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: "bold",
-        marginBottom: 10,
+        marginBottom: 5,
         color: "#1976D2",
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: 12,
         marginBottom: 6,
         color: "#424242",
-    },
-    doctorName: {
-        backgroundColor: "#1976D2",
-        color: "#fff",
-        fontSize: 18,
-        fontWeight: "bold",
     },
     patientName: {
         fontSize: 16,
@@ -94,19 +116,64 @@ const styles = StyleSheet.create({
     },
     qaContainer: {
         marginBottom: 14,
-        backgroundColor: "#F1F8E9",
+        backgroundColor: '#e6f0ff',
         padding: 10,
         borderRadius: 8,
     },
     question: {
-        fontWeight: "600",
-        fontSize: 15,
+        fontWeight: "500",
+        fontSize: 10,
         marginBottom: 4,
     },
     answer: {
-        fontSize: 15,
+        fontSize: 10,
         color: "#37474F",
     },
+    resultContainer: {
+        marginTop: 24,
+        padding: 16,
+        backgroundColor: "#f8f8f8",
+        borderRadius: 12,
+        flexDirection: 'row', // Satırda hizalamayı sağlıyor
+        justifyContent: 'space-between', // Sol ve sağdaki elemanları birbirine uzaklaştırıyor
+        alignItems: 'center', // Dikeyde ortalamayı sağlıyor
+        height: 60,  // Sabit bir yükseklik değeri
+        width: 300,
+    },
+    resultTitle: {
+        fontSize: 12,
+        fontWeight: "bold",
+        color: "#333",
+        flex: 1, // Sol tarafta yer alacak kısmı büyütüyor
+    },
+    resultBox: {
+        paddingVertical: 2,
+        paddingHorizontal: 24,
+        borderRadius: 10,
+        backgroundColor: "#F44336", // Kırmızı arka plan
+        justifyContent: "center",
+        alignItems: "center",
+        width: 120, // Minimum genişlik
+    },
+    resultText: {
+        color: "white",
+        fontWeight: "200",
+        fontSize: 12,
+        textAlign: "center",
+    },
+    resultGood: {
+        backgroundColor: "#4CAF50", // yeşil
+    },
+
+    resultNormal: {
+        backgroundColor: "#FFC107", // sarı
+    },
+
+    resultFollowUp: {
+        backgroundColor: "#F44336", // kırmızı
+        transform: [{ scale: 1.05 }], // Hover benzeri etkileşim için hafif büyütme efekti
+    },
+
 });
 
 export default ReportDetail;
