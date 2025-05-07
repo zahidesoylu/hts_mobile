@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { doc, getDoc, addDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../src/config/firebaseConfig";
 import BottomMenu from "@/components/ui/BottomMenu";
+import { Timestamp } from 'firebase/firestore';
 
 
 type PtDailyReportParams = {
@@ -20,7 +21,20 @@ type PtDailyReportParams = {
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const PtDailyReport = ({ navigation }: any) => {
     const route = useRoute<RouteProp<PtDailyReportParams, "PtDailyReport">>();
-    const { patientId, patientName, doctorId, doctorName, hastalikId, date } = route.params;
+    const {
+        patientId,
+        patientName,
+        doctorName,
+        doctorId,
+        hastalikId,
+        date,
+    } = route.params;
+    console.log("Hastalık ID:", route.params.hastalikId); // Hastalık ID'sini konsola yazdırıyoruz
+    console.log("Hasta ID:", route.params.patientId); // Hasta ID'sini konsola yazdırıyoruz          
+    console.log("Hasta Adı:", route.params.patientName); // Hasta adını konsola yazdırıyoruz
+    console.log("Doktor ID:", route.params.doctorId); // Doktor ID'sini konsola yazdırıyoruz
+    console.log("Doktor Adı:", route.params.doctorName); // Doktor adını konsola yazdırıyoruz
+    console.log("Tarih:", route.params.date); // Tarihi konsola yazdırıyoruz
 
     const [questions, setQuestions] = useState<string[]>([]);
     const [answers, setAnswers] = useState<string[]>([]);
@@ -28,27 +42,27 @@ const PtDailyReport = ({ navigation }: any) => {
     const [loading, setLoading] = useState(true);
     const [todayReportFilled, setTodayReportFilled] = useState(false);
 
+
     useEffect(() => {
         checkTodayReport(); // Sayfa yüklendiğinde rapor durumu kontrolü yapılacak
     }, []);
 
     const checkTodayReport = async () => {
         try {
-            const todayDate = new Date();
-            const todayStart = new Date(todayDate.setHours(0, 0, 0, 0)); // Bugün saat 00:00
-            const todayEnd = new Date(todayDate.setHours(23, 59, 59, 999)); // Bugün saat 23:59
+            const now = new Date();
+            const todayStart = new Date(now);
+            todayStart.setHours(0, 0, 0, 0);
+
+            const todayEnd = new Date(now);
+            todayEnd.setHours(23, 59, 59, 999);
 
             const q = query(
                 collection(db, "reports"),
                 where("patientId", "==", patientId),
-                where("doctorId", "==", doctorId),
-                where("hastalikId", "==", hastalikId),
-                where("reportDate", ">=", todayStart), // 'date' yerine 'reportDate' kullanılmalı
-                where("reportDate", "<=", todayEnd),
-                where("isFilled", "==", true) // Raporun doldurulup doldurulmadığını kontrol et
             );
 
             const querySnapshot = await getDocs(q);
+
 
             if (!querySnapshot.empty) {
                 setTodayReportFilled(true); // Eğer rapor doldurulmuşsa
@@ -112,7 +126,7 @@ const PtDailyReport = ({ navigation }: any) => {
                 patientName,
                 doctorId,
                 doctorName,
-                reportDate: new Date(), // yalnızca bu yeterli
+                reportDate: Timestamp.now(),
                 hastalikId,
                 hastalik: hastalikName,
                 cevapListesi: answers,
@@ -137,6 +151,9 @@ const PtDailyReport = ({ navigation }: any) => {
             </View>
         );
     }
+
+    console.log("checkTodayReport input:", { patientId, doctorId, hastalikId });
+
 
     return (
         <View style={styles.container}>
@@ -170,9 +187,16 @@ const PtDailyReport = ({ navigation }: any) => {
                             </View>
                         );
                     })}
-                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>Kaydet</Text>
+                    <TouchableOpacity
+                        style={[styles.saveButton, todayReportFilled && { backgroundColor: "#ccc" }]}
+                        onPress={handleSave}
+                        disabled={todayReportFilled}
+                    >
+                        <Text style={styles.saveButtonText}>
+                            {todayReportFilled ? "Bugünkü Rapor Dolduruldu" : "Kaydet"}
+                        </Text>
                     </TouchableOpacity>
+
                 </ScrollView>
 
             </View>

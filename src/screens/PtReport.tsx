@@ -96,7 +96,7 @@ const PtReport = ({ navigation }: any) => {
                 // biome-ignore lint/complexity/noForEach: <explanation>
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const date = data.date;
+                    const date = data.reportDate;
 
                     console.log("Raw date:", date);
 
@@ -108,12 +108,13 @@ const PtReport = ({ navigation }: any) => {
                         reportDate = new Date(date);
                     }
 
-                    console.log("JavaScript Date objesi:", reportDate);
+                    const formattedDate = reportDate.toLocaleDateString("tr-TR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric"
+                    });
 
-                    const formattedDate = reportDate.toISOString().slice(0, 10);  // YYYY-MM-DD formatında
-
-                    reports.push(date);
-                    console.log("Formatted report date:", formattedDate); // Formatlanmış tarihi kontrol et
+                    reports.push(formattedDate);
                 });
 
                 setReportList(reports);
