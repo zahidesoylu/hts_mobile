@@ -175,8 +175,8 @@ const PtDailyReport = ({ navigation }: any) => {
                     </TouchableOpacity>
                 </ScrollView>
 
-                <BottomMenu />
             </View>
+            <BottomMenu />
         </View>
 
     );
@@ -197,6 +197,8 @@ const styles = StyleSheet.create({
         marginTop: 20,
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
         alignItems: "center",
         justifyContent: "space-between",
     },

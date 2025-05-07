@@ -143,6 +143,18 @@ const PtRandevuButton = () => {
 
     try {
       const appointmentRef = collection(db, "randevu");
+
+
+      console.log("Firestore'a gönderilen veriler:", {
+        hastaId: patientId,
+        doktorId: doctorId,
+        tarih: randevuTarihi.toISOString().split("T")[0],
+        saat: hour,
+        hastaAd: patientName,
+        doktorAd: doctorName,
+        isApproved: false,
+      });
+
       await addDoc(appointmentRef, {
         hastaId: patientId,
         doktorId: doctorId,
@@ -158,6 +170,7 @@ const PtRandevuButton = () => {
       console.error("Randevu oluşturulamadı:", error);
       alert("Randevu oluşturulamadı.");
     }
+
   };
 
   useEffect(() => {

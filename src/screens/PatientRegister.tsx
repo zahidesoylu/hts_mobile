@@ -331,7 +331,7 @@ const PatientRegister = ({ navigation }: any) => {
 
                 <TouchableOpacity style={styles.button}
                     onPress={() => {
-                        alert("Butona basıldı!"); // Basit bir alert mesajı
+                        alert("Hasta Kaydı Tamamlandı!"); // Basit bir alert mesajı
                         handleRegister();
                     }}>
                     <Text style={styles.buttonText}>Kaydet</Text>
