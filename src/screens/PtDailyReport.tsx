@@ -5,6 +5,7 @@ import { doc, getDoc, addDoc, collection, query, where, getDocs } from "firebase
 import { db } from "../../src/config/firebaseConfig";
 import BottomMenu from "@/components/ui/BottomMenu";
 import { Timestamp } from 'firebase/firestore';
+import { analyseReport } from "@/utils/gemini"; // AI ile analiz için fonksiyon
 
 
 type PtDailyReportParams = {
@@ -47,6 +48,7 @@ const PtDailyReport = ({ navigation }: any) => {
         checkTodayReport(); // Sayfa yüklendiğinde rapor durumu kontrolü yapılacak
     }, []);
 
+    // Bugünkü raporun doldurulup doldurulmadığını kontrol et
     const checkTodayReport = async () => {
         try {
             const now = new Date();
@@ -59,6 +61,8 @@ const PtDailyReport = ({ navigation }: any) => {
             const q = query(
                 collection(db, "reports"),
                 where("patientId", "==", patientId),
+                where("reportDate", ">=", Timestamp.fromDate(todayStart)),
+                where("reportDate", "<=", Timestamp.fromDate(todayEnd)),
             );
 
             const querySnapshot = await getDocs(q);
@@ -76,6 +80,7 @@ const PtDailyReport = ({ navigation }: any) => {
     };
 
 
+    // Hastalık bilgilerini ve soruları al
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
@@ -120,8 +125,19 @@ const PtDailyReport = ({ navigation }: any) => {
         }
 
         try {
+            // Soruları ve cevapları formatla
+            let reportContent = "";
+            questions.forEach((question, index) => {
+                const cleanedQuestion = question.trim().replace(/^"|"$/g, "");
+                const answer = answers[index].trim();
+                reportContent += `${cleanedQuestion}: ${answer}\n`;
+            });
+
+            // Veriyi AI'ye gönder
+            const analysisResult = await analyseReport(reportContent);
+
             // Raporu Firestore'a kaydet
-            await addDoc(collection(db, "reports"), {
+            const reportData = {
                 patientId,
                 patientName,
                 doctorId,
@@ -132,8 +148,16 @@ const PtDailyReport = ({ navigation }: any) => {
                 cevapListesi: answers,
                 soruListesi: questions,
                 isFilled: true,
-            });
+                aiCategory: analysisResult.category,  // AI'dan gelen kategori
+                aiDescription: analysisResult.description,  // AI'dan gelen açıklama
+                aiNote: analysisResult.note,  // AI'dan gelen not
+            };
 
+            // Konsola veriyi yazdır
+            console.log("Firestore'a kaydedilecek veriler:", reportData);
+
+            // Raporu Firestore'a kaydet
+            await addDoc(collection(db, "reports"), reportData)
 
             Alert.alert("Başarılı", "Rapor kaydedildi.");
             navigation.goBack();
