@@ -137,7 +137,15 @@ const LoginScreen = ({ navigation }: any) => {
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     } catch (error: any) {
       console.log("Kayıt hatası:", error);
-      setErrorMessage("Kayıt başarısız. Lütfen tekrar deneyin.");
+      if (error.code === "auth/email-already-in-use") {
+        setErrorMessage("Bu e-posta zaten kayıtlı.");
+      } else if (error.code === "auth/invalid-email") {
+        setErrorMessage("Geçersiz e-posta adresi.");
+      } else if (error.code === "auth/weak-password") {
+        setErrorMessage("Şifre çok zayıf. Daha güçlü bir şifre deneyin.");
+      } else {
+        setErrorMessage("Kayıt başarısız. Lütfen tekrar deneyin.");
+      }
     }
   };
 
