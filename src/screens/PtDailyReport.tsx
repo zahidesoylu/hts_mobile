@@ -6,6 +6,8 @@ import { db } from "../../src/config/firebaseConfig";
 import BottomMenu from "@/components/ui/BottomMenu";
 import { Timestamp } from 'firebase/firestore';
 import { analyseReport } from "@/utils/gemini"; // AI ile analiz için fonksiyon
+import * as Speech from 'expo-speech';  // Burada import ettik
+
 
 
 type PtDailyReportParams = {
@@ -178,6 +180,20 @@ const PtDailyReport = ({ navigation }: any) => {
 
     console.log("checkTodayReport input:", { patientId, doctorId, hastalikId });
 
+    const dinle = (text: string) => {
+        Speech.speak(text); // Verilen metni sesli okur
+    };
+
+
+    // Sesle cevap verme için fonksiyon
+    const sesleCevapla = async (index: number) => {
+        // Burada cevapları almak için basit bir input kullanabiliriz
+        const prompt = "Cevabınızı söyleyin"; // Kullanıcıya ne yapması gerektiğiyle ilgili bilgi veririz
+        Speech.speak(prompt); // İlk olarak "cevabınızı söyleyin" uyarısı söylenir
+
+        // Sesli cevap almak için bir yol oluşturabiliriz
+        // Bu, Speech Recognition ya da başka bir çözüm gerektirir. Şu anda sadece sesli cevap verme kısmı var.
+    };
 
     return (
         <View style={styles.container}>
@@ -337,7 +353,7 @@ const styles = StyleSheet.create({
     },
     assistantButtonText: {
         color: '#007AFF',
-        fontWeight: '500',
+        fontWeight: '400',
     },
 
 });
