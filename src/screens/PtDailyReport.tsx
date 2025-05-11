@@ -1,14 +1,30 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    TouchableOpacity,
+    ScrollView,
+    Alert,
+    ActivityIndicator,
+} from "react-native";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { doc, getDoc, addDoc, collection, query, where, getDocs } from "firebase/firestore";
+import {
+    doc,
+    getDoc,
+    addDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    Timestamp,
+} from "firebase/firestore";
 import { db } from "../../src/config/firebaseConfig";
 import BottomMenu from "@/components/ui/BottomMenu";
-import { Timestamp } from 'firebase/firestore';
-import { analyseReport } from "@/utils/gemini"; // AI ile analiz için fonksiyon
-import * as Speech from 'expo-speech';  // Burada import ettik
-
-
+import { analyseReport } from "@/utils/gemini";
+import * as Speech from "expo-speech";
+import VoiceInput from "@/components/ui/VoiceInput";
 
 type PtDailyReportParams = {
     PtDailyReport: {
@@ -32,31 +48,31 @@ const PtDailyReport = ({ navigation }: any) => {
         hastalikId,
         date,
     } = route.params;
-    console.log("Hastalık ID:", route.params.hastalikId); // Hastalık ID'sini konsola yazdırıyoruz
-    console.log("Hasta ID:", route.params.patientId); // Hasta ID'sini konsola yazdırıyoruz          
-    console.log("Hasta Adı:", route.params.patientName); // Hasta adını konsola yazdırıyoruz
-    console.log("Doktor ID:", route.params.doctorId); // Doktor ID'sini konsola yazdırıyoruz
-    console.log("Doktor Adı:", route.params.doctorName); // Doktor adını konsola yazdırıyoruz
-    console.log("Tarih:", route.params.date); // Tarihi konsola yazdırıyoruz
 
     const [questions, setQuestions] = useState<string[]>([]);
     const [answers, setAnswers] = useState<string[]>([]);
+    const [recognizedText, setRecognizedText] = useState<string>("");
     const [hastalikName, setHastalikName] = useState<string>("");
     const [loading, setLoading] = useState(true);
     const [todayReportFilled, setTodayReportFilled] = useState(false);
 
+    const handleSpeechResult = (recognizedText: string) => {
+        setRecognizedText(recognizedText);
+    };
+
+    const handleSpeechStart = () => {
+        console.log("Dinleme başladı");
+    };
 
     useEffect(() => {
-        checkTodayReport(); // Sayfa yüklendiğinde rapor durumu kontrolü yapılacak
+        checkTodayReport();
     }, []);
 
-    // Bugünkü raporun doldurulup doldurulmadığını kontrol et
     const checkTodayReport = async () => {
         try {
             const now = new Date();
             const todayStart = new Date(now);
             todayStart.setHours(0, 0, 0, 0);
-
             const todayEnd = new Date(now);
             todayEnd.setHours(23, 59, 59, 999);
 
@@ -64,25 +80,22 @@ const PtDailyReport = ({ navigation }: any) => {
                 collection(db, "reports"),
                 where("patientId", "==", patientId),
                 where("reportDate", ">=", Timestamp.fromDate(todayStart)),
-                where("reportDate", "<=", Timestamp.fromDate(todayEnd)),
+                where("reportDate", "<=", Timestamp.fromDate(todayEnd))
             );
 
             const querySnapshot = await getDocs(q);
 
-
             if (!querySnapshot.empty) {
-                setTodayReportFilled(true); // Eğer rapor doldurulmuşsa
+                setTodayReportFilled(true);
             } else {
-                setTodayReportFilled(false); // Eğer rapor doldurulmamışsa
+                setTodayReportFilled(false);
             }
         } catch (error) {
-            console.error("Rapor kontrolü sırasında bir hata oluştu:", error);
+            console.error("Rapor kontrolü hatası:", error);
             Alert.alert("Hata", "Rapor kontrolü sırasında bir hata oluştu.");
         }
     };
 
-
-    // Hastalık bilgilerini ve soruları al
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
@@ -91,9 +104,9 @@ const PtDailyReport = ({ navigation }: any) => {
 
                 if (snap.exists()) {
                     const data = snap.data();
-
                     let questionList = data.soruListesi;
-                    if (typeof questionList === 'string') {
+
+                    if (typeof questionList === "string") {
                         questionList = questionList.split(",");
                     }
 
@@ -101,7 +114,6 @@ const PtDailyReport = ({ navigation }: any) => {
                         setQuestions(questionList);
                         setAnswers(new Array(questionList.length).fill(""));
                     } else {
-                        console.error("soruListesi bir dizi değil:", questionList);
                         Alert.alert("Hata", "Hastalık soruları uygun formatta değil.");
                     }
 
@@ -127,7 +139,6 @@ const PtDailyReport = ({ navigation }: any) => {
         }
 
         try {
-            // Soruları ve cevapları formatla
             let reportContent = "";
             questions.forEach((question, index) => {
                 const cleanedQuestion = question.trim().replace(/^"|"$/g, "");
@@ -135,10 +146,8 @@ const PtDailyReport = ({ navigation }: any) => {
                 reportContent += `${cleanedQuestion}: ${answer}\n`;
             });
 
-            // Veriyi AI'ye gönder
             const analysisResult = await analyseReport(reportContent);
 
-            // Raporu Firestore'a kaydet
             const reportData = {
                 patientId,
                 patientName,
@@ -150,16 +159,12 @@ const PtDailyReport = ({ navigation }: any) => {
                 cevapListesi: answers,
                 soruListesi: questions,
                 isFilled: true,
-                aiCategory: analysisResult.category,  // AI'dan gelen kategori
-                aiDescription: analysisResult.description,  // AI'dan gelen açıklama
-                aiNote: analysisResult.note,  // AI'dan gelen not
+                aiCategory: analysisResult.category,
+                aiDescription: analysisResult.description,
+                aiNote: analysisResult.note,
             };
 
-            // Konsola veriyi yazdır
-            console.log("Firestore'a kaydedilecek veriler:", reportData);
-
-            // Raporu Firestore'a kaydet
-            await addDoc(collection(db, "reports"), reportData)
+            await addDoc(collection(db, "reports"), reportData);
 
             Alert.alert("Başarılı", "Rapor kaydedildi.");
             navigation.goBack();
@@ -169,6 +174,9 @@ const PtDailyReport = ({ navigation }: any) => {
         }
     };
 
+    const dinle = (text: string) => {
+        Speech.speak(text);
+    };
 
     if (loading) {
         return (
@@ -177,23 +185,6 @@ const PtDailyReport = ({ navigation }: any) => {
             </View>
         );
     }
-
-    console.log("checkTodayReport input:", { patientId, doctorId, hastalikId });
-
-    const dinle = (text: string) => {
-        Speech.speak(text); // Verilen metni sesli okur
-    };
-
-
-    // Sesle cevap verme için fonksiyon
-    const sesleCevapla = async (index: number) => {
-        // Burada cevapları almak için basit bir input kullanabiliriz
-        const prompt = "Cevabınızı söyleyin"; // Kullanıcıya ne yapması gerektiğiyle ilgili bilgi veririz
-        Speech.speak(prompt); // İlk olarak "cevabınızı söyleyin" uyarısı söylenir
-
-        // Sesli cevap almak için bir yol oluşturabiliriz
-        // Bu, Speech Recognition ya da başka bir çözüm gerektirir. Şu anda sadece sesli cevap verme kısmı var.
-    };
 
     return (
         <View style={styles.container}>
@@ -211,9 +202,7 @@ const PtDailyReport = ({ navigation }: any) => {
                         return (
                             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                             <View key={index} style={styles.questionBox}>
-                                <Text style={styles.question}>
-                                    {index + 1}. {cleanedQuestion}
-                                </Text>
+                                <Text style={styles.question}>{index + 1}. {cleanedQuestion}</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Cevabınızı yazınız"
@@ -224,18 +213,23 @@ const PtDailyReport = ({ navigation }: any) => {
                                         setAnswers(newAnswers);
                                     }}
                                 />
-                                {/* Asistan Butonları */}
                                 <View style={styles.assistantButtons}>
                                     <TouchableOpacity onPress={() => dinle(cleanedQuestion)}>
                                         <Text style={styles.assistantButtonText}>🔊 Soruyu Dinle</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => sesleCevapla(index)}>
-                                        <Text style={styles.assistantButtonText}>🎙️ Sesle Cevapla</Text>
+                                    <TouchableOpacity onPress={() => {
+                                        const updatedAnswers = [...answers];
+                                        updatedAnswers[index] = recognizedText;
+                                        setAnswers(updatedAnswers);
+                                    }}>
+                                        <Text style={styles.assistantButtonText}>🎙️ Sesli Cevabını Gir</Text>
                                     </TouchableOpacity>
                                 </View>
+                                <VoiceInput onSpeechStart={handleSpeechStart} onSpeechResult={handleSpeechResult} />
                             </View>
                         );
                     })}
+
                     <TouchableOpacity
                         style={[styles.saveButton, todayReportFilled && { backgroundColor: "#ccc" }]}
                         onPress={handleSave}
@@ -245,13 +239,10 @@ const PtDailyReport = ({ navigation }: any) => {
                             {todayReportFilled ? "Bugünkü Rapor Dolduruldu" : "Kaydet"}
                         </Text>
                     </TouchableOpacity>
-
                 </ScrollView>
-
             </View>
             <BottomMenu />
         </View>
-
     );
 };
 
@@ -276,86 +267,64 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     infoBox: {
-        backgroundColor: '#e6f0ff',
+        backgroundColor: "#e6f0ff",
         padding: 15,
         borderRadius: 10,
-        alignItems: 'center',
-        width: '100%',
-        height: 120,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-        marginBottom: 20, // Bilgi kutusu ile sorular arasında boşluk
     },
     title: {
         fontSize: 18,
-        fontWeight: "700",
-        color: "#333", // Başlık için daha koyu bir renk
+        fontWeight: "bold",
         marginBottom: 5,
     },
-    questionsContainer: {
-        maxHeight: 420,
-        width: "100%",
-        padding: 10,
-    },
     subtitle: {
-        fontSize: 12,
-        color: "#555", // Alt başlıklar için daha hafif bir gri
-        marginBottom: 8,
+        fontSize: 16,
+        marginBottom: 2,
+    },
+    questionsContainer: {
+        marginTop: 10,
     },
     questionBox: {
         marginBottom: 20,
     },
     question: {
-        fontSize: 12,
+        fontSize: 16,
         fontWeight: "600",
-        color: "#333", // Sorular için daha dikkat çekici bir renk
+        marginBottom: 5,
     },
     input: {
         borderWidth: 1,
-        borderColor: "#ddd", // Daha açık bir kenarlık rengi
-        borderRadius: 12, // Yumuşak köşeler
-        padding: 12,
-        marginTop: 10,
-        fontSize: 12,
-        color: "#333",
+        borderColor: "#ccc",
+        borderRadius: 8,
+        padding: 10,
+        fontSize: 16,
+        backgroundColor: "#fff",
+    },
+    assistantButtons: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 5,
+    },
+    assistantButtonText: {
+        fontSize: 14,
+        color: "#007AFF",
     },
     saveButton: {
-        backgroundColor: "#336699", // Canlı bir mor renk
-        padding: 6,
-        borderRadius: 12,
+        backgroundColor: "#007AFF",
+        padding: 15,
+        borderRadius: 10,
+        marginTop: 20,
         alignItems: "center",
-        width: "50%", // Buton genişliğini %50 ile sınırladık
-        alignSelf: "center", // Butonu ortaladık
-        shadowColor: "#000", // Buton için gölge efekti
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
     },
     saveButtonText: {
         color: "#fff",
-        fontWeight: "700", // Daha belirgin bir yazı tipi
-        fontSize: 12,
+        fontSize: 16,
+        fontWeight: "bold",
     },
     center: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
     },
-    activityIndicator: {
-        paddingTop: 20, // ActivityIndicator'a biraz boşluk
-    },
-    assistantButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 8,
-    },
-    assistantButtonText: {
-        color: '#007AFF',
-        fontWeight: '400',
-    },
-
 });
 
 export default PtDailyReport;
