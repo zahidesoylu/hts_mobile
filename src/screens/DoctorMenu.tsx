@@ -6,6 +6,7 @@ import BottomMenu from "../components/ui/BottomMenu";
 import SearchBar from "../components/ui/SearchBar";
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from "../config/firebaseConfig";
+import { AntDesign } from '@expo/vector-icons';
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -124,6 +125,8 @@ const DoctorMenu = ({ navigation, route }: any) => {
 
             })} // Mesajlar sayfasına yönlendir
           >
+            <AntDesign name="home" size={30} color="black" />
+
             <Text style={styles.cardText}>Mesajlar</Text>
           </TouchableOpacity>
         </View>

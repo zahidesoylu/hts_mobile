@@ -208,6 +208,15 @@ const PtDailyReport = ({ navigation }: any) => {
                                         setAnswers(newAnswers);
                                     }}
                                 />
+                                {/* Asistan Butonları */}
+                                <View style={styles.assistantButtons}>
+                                    <TouchableOpacity onPress={() => dinle(cleanedQuestion)}>
+                                        <Text style={styles.assistantButtonText}>🔊 Soruyu Dinle</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => sesleCevapla(index)}>
+                                        <Text style={styles.assistantButtonText}>🎙️ Sesle Cevapla</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         );
                     })}
@@ -321,6 +330,16 @@ const styles = StyleSheet.create({
     activityIndicator: {
         paddingTop: 20, // ActivityIndicator'a biraz boşluk
     },
+    assistantButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 8,
+    },
+    assistantButtonText: {
+        color: '#007AFF',
+        fontWeight: '500',
+    },
+
 });
 
 export default PtDailyReport;

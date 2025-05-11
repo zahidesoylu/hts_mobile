@@ -8,6 +8,7 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const RegisterScreen = ({ navigation, route }: any) => {
   const { uid, eposta, password } = route.params; // Şifreyi de alıyoruz
 
@@ -129,6 +130,7 @@ const RegisterScreen = ({ navigation, route }: any) => {
           } else {
             setErrorMessage("Geçersiz kullanıcı rolü.");
           }
+          // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         } catch (error: any) {
           console.log("Giriş hatası:", error);
           setErrorMessage("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
@@ -154,119 +156,125 @@ const RegisterScreen = ({ navigation, route }: any) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.scrollViewContainer}>
-        <Text style={styles.header}>Doktor Kayıt Tamamlama Formu</Text>
+      <View style={styles.innerContainer}>
 
-        <ScrollView contentContainerStyle={styles.formContainer}>
+        <View style={styles.scrollViewContainer}>
+          <Text style={styles.header}>Doktor Kayıt Tamamlama Formu</Text>
 
-          {/* Diğer alanlar */}
-          <Text>TC Kimlik Numarası:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="TC Kimlik Numaranızı girin"
-            placeholderTextColor="#aaa"
-            value={tc}
-            onChangeText={setTc}
-            keyboardType="numeric"
-          />
+          <ScrollView contentContainerStyle={styles.formContainer}>
 
-          <Text>Ad:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Adınızı girin"
-            placeholderTextColor="#aaa"
-            value={ad}
-            onChangeText={setAd}
-          />
+            {/* Diğer alanlar */}
+            <Text>TC Kimlik Numarası:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="TC Kimlik Numaranızı girin"
+              placeholderTextColor="#aaa"
+              value={tc}
+              onChangeText={setTc}
+              keyboardType="numeric"
+            />
 
-          <Text>Soyad:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Soyadınızı girin"
-            placeholderTextColor="#aaa"
-            value={soyad}
-            onChangeText={setSoyad}
-          />
+            <Text>Ad:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Adınızı girin"
+              placeholderTextColor="#aaa"
+              value={ad}
+              onChangeText={setAd}
+            />
 
-          <Text>Unvan Seçin:</Text>
-          {unvanlar.length > 0 ? (
-            <Picker
-              selectedValue={selectedUnvan}
-              style={styles.picker}
-              onValueChange={(itemValue) => setSelectedUnvan(itemValue)}
-            >
-              <Picker.Item label="Seçiniz..." value="" />
-              {unvanlar.map((unvan, index) => (
-                <Picker.Item key={index} label={unvan} value={unvan} />
-              ))}
+            <Text>Soyad:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Soyadınızı girin"
+              placeholderTextColor="#aaa"
+              value={soyad}
+              onChangeText={setSoyad}
+            />
+
+            <Text>Unvan Seçin:</Text>
+            {unvanlar.length > 0 ? (
+              <Picker
+                selectedValue={selectedUnvan}
+                style={styles.picker}
+                onValueChange={(itemValue) => setSelectedUnvan(itemValue)}
+              >
+                <Picker.Item label="Seçiniz..." value="" />
+                {unvanlar.map((unvan, index) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                  <Picker.Item key={index} label={unvan} value={unvan} />
+                ))}
+              </Picker>
+            ) : (
+              <Text>Veriler yükleniyor...</Text>
+            )}
+
+            <Text>Cinsiyet:</Text>
+            <Picker selectedValue={cinsiyet} onValueChange={setCinsiyet} style={styles.picker}>
+              <Picker.Item label="Kadın" value="Kadın" />
+              <Picker.Item label="Erkek" value="Erkek" />
             </Picker>
-          ) : (
-            <Text>Veriler yükleniyor...</Text>
-          )}
 
-          <Text>Cinsiyet:</Text>
-          <Picker selectedValue={cinsiyet} onValueChange={setCinsiyet} style={styles.picker}>
-            <Picker.Item label="Kadın" value="Kadın" />
-            <Picker.Item label="Erkek" value="Erkek" />
-          </Picker>
+            <Text>Doğum Tarihi:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Doğum Tarihinizi girin"
+              placeholderTextColor="#aaa"
+              value={dogumTarihi}
+              onChangeText={setDogumTarihi}
+            />
 
-          <Text>Doğum Tarihi:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Doğum Tarihinizi girin"
-            placeholderTextColor="#aaa"
-            value={dogumTarihi}
-            onChangeText={setDogumTarihi}
-          />
+            <Text>Telefon:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Telefon Numaranızı girin"
+              placeholderTextColor="#aaa"
+              value={telefon}
+              onChangeText={setTelefon}
+              keyboardType="phone-pad"
+            />
 
-          <Text>Telefon:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Telefon Numaranızı girin"
-            placeholderTextColor="#aaa"
-            value={telefon}
-            onChangeText={setTelefon}
-            keyboardType="phone-pad"
-          />
+            <Text>Uzmanlık Alanınızı Seçin:</Text>
+            {UzmanlikAlanlari.length > 0 ? (
+              <Picker
+                selectedValue={selectedUzmanlikAlanlari}
+                style={styles.picker}
+                onValueChange={(itemValue) => setSelectedUzmanlikAlanlari(itemValue)}
+              >
+                <Picker.Item label="Seçiniz..." value="" />
+                {UzmanlikAlanlari.map((uzmanlik, index) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                  <Picker.Item key={index} label={uzmanlik} value={uzmanlik} />
+                ))}
+              </Picker>
+            ) : (
+              <Text>Veriler yükleniyor...</Text>
+            )}
 
-          <Text>Uzmanlık Alanınızı Seçin:</Text>
-          {UzmanlikAlanlari.length > 0 ? (
-            <Picker
-              selectedValue={selectedUzmanlikAlanlari}
-              style={styles.picker}
-              onValueChange={(itemValue) => setSelectedUzmanlikAlanlari(itemValue)}
-            >
-              <Picker.Item label="Seçiniz..." value="" />
-              {UzmanlikAlanlari.map((uzmanlik, index) => (
-                <Picker.Item key={index} label={uzmanlik} value={uzmanlik} />
-              ))}
-            </Picker>
-          ) : (
-            <Text>Veriler yükleniyor...</Text>
-          )}
+            <Text>Eğitim Bilgisi:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Üniversite Adı"
+              placeholderTextColor="#aaa"
+              value={egitim}
+              onChangeText={setEgitim}
+            />
 
-          <Text>Eğitim Bilgisi:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Üniversite Adı"
-            placeholderTextColor="#aaa"
-            value={egitim}
-            onChangeText={setEgitim}
-          />
-
-          <Text>Çalıştığı Kurum:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Kurum Adı"
-            placeholderTextColor="#aaa"
-            value={kurum}
-            onChangeText={setKurum}
-          />
-        </ScrollView>
+            <Text>Çalıştığı Kurum:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Kurum Adı"
+              placeholderTextColor="#aaa"
+              value={kurum}
+              onChangeText={setKurum}
+            />
+          </ScrollView>
+        </View>
+        <TouchableOpacity onPress={handleRegister} style={styles.button}>
+          <Text style={styles.buttonText}>Kaydet</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={handleRegister} style={styles.button}>
-        <Text style={styles.buttonText}>Kaydet</Text>
-      </TouchableOpacity>
+
     </ScrollView>
   );
 };
@@ -279,9 +287,24 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
+  innerContainer: {
+    width: 400,
+    height: 600,
+    backgroundColor: "white",
+    padding: 30,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  },
   formContainer: {
     width: 300,
-    height: 500,
+    height: 600,
     justifyContent: "center",
     padding: 20,
     borderRadius: 12,
@@ -299,10 +322,12 @@ const styles = StyleSheet.create({
   },
   scrollViewContainer: {
     flex: 1,
-    width: "100%", // ScrollView genişliği ekranın tamamını kaplayacak şekilde ayarlandı
+    width: "100%",
+    borderRadius: 10,
+    justifyContent: "center",
   },
   header: {
-    fontSize: 24,
+    fontSize: 23,
     fontWeight: "bold",
     marginBottom: 10,
     textAlign: "center",
@@ -327,11 +352,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 10,
-    width: 100,  // Buton genişliği
-    height: 40,  // Buton yüksekliği
-    justifyContent: "center",  // Dikeyde ortalama
-    alignItems: "center",  // Yatayda ortalama
-    display: 'flex',  // Flex container olarak işaretle
+    width: 100,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    display: 'flex',
   },
   buttonText: {
     color: "#fff",
@@ -339,7 +364,6 @@ const styles = StyleSheet.create({
     textAlign: "center",  // Metnin yatayda ortalanması
     lineHeight: 40,  // Metnin dikeyde ortalanması için lineHeight'i butonun yüksekliğiyle aynı yap
   }
-
 
 });
 

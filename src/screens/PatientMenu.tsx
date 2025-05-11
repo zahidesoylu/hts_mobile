@@ -7,6 +7,7 @@ import { auth, db } from "@/config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AntDesign } from '@expo/vector-icons';
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -226,6 +227,7 @@ const PatientMenu = ({ navigation, route }: any) => {
 
           <TouchableOpacity
             style={styles.card}
+
             onPress={() =>
               navigation.navigate('PtChatScreen', {
                 patientName,
@@ -235,6 +237,8 @@ const PatientMenu = ({ navigation, route }: any) => {
               })
             }
           >
+            <AntDesign name="home" size={30} color="black" />
+
             <Text style={styles.cardText}>Mesajlar</Text>
           </TouchableOpacity>
         </View>
