@@ -300,7 +300,6 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: "#183B4E",
         borderRadius: 10,
-
     },
     questionBox: {
         marginBottom: 20,
@@ -334,10 +333,11 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         backgroundColor: "#2E5077",
+        justifyContent: "center",
+        alignItems: "center",
         padding: 15,
         borderRadius: 10,
         marginTop: 20,
-        alignItems: "center",
     },
     saveButtonText: {
         color: "#fff",

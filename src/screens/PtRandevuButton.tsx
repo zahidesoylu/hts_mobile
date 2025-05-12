@@ -417,25 +417,27 @@ const styles = StyleSheet.create({
   infoBox: {
     width: "100%",
     padding: 15,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#183B4E",
     borderRadius: 8,
-    marginVertical: 20,
+    marginVertical: 10,
   },
   infoText: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 5,
+    color: "white",
   },
   doctorName: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "white",
   },
   optionsContainer: {
     width: "100%",
     marginVertical: 20,
     flexDirection: "row",
     justifyContent: "space-between",
+
   },
   optionButton: {
     width: 100,
@@ -444,6 +446,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#183B4E",
   },
   optionButtonText: {
     fontSize: 14,
@@ -494,7 +498,7 @@ const styles = StyleSheet.create({
   },
   createButton: {
     width: "80%",
-    backgroundColor: "#007BFF",
+    backgroundColor: "#183B4E",
     padding: 12,
     borderRadius: 12,
     alignItems: "center",

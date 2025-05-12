@@ -147,7 +147,7 @@ const PtReport = ({ navigation }: any) => {
                 <Text style={styles.sectionTitle}>Günlük Raporum</Text>
 
                 {todayReportFilled ? (
-                    <View style={[styles.reportButton, { backgroundColor: "#4caf50" }]}>
+                    <View style={[styles.reportButton, { backgroundColor: "#2E5077" }]}>
                         <Ionicons name="checkmark-circle" size={24} color="white" style={{ marginRight: 8 }} />
                         <Text style={styles.reportButtonText}>Bugünkü rapor dolduruldu</Text>
                     </View>

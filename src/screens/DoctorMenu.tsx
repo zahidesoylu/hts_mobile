@@ -7,6 +7,10 @@ import SearchBar from "../components/ui/SearchBar";
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from "../config/firebaseConfig";
 import { AntDesign } from '@expo/vector-icons';
+import Fontisto from '@expo/vector-icons/Fontisto';
+import { Ionicons } from '@expo/vector-icons';
+
+
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -74,14 +78,11 @@ const DoctorMenu = ({ navigation, route }: any) => {
             year: "numeric",
           })}
         </Text>
+        <View style={styles.profileContainer}>
 
-        <FontAwesome name="user-circle" size={50} color="gray" style={styles.profileIcon} />
-        <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
-        {/* Arama Çubuğu */}
-        <SearchBar onSearch={(text: string): void => {
-          // Arama işlemleri burada yapılabilir
-          console.log("Arama metni:", text);
-        }} />
+          <FontAwesome name="user-circle" size={50} color="white" style={styles.profileIcon} />
+          <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+        </View>
 
         {/* Menü Butonları */}
         <View style={styles.menuContainer}>
@@ -93,7 +94,7 @@ const DoctorMenu = ({ navigation, route }: any) => {
 
             })} // Hastalar sayfasına yönlendir
           >
-            <Text style={styles.cardText}>Hasta İşlemleri</Text>
+            <Ionicons name="person-circle" size={30} color="black" />            <Text style={styles.cardText}>Hasta İşlemleri</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -104,6 +105,7 @@ const DoctorMenu = ({ navigation, route }: any) => {
 
             })} // Randevular sayfasına yönlendir
           >
+            <Fontisto name="date" size={30} color="black" />
             <Text style={styles.cardText}>Randevular</Text>
           </TouchableOpacity>
 
@@ -114,6 +116,7 @@ const DoctorMenu = ({ navigation, route }: any) => {
               doctorId: auth.currentUser?.uid,
             })}
           >
+            <AntDesign name="profile" size={30} color="black" />
             <Text style={styles.cardText}>Raporlar</Text>
           </TouchableOpacity>
 
@@ -126,7 +129,6 @@ const DoctorMenu = ({ navigation, route }: any) => {
             })} // Mesajlar sayfasına yönlendir
           >
             <AntDesign name="home" size={30} color="black" />
-
             <Text style={styles.cardText}>Mesajlar</Text>
           </TouchableOpacity>
         </View>
@@ -148,17 +150,26 @@ const styles = StyleSheet.create({
   innerContainer: {
     width: 400,
     height: 600,
-    backgroundColor: "white",
+    backgroundColor: "#F9F9F9",
     padding: 30,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderWidth: 2,
+    borderColor: "#183B4E",
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
     alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
+    marginBottom: -2,
+  },
+  profileContainer: {
+    backgroundColor: "#2E5077", // istediğin renk
+    width: 300,
+    padding: 15,
+    height: 140,
+    marginBottom: 35,
+    borderRadius: 15,
   },
   dateText: {
     fontSize: 20,
@@ -172,10 +183,11 @@ const styles = StyleSheet.create({
   },
   profileIcon: {
     marginBottom: 10,
+    alignSelf: "center",
   },
   doctorName: {
     fontSize: 14,
-    color: "black",
+    color: "white",
     marginTop: 10,
     fontWeight: "bold",
     textAlign: "center", // ortalamak istersen
@@ -186,12 +198,14 @@ const styles = StyleSheet.create({
     width: '35%',
     height: 120,
     margin: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#eee',
+    borderWidth: 2,
+    borderColor: "#183B4E",
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5, // Android için gölge efekti
-    shadowColor: '#000', // iOS için gölge efekti
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
@@ -212,7 +226,7 @@ const styles = StyleSheet.create({
     width: "40%",
     height: "70%",
     marginBottom: 30,
-    backgroundColor: "#ddd",
+    backgroundColor: "#eee",
     padding: 20,
     borderRadius: 10,
     alignItems: "center",

@@ -212,9 +212,14 @@ const PatientRegister = ({ navigation }: any) => {
             <View style={styles.innerContainer}>
 
                 <Text style={styles.dateText}>{new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}</Text>
-                <FontAwesome name="user-md" size={50} color="gray" style={styles.profileIcon} />
-                <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
-                <Text style={styles.doctorName}>Yeni Hasta Kaydı Bilgileri</Text>
+
+                <View style={styles.profileContainer}>
+
+                    <FontAwesome name="user-md" size={50} color="white" style={styles.profileIcon} />
+                    <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+                </View>
+
+                <Text style={styles.ptName}>Yeni Hasta Kaydı Bilgileri</Text>
 
                 <ScrollView style={styles.scrollContainer}>
                     <TextInput
@@ -352,17 +357,18 @@ const styles = StyleSheet.create({
     innerContainer: {
         width: 400,
         height: 600,
-        backgroundColor: "white",
+        backgroundColor: "#F9F9F9",
         padding: 30,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        borderWidth: 2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
-        overflow: "hidden", // Taşan içeriği gizler
-        flexShrink: 0,      // İçeriğe bağlı olarak küçülmeyi engeller
+        marginBottom: -2,
     },
     dateText: {
         fontSize: 18,
@@ -371,11 +377,28 @@ const styles = StyleSheet.create({
     },
     profileIcon: {
         marginBottom: 10,
+        alignSelf: "center",
     },
     doctorName: {
+        fontSize: 12,
+        fontWeight: "bold",
+        marginBottom: 20,
+        color: "white",
+        alignSelf: "center",
+    },
+    profileContainer: {
+        backgroundColor: "#2E5077", // istediğin renk
+        width: 300,
+        padding: 15,
+        height: 100,
+        marginBottom: 15,
+        borderRadius: 15,
+    },
+    ptName: {
         fontSize: 16,
         fontWeight: "bold",
         marginBottom: 20,
+        color: "#2E5077"
     },
     input: {
         width: "100%",
@@ -384,10 +407,10 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         borderRadius: 5,
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#183B4E",
     },
     button: {
-        backgroundColor: "#007bff",
+        backgroundColor: "#2E5077",
         padding: 10,
         borderRadius: 15,
         alignItems: "center",
@@ -414,6 +437,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
+        borderWidth: 1,
+        borderColor: "#183B4E",
     },
     pickerContainer: {
         width: "100%",

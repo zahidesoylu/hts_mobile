@@ -168,19 +168,19 @@ const styles = StyleSheet.create({
     },
     innerContainer: {
         width: 400,
-        height: 550,
-        backgroundColor: "white",
+        height: 600,
+        backgroundColor: "#F9F9F9",
         padding: 30,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        borderWidth: 2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
-        overflow: "hidden", // Taşan içeriği gizler
-        flexShrink: 0,
-        justifyContent: "center"
+        marginBottom: -2,
     },
     scrollContent: {
         width: "100%",
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     infoBox: {
         width: "100%",
         padding: 15,
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#2E5077",
         borderRadius: 8,
         marginVertical: 20,
         alignItems: "center", // Bu zaten var, yatayda ortalamayı sağlar
@@ -217,10 +217,12 @@ const styles = StyleSheet.create({
     hastalarButton: {
         width: "100%",
         padding: 10,
-        backgroundColor: "#ddd",
+        backgroundColor: "#eee",
         borderRadius: 8,
         alignItems: "center",
         marginVertical: 10,
+        borderWidth: 2,
+        borderColor: "#183B4E",
     },
     hastalarButtonText: {
         fontSize: 16,
@@ -236,12 +238,14 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     addPatientButton: {
-        width: "100%",
+        width: 250,
         padding: 10,
-        backgroundColor: "#ddd",
+        backgroundColor: "#eee",
         borderRadius: 8,
         alignItems: "center",
         marginVertical: 10,
+        borderWidth: 2,
+        borderColor: "#183B4E",
     },
     addPatientButtonText: {
         fontSize: 16,
@@ -254,10 +258,11 @@ const styles = StyleSheet.create({
     },
     doctorName: {
         fontSize: 14,
-        color: "black",
+        color: "white",
         fontWeight: "bold",
         textAlign: "center", // Metni yatayda ortalar
         marginTop: 10,
+        marginBottom: 10,
     },
     input: {
         width: "100%",
@@ -290,13 +295,16 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     deleteButton: {
-        backgroundColor: '#FF4C4C',
+        backgroundColor: '#eee',
         paddingVertical: 5,
         paddingHorizontal: 15,
         borderRadius: 8,
+        borderWidth: 2,
+        borderColor: "#183B4E",
+
     },
     deleteButtonText: {
-        color: '#fff',
+        color: '#black',
         fontWeight: 'bold',
     },
 

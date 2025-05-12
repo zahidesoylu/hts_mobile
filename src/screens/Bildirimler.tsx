@@ -103,9 +103,11 @@ const Bildirimler = () => {
                         year: "numeric",
                     })}
                 </Text>
+                <View style={styles.infoBox}>
 
-                <FontAwesome name="bell" size={50} color="gray" style={styles.icon} />
-                <Text style={styles.title}>Bildirimler</Text>
+                    <FontAwesome name="bell" size={40} color="white" style={styles.icon} />
+                    <Text style={styles.title}>Bildirimler</Text>
+                </View>
 
                 {loading ? (
                     <Text style={styles.loadingText}>Yükleniyor...</Text>
@@ -150,13 +152,30 @@ const styles = StyleSheet.create({
         height: 600,
         backgroundColor: "white",
         padding: 30,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        borderWidth: 2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        marginBottom: -2,
         alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
+    },
+    infoBox: {
+        backgroundColor: '#2E5077',
+        padding: 15,
+        borderRadius: 10,
+        marginVertical: 15,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     dateText: {
         fontSize: 20,
@@ -167,9 +186,10 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     title: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: "bold",
-        marginBottom: 20,
+        marginBottom: 10,
+        color: "white",
     },
     loadingText: {
         fontSize: 18,
@@ -183,7 +203,9 @@ const styles = StyleSheet.create({
         width: "100%",
         padding: 15,
         marginBottom: 10,
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#white",
+        borderWidth: 2,
+        borderColor: "#183B4E",
         borderRadius: 10,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
