@@ -199,12 +199,19 @@ const PtDailyReport = ({ navigation }: any) => {
                     <Text style={styles.subtitle}>Hastalık: {hastalikName}</Text>
                 </View>
 
-                <ScrollView style={styles.questionsContainer} contentContainerStyle={{ paddingBottom: 20 }}>
+                <ScrollView
+                    style={styles.questionsContainer}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    showsVerticalScrollIndicator={false} // Kaydırma çubuğunu gizler
+                >
                     {questions.map((question, index) => {
                         const cleanedQuestion = question.trim().replace(/^"|"$/g, "");
                         return (
                             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                             <View key={index} style={styles.questionBox}>
+                                <TouchableOpacity onPress={() => dinle(cleanedQuestion)}>
+                                    <Text style={styles.assistantButtonText}>🔊 Soruyu Dinle</Text>
+                                </TouchableOpacity>
                                 <Text style={styles.question}>{index + 1}. {cleanedQuestion}</Text>
                                 <TextInput
                                     style={styles.input}
@@ -237,6 +244,8 @@ const PtDailyReport = ({ navigation }: any) => {
                         style={[styles.saveButton, todayReportFilled && { backgroundColor: "#ccc" }]}
                         onPress={handleSave}
                         disabled={todayReportFilled}
+                        activeOpacity={0.7} // Tıklama efekti ekler (opacity düşer)
+
                     >
                         <Text style={styles.saveButtonText}>
                             {todayReportFilled ? "Bugünkü Rapor Dolduruldu" : "Kaydet"}
@@ -297,9 +306,11 @@ const styles = StyleSheet.create({
     },
     questionsContainer: {
         marginTop: 10,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: "#183B4E",
         borderRadius: 10,
+        overflow: 'hidden', // Kaydırma çubuğunun görünmesini engeller
+
     },
     questionBox: {
         marginBottom: 20,
@@ -335,14 +346,16 @@ const styles = StyleSheet.create({
         backgroundColor: "#2E5077",
         justifyContent: "center",
         alignItems: "center",
-        padding: 15,
-        borderRadius: 10,
-        marginTop: 20,
+        padding: 5,
+        borderRadius: 15,
+        marginTop: 10,
+        opacity: 1, // Opaklık normal
+        width: 100,
+        alignSelf: "center",
     },
     saveButtonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "bold",
+        color: "white",
+        fontSize: 12,
     },
     center: {
         flex: 1,

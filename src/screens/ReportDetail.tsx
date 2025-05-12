@@ -150,10 +150,11 @@ const styles = StyleSheet.create({
         height: 600,
         backgroundColor: "white",
         padding: 30,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
+        borderWidth: 2,
+        marginBottom: -2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.1,
@@ -244,6 +245,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#e6f0ff',
         padding: 10,
         borderRadius: 8,
+        borderWidth: 1,
     },
     question: {
         fontWeight: "500",
@@ -277,11 +279,11 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         paddingHorizontal: 24,
         borderRadius: 10,
-        backgroundColor: "#F44336", // Kırmızı arka plan
+        backgroundColor: "#2E5077", // ← bu satır zaten senin istediğin renk!
         justifyContent: "center",
         alignItems: "center",
-        width: 90, // Minimum genişlik
-        height: 35, // Minimum yükseklik
+        width: 90,
+        height: 35,
     },
     resultFollowUp: {
         backgroundColor: "#F44336", // kırmızı

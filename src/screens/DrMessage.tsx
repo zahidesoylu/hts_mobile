@@ -127,6 +127,7 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
                         if (selectedPatient) {
                             navigation.navigate("ChatScreen", {
                                 patient: selectedPatient,
+                                doctorName: doctorName,
 
 
                             });

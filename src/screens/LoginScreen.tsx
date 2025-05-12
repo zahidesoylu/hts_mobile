@@ -178,22 +178,14 @@ const LoginScreen = ({ navigation }: any) => {
             keyboardType="email-address"
           />
 
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="Şifre"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!passwordVisible}
-            />
-            <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
-              <Ionicons
-                name={passwordVisible ? "eye-off" : "eye"}
-                size={20}
-                color="#555"
-              />
-            </TouchableOpacity>
-          </View>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Şifre"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!passwordVisible}
+          />
 
           {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
 
@@ -222,17 +214,23 @@ const styles = StyleSheet.create({
   container: {
     width: 400,
     height: 600,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 25,
-    elevation: 8,
+    backgroundColor: "#F9F9F9",
+    padding: 30,
+    borderWidth: 2,
+    borderColor: "#183B4E",
+    borderRadius: 40,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   header: {
     fontSize: 26,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 20,
+    marginBottom: 50,
+    marginTop: 30,
   },
   roleContainer: {
     flexDirection: "row",
@@ -249,7 +247,7 @@ const styles = StyleSheet.create({
   },
 
   selectedRole: {
-    backgroundColor: "#007bff",
+    backgroundColor: "#2E5077",
   },
   roleText: {
     fontSize: 15,
@@ -266,30 +264,36 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#f9f9f9",
-    borderColor: "#ccc",
+    borderColor: "#2E5077",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 45,
-    marginBottom: 15,
+    marginBottom: 25,
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f9f9f9",
-    borderColor: "#ccc",
+    borderColor: "#2E5077",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 45,
-    marginBottom: 15,
-    justifyContent: "space-between",
+    marginBottom: 25,
   },
   passwordInput: {
-    flex: 1,
+    backgroundColor: "#f9f9f9",
+    borderColor: "#2E5077",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 45,
+    fontSize: 16,
+    color: "#000",
   },
   loginButton: {
-    backgroundColor: "#007bff",
+    backgroundColor: "#2E5077",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -306,10 +310,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#007bff",
+    borderColor: "#2E5077",
   },
   registerText: {
-    color: "#007bff",
+    color: "#2E5077",
     fontWeight: "bold",
     fontSize: 16,
   },
@@ -317,6 +321,11 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: 10,
     textAlign: "center",
+  },
+  eyeButton: {
+    alignItems: "flex-start",
+    marginTop: 6,
+    marginLeft: 4, // İsteğe bağlı
   },
 });
 
