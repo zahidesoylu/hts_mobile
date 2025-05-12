@@ -161,10 +161,15 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     infoBox: {
-        backgroundColor: '#e6f0ff',
-        borderRadius: 8,
+        backgroundColor: "#2E5077", // istediğin renk
+        width: 300,
+        padding: 15,
+        height: 140,
+        marginBottom: 35,
+        borderRadius: 15,
+        justifyContent: "center",
         alignItems: "center",
-        width: "100%",
+
     },
     scrollContainer: {
         flex: 1,
@@ -179,12 +184,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 5,
-        color: "#1976D2",
+        color: "white",
+        alignSelf: "center",
     },
     subtitle: {
         fontSize: 12,
         marginBottom: 6,
-        color: "#424242",
+        color: "white",
     },
     resultText: {
         color: "black",
@@ -258,6 +264,8 @@ const styles = StyleSheet.create({
         alignItems: 'center', // Dikeyde ortalamayı sağlıyor
         height: 60,  // Sabit bir yükseklik değeri
         width: 300,
+        borderWidth: 1,
+        borderColor: "2E5077",
     },
     resultTitle: {
         fontSize: 12,

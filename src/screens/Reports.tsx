@@ -146,8 +146,11 @@ const styles = StyleSheet.create({
         height: 600,
         backgroundColor: "white",
         padding: 30,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        borderWidth: 2,
+        marginBottom: -2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
         alignItems: "center",
@@ -158,7 +161,7 @@ const styles = StyleSheet.create({
     },
     infoBox: {
         padding: 15,
-        backgroundColor: "#2F4F4F",
+        backgroundColor: "#2E5077",
         marginBottom: 20,
         borderRadius: 8,
         alignItems: "center",
@@ -177,7 +180,7 @@ const styles = StyleSheet.create({
     patientItem: {
         padding: 10,
         borderBottomWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#2E5077",
     },
     patientName: {
         fontSize: 16,
@@ -189,6 +192,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#f0f0f0",
         borderRadius: 8,
         marginTop: 4,
+        borderWidth: 1,
+        borderColor: "2E5077",
     },
     reportDate: {
         fontSize: 14,

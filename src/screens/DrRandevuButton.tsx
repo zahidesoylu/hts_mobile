@@ -192,8 +192,8 @@ const DrRandevuButton = () => {
                                     style={[
                                         styles.confirmButtonStyle,
                                         (item.isApproved || selectedDate === "Dün")
-                                            ? { backgroundColor: "#4CAF50", opacity: 0.6 }
-                                            : { backgroundColor: "#4CAF50" },
+                                            ? { backgroundColor: "#eee", opacity: 0.6 }
+                                            : { backgroundColor: "#eee" },
                                     ]}
                                     disabled={item.isApproved || selectedDate === "Dün"}
                                     onPress={() => handleApprove(item.id, item.hastaId)}
@@ -203,6 +203,7 @@ const DrRandevuButton = () => {
                                     </Text>
                                 </TouchableOpacity>
                             </View>
+
                         )}
                         style={styles.appointmentsContainer}
                     />
@@ -247,22 +248,18 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     doctorNameContainer: {
-        padding: 10,
-        backgroundColor: '#f0f4f8',
+        width: "100%",
+        padding: 15,
+        backgroundColor: "#2E5077",
         borderRadius: 8,
-        marginVertical: 10,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-        width: "90%",
-        height: 50,
+        marginVertical: 20,
+        alignItems: "center", // Bu zaten var, yatayda ortalamayı sağlar
         justifyContent: "center",
+        flexDirection: "column", // Dikeyde ortalamak için
     },
     doctorName: {
         fontSize: 14,
-        color: "black",
+        color: "white",
         fontWeight: "bold",
     },
     dateSelector: {
@@ -273,9 +270,9 @@ const styles = StyleSheet.create({
     },
     dateButton: {
         padding: 10,
-        borderWidth: 1,
+        borderWidth: 2,
         borderRadius: 5,
-        borderColor: "#ddd",
+        borderColor: "#183B4E",
         marginTop: 15,
     },
     selectedDateButton: {
@@ -287,6 +284,7 @@ const styles = StyleSheet.create({
     },
     appointmentsContainer: {
         width: "90%",
+
     },
     appointmentRow: {
         backgroundColor: "#fff",
@@ -302,21 +300,25 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+        borderWidth: 2,
+        borderColor: "#183B4E"
     },
     appointmentText: {
         fontSize: 16,
         color: "#333",
     },
     confirmButtonStyle: {
-        backgroundColor: "#4CAF50",
+        backgroundColor: "#eee",
         padding: 10,
         borderRadius: 5,
         justifyContent: "center",
         alignItems: "center",
         marginLeft: 20,
+        borderWidth: 2,
+        borderColor: "#183B4E"
     },
     confirmButtonText: {
-        color: "#fff",
+        color: "#183B4E",
         fontSize: 14,
     },
     emptyText: {
