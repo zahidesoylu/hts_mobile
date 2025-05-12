@@ -16,6 +16,8 @@ import Bildirimler from "../../src/screens/Bildirimler";
 import PtDailyReport from "../../src/screens/PtDailyReport";
 import Reports from "../../src/screens/Reports";
 import ReportDetail from "@/screens/ReportDetail";
+import tailwind from 'tailwind-rn';
+
 
 export type RootStackParamList = {
   LoginScreen: undefined;

@@ -79,6 +79,7 @@ const PtReport = ({ navigation }: any) => {
     }, [patientId, doctorId, hastalikId]);
 
 
+
     // Geçmiş raporları çekme
     useEffect(() => {
         const fetchPastReports = async () => {
@@ -143,7 +144,7 @@ const PtReport = ({ navigation }: any) => {
                     <Text style={styles.doctorName}>{doctorName || "Doktor adı bulunamadı"}</Text>
                 </View>
 
-                <Text style={styles.sectionTitle}>Günlük Rapor</Text>
+                <Text style={styles.sectionTitle}>Günlük Raporum</Text>
 
                 {todayReportFilled ? (
                     <View style={[styles.reportButton, { backgroundColor: "#4caf50" }]}>
@@ -165,7 +166,7 @@ const PtReport = ({ navigation }: any) => {
                             })
                         }
                     >
-                        <Ionicons name="create" size={24} color="gray" style={{ marginRight: 8 }} />
+                        <Ionicons name="create" size={24} color="white" style={{ marginRight: 8 }} />
                         <Text style={styles.reportButtonText}>Günlük Raporu Doldur</Text>
                     </TouchableOpacity>
                 )}
@@ -177,19 +178,13 @@ const PtReport = ({ navigation }: any) => {
                         <Text style={styles.infoText}>Geçmiş bir raporunuz bulunmamaktadır.</Text>
                     ) : (
                         reportList.map((reportDate, index) => (
-                            <TouchableOpacity
+                            <View
                                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                 key={index}
                                 style={styles.reportCard}
-                                onPress={() =>
-                                    navigation.navigate("ReportDetail", {
-                                        patientId,
-                                        date: reportDate,
-                                    })
-                                }
                             >
                                 <Text>{reportDate}</Text>
-                            </TouchableOpacity>
+                            </View>
                         ))
                     )}
                 </ScrollView>
@@ -210,12 +205,16 @@ const styles = StyleSheet.create({
     innerContainer: {
         width: 400,
         height: 600,
+        borderWidth: 2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         backgroundColor: "white",
         padding: 20,
         marginTop: 20,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
         alignItems: "center",
+        marginBottom: -2,
+
     },
     dateText: {
         fontSize: 20,
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     infoBox: {
-        backgroundColor: '#e6f0ff',
+        backgroundColor: '#2E5077',
         padding: 15,
         borderRadius: 10,
         alignItems: 'center',
@@ -237,10 +236,12 @@ const styles = StyleSheet.create({
     pFullName: {
         fontSize: 18,
         fontWeight: "bold",
+        marginBottom: 15,
+        color: "white",
     },
     doctorName: {
         fontSize: 14,
-        color: "gray",
+        color: "white",
         marginBottom: 15,
     },
     sectionTitle: {
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     reportButton: {
-        backgroundColor: "#336699", // Aynı mavi renk
+        backgroundColor: "#2E5077", // Aynı mavi renk
         padding: 15,
         borderRadius: 8,
         marginBottom: 10,

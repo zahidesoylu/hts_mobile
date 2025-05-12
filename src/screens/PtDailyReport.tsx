@@ -166,6 +166,9 @@ const PtDailyReport = ({ navigation }: any) => {
 
             await addDoc(collection(db, "reports"), reportData);
 
+            setTodayReportFilled(true); // Kaydedildiği için buton durumu güncellenir
+
+
             Alert.alert("Başarılı", "Rapor kaydedildi.");
             navigation.goBack();
         } catch (error) {
@@ -256,48 +259,69 @@ const styles = StyleSheet.create({
     innerContainer: {
         width: 400,
         height: 600,
-        backgroundColor: "white",
+        borderWidth: 2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         padding: 20,
         marginTop: 20,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
         alignItems: "center",
         justifyContent: "space-between",
+        marginBottom: -2,
+
     },
     infoBox: {
-        backgroundColor: "#e6f0ff",
+        backgroundColor: '#2E5077',
         padding: 15,
         borderRadius: 10,
+        marginVertical: 15,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
     },
     title: {
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: "bold",
         marginBottom: 5,
+        color: "white",
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: 12,
         marginBottom: 2,
+        color: "white",
+
     },
     questionsContainer: {
         marginTop: 10,
+        borderWidth: 2,
+        borderColor: "#183B4E",
+        borderRadius: 10,
+
     },
     questionBox: {
         marginBottom: 20,
     },
     question: {
-        fontSize: 16,
-        fontWeight: "600",
+        marginTop: 12,
+        marginLeft: 5,
+        fontSize: 15,
+        fontWeight: "400",
         marginBottom: 5,
+
     },
     input: {
         borderWidth: 1,
         borderColor: "#ccc",
         borderRadius: 8,
         padding: 10,
-        fontSize: 16,
+        fontSize: 12,
         backgroundColor: "#fff",
+        marginLeft: 5,
+
     },
     assistantButtons: {
         flexDirection: "row",
@@ -309,7 +333,7 @@ const styles = StyleSheet.create({
         color: "#007AFF",
     },
     saveButton: {
-        backgroundColor: "#007AFF",
+        backgroundColor: "#2E5077",
         padding: 15,
         borderRadius: 10,
         marginTop: 20,

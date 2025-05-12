@@ -8,6 +8,9 @@ import { doc, getDoc } from "firebase/firestore";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AntDesign } from '@expo/vector-icons';
+import tailwind from "tailwind-rn"; // tailwind-rn'i kullanarak stil yapıyoruz
+import Ionicons from '@expo/vector-icons/Ionicons';
+import Fontisto from '@expo/vector-icons/Fontisto';
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -168,18 +171,22 @@ const PatientMenu = ({ navigation, route }: any) => {
           })}
         </Text>
 
-        <FontAwesome name="user-circle" size={50} color="gray" style={styles.profileIcon} />
-        <Text style={styles.pFullName}>{patientName || 'Hasta adı bulunamadı'}</Text>
+        <View style={styles.profileContainer}>
+          <View style={styles.profileRow}>
+            <FontAwesome name="user-circle" size={50} color="gray" style={styles.profileIcon} />
+            <Text style={styles.pFullName}>{patientName || 'Hasta adı bulunamadı'}</Text>
+          </View>
 
-        {loading ? (
-          <Text style={styles.doctorName}>Yükleniyor...</Text>
-        ) : filteredDoctorName && filteredPatientName ? (
-          <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
-        ) : (
-          <Text style={styles.doctorName}>Eşleşen veri bulunamadı</Text>
-        )}
+          {loading ? (
+            <Text style={styles.doctorName}>Yükleniyor...</Text>
+          ) : filteredDoctorName && filteredPatientName ? (
+            <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+          ) : (
+            <Text style={styles.doctorName}>Eşleşen veri bulunamadı</Text>
+          )}
+        </View>
 
-        <SearchBar onSearch={handleSearch} />  {/* SearchBar'dan gelen metni alıyoruz */}
+
 
         <View style={styles.menuContainer}>
           <TouchableOpacity
@@ -192,7 +199,8 @@ const PatientMenu = ({ navigation, route }: any) => {
               hastalikId,
               hastalik,
             })}
-          >
+
+          ><AntDesign name="profile" size={30} color="black" />
             <Text style={styles.cardText}>Raporlar</Text>
           </TouchableOpacity>
 
@@ -208,6 +216,7 @@ const PatientMenu = ({ navigation, route }: any) => {
             })
             }
           >
+            <Fontisto name="date" size={30} color="black" />
             <Text style={styles.cardText}>Randevular</Text>
           </TouchableOpacity>
 
@@ -222,6 +231,7 @@ const PatientMenu = ({ navigation, route }: any) => {
               hastalik,
             })}
           >
+            <Ionicons name="notifications-outline" size={30} color="black" />
             <Text style={styles.cardText}>Bildirimler</Text>
           </TouchableOpacity>
 
@@ -252,39 +262,54 @@ const PatientMenu = ({ navigation, route }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#ECE8DD",
     alignItems: "center",
     justifyContent: "center",
   },
   innerContainer: {
     width: 400,
     height: 600,
-    backgroundColor: "white",
+    backgroundColor: "#F9F9F9",
     padding: 30,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    borderWidth: 2,
+    borderColor: "#183B4E",
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
     alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
+    marginBottom: -2,
   },
+  profileContainer: {
+    backgroundColor: "#2E5077", // istediğin renk
+    width: 300,
+    padding: 15,
+    height: 140,
+    marginBottom: 35,
+    borderRadius: 15,
+  },
+
   dateText: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: 25,
   },
   profileIcon: {
     marginBottom: 10,
+    color: "white",
   },
   pFullName: {
     fontSize: 18,
     fontWeight: "bold",
+    color: "white",
   },
   doctorName: {
     fontSize: 14,
-    color: "gray",
+    color: "white",
     marginTop: 10,
+    marginBottom: 60,
   },
   menuContainer: {
     flexDirection: "row",
@@ -293,11 +318,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
     width: "100%",
   },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20, // Eğer desteklemiyorsa marginRight kullan
+  },
   card: {
     width: '35%',
     height: 120,
     margin: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#eee',
+    borderWidth: 2,
+    borderColor: "#183B4E",
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',

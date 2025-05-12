@@ -35,7 +35,14 @@ const BottomMenu = () => {
 
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {
+      backgroundColor: "#F9F9F9",
+      height: 80,
+      borderWidth: 2,
+      borderColor: "#183B4E",
+      borderBottomLeftRadius: 40,
+      borderBottomRightRadius: 40,
+    }]}>
       <TouchableOpacity
         style={styles.menuItem}
         onPress={handleMenuPress}
