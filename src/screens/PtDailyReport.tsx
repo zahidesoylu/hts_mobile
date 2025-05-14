@@ -209,10 +209,17 @@ const PtDailyReport = ({ navigation }: any) => {
                         return (
                             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                             <View key={index} style={styles.questionBox}>
-                                <TouchableOpacity onPress={() => dinle(cleanedQuestion)}>
-                                    <Text style={styles.assistantButtonText}>🔊 Soruyu Dinle</Text>
-                                </TouchableOpacity>
-                                <Text style={styles.question}>{index + 1}. {cleanedQuestion}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <TouchableOpacity onPress={() => dinle(cleanedQuestion)}>
+                                        <Text style={[styles.question, { marginLeft: 4 }]}>🔊</Text>
+                                    </TouchableOpacity>
+                                    <Text style={styles.question}>
+                                        {index + 1}.
+                                    </Text>
+                                    <Text style={[styles.question, { marginLeft: 4 }]}>
+                                        {cleanedQuestion}
+                                    </Text>
+                                </View>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Cevabınızı yazınız"
@@ -223,19 +230,17 @@ const PtDailyReport = ({ navigation }: any) => {
                                         setAnswers(newAnswers);
                                     }}
                                 />
-                                <View style={styles.assistantButtons}>
-                                    <TouchableOpacity onPress={() => dinle(cleanedQuestion)}>
-                                        <Text style={styles.assistantButtonText}>🔊 Soruyu Dinle</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => {
-                                        const updatedAnswers = [...answers];
-                                        updatedAnswers[index] = recognizedText;
-                                        setAnswers(updatedAnswers);
-                                    }}>
-                                        <Text style={styles.assistantButtonText}>🎙️ Sesli Cevabını Gir</Text>
+                                <View style={[styles.assistantButtons]}>
+                                    <VoiceInput onSpeechStart={handleSpeechStart} onSpeechResult={handleSpeechResult} />
+                                    <TouchableOpacity style={styles.saveButton2}
+                                        onPress={() => {
+                                            const updatedAnswers = [...answers];
+                                            updatedAnswers[index] = recognizedText;
+                                            setAnswers(updatedAnswers);
+                                        }}>
+                                        <Text style={styles.saveButtonText2}>🎙️Cevabını Kaydet</Text>
                                     </TouchableOpacity>
                                 </View>
-                                <VoiceInput onSpeechStart={handleSpeechStart} onSpeechResult={handleSpeechResult} />
                             </View>
                         );
                     })}
@@ -318,7 +323,7 @@ const styles = StyleSheet.create({
     question: {
         marginTop: 12,
         marginLeft: 5,
-        fontSize: 15,
+        fontSize: 12,
         fontWeight: "400",
         marginBottom: 5,
 
@@ -330,13 +335,14 @@ const styles = StyleSheet.create({
         padding: 10,
         fontSize: 12,
         backgroundColor: "#fff",
-        marginLeft: 5,
+        margin: 5,
+
 
     },
     assistantButtons: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 5,
+        flexDirection: "row", // Butonları yatay hizalar
+        justifyContent: "space-between", // Butonlar arasında boşluk bırakır
+        alignItems: "center",
     },
     assistantButtonText: {
         fontSize: 14,
@@ -362,6 +368,20 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+    saveButton2: {
+        width: 105,
+        height: 30,
+        backgroundColor: "#2E5077",
+        borderRadius: 12,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 25,
+        marginTop: 10,
+    },
+    saveButtonText2: {
+        color: "white",
+        fontSize: 11,
+    }
 });
 
 export default PtDailyReport;

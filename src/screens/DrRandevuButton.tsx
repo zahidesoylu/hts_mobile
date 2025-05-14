@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     },
     appointmentText: {
         fontSize: 16,
-        color: "#333",
+        color: "#183B4E",
     },
     confirmButtonStyle: {
         backgroundColor: "#eee",

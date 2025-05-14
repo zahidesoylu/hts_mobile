@@ -231,11 +231,10 @@ const styles = StyleSheet.create({
     },
     patientPanel: {
         width: "100%",
-        marginVertical: 20,
+        marginVertical: 5,
     },
     patientText: {
         fontSize: 16,
-        marginBottom: 8,
     },
     addPatientButton: {
         width: 250,
@@ -290,7 +289,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#f9f9f9',
-        padding: 10,
         borderRadius: 8,
         marginBottom: 8,
     },

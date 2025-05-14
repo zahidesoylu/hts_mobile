@@ -84,6 +84,11 @@ const PtReport = ({ navigation }: any) => {
     useEffect(() => {
         const fetchPastReports = async () => {
             try {
+
+                if (!patientId || !doctorId || !hastalikId) {
+                    console.error("Eksik parametreler: ", { patientId, doctorId, hastalikId });
+                    return;
+                }
                 const q = query(
                     collection(db, "reports"),
                     where("patientId", "==", patientId),

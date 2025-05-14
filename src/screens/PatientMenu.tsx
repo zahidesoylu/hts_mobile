@@ -180,7 +180,7 @@ const PatientMenu = ({ navigation, route }: any) => {
           {loading ? (
             <Text style={styles.doctorName}>Yükleniyor...</Text>
           ) : filteredDoctorName && filteredPatientName ? (
-            <Text style={styles.doctorName}>{doctorName || 'Doktor adı bulunamadı'}</Text>
+            <Text style={styles.doctorName}>Doktoru: {doctorName || 'Doktor adı bulunamadı'}</Text>
           ) : (
             <Text style={styles.doctorName}>Eşleşen veri bulunamadı</Text>
           )}
@@ -304,12 +304,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "white",
+    alignSelf: "center",
   },
   doctorName: {
     fontSize: 14,
     color: "white",
     marginTop: 10,
     marginBottom: 60,
+    alignSelf: "center",
   },
   menuContainer: {
     flexDirection: "row",

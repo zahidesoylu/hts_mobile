@@ -1,5 +1,7 @@
 import type React from "react";
 import { useState, useRef } from "react";
+import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+
 
 interface VoiceInputProps {
     onSpeechResult: (text: string) => void;
@@ -53,16 +55,37 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onSpeechResult, onSpeechStart }
     };
 
     return (
-        <div className="mt-2">
-            {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-            <button
-                onClick={isListening ? handleStop : handleStart}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        <View style={styles.container}>
+            <TouchableOpacity
+                onPress={isListening ? handleStop : handleStart}
+                style={styles.button}
             >
-                {isListening ? "🛑 Durdur" : "🎤 Konuşmaya Başla"}
-            </button>
-        </div>
+                <Text style={styles.buttonText}>
+                    {isListening ? "🛑 Durdur" : "🎤 Sesli Cevap Ver"}
+                </Text>
+            </TouchableOpacity>
+        </View>
     );
 };
+
+
+const styles = StyleSheet.create({
+    container: {
+        marginTop: 8, // mt-2 eşdeğeri
+    },
+    button: {
+        width: 100, // w-48
+        height: 30, // h-12
+        backgroundColor: "#2E5077", // Tailwind'de bg-blue-500
+        borderRadius: 12, // rounded-xl
+        marginLeft: 20, // ml-5
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    buttonText: {
+        color: "white",
+        fontSize: 10,
+    },
+});
 
 export default VoiceInput;

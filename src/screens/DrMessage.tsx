@@ -159,8 +159,11 @@ const styles = StyleSheet.create({
         height: 600,
         backgroundColor: "white",
         padding: 30,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        borderWidth: 2,
+        marginBottom: -2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.1,
@@ -180,17 +183,19 @@ const styles = StyleSheet.create({
         backgroundColor: "#f0f0f0",
         borderRadius: 8,
         marginVertical: 20,
+        borderWidth: 2,
+        borderColor: "2E5077",
     },
     selectPatientText: {
         fontSize: 16,
         fontWeight: "bold",
         textAlign: "center",
-        color: "#007BFF",
+        color: "#2E5077",
         paddingVertical: 10,
     },
     patientButton: {
         padding: 10,
-        backgroundColor: "#007BFF",
+        backgroundColor: "#2E5077",
         borderRadius: 8,
         marginVertical: 5,
         alignItems: "center",
@@ -200,14 +205,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     selectedPatientButton: {
-        backgroundColor: "#66bb6a", // Seçilen hasta butonunu yeşil yapalım
     },
     scrollableList: {
         maxHeight: 200, // Listede kaydırılabilir alanı sınırla
     },
     selectedPatientContainer: {
         marginVertical: 10,
-        backgroundColor: "#c8e6c9",
         padding: 10,
         borderRadius: 8,
         width: "100%",
@@ -216,6 +219,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
         textAlign: "center",
+        color: "2E5077",
     },
     messageContainer: {
         width: "100%",
@@ -224,11 +228,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#f0f0f0",
         borderRadius: 8,
         alignItems: "center",
+        borderWidth: 2,
+        borderColor: "2E5077",
     },
     messageText: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#007BFF", // Mesaj yaz kısmı mavi renkte
+        color: "#2E5077", // Mesaj yaz kısmı mavi renkte
         textAlign: "center",
     },
     noPatientsText: {
