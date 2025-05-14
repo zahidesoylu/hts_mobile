@@ -12,7 +12,7 @@ export async function analyseReport(content: string): Promise<AnalysisResult> {
     responseMimeType: "text/plain",
     systemInstruction: [
       {
-        text: `Sen bir sağlık izleme asistanısın. Kullanıcı kronik hastalığıyla ilgili günlük rapor dolduruyor. Verilen cevapları analiz et ve aşağıdaki 3 sınıftan birine göre durumu değerlendir:
+        text: `Sen bir sağlık izleme asistanısın. Kullanıcı kronik hastalığıyla ilgili günlük rapor dolduruyor. Verilen cevapları analiz et ve aşağıdaki 3 sınıftan birine göre durumu değerlendir çok extreme bir durum olmadıkça takip gerektirene koyma. Eğer koyduysan doktora hastanın acil durum kişilerine ulaşması gerektiğini hatırlat.:
   1. "İyi"
   2. "Normal"
   3. "Takip Gerektiren"

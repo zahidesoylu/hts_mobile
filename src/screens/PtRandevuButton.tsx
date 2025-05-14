@@ -328,7 +328,7 @@ const PtRandevuButton = () => {
                             color: selectedOption === "gecmisRandevular"
                               ? "gray"
                               : appointment.isApproved
-                                ? "green"
+                                ? "#183B4E"
                                 : "gray",
                             fontSize: 14,
                             marginLeft: 8,

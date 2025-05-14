@@ -72,10 +72,7 @@ const ReportDetail = ({ route }: any) => {
                     <Text style={styles.resultTitle}>Sorular & Cevaplar</Text>
 
                     <TouchableOpacity
-                        style={[
-                            styles.resultBox,
-                            isQAOpen ? styles.resultGood : styles.resultNormal,
-                        ]}
+                        style={styles.resultBox}
                         onPress={() => setIsQAOpen(!isQAOpen)}
                     >
                         <Text style={styles.resultText}>
@@ -104,7 +101,7 @@ const ReportDetail = ({ route }: any) => {
                 <View style={styles.resultContainer}>
                     <Text style={styles.resultTitle}>Rapor Sonucu</Text>
                     <TouchableOpacity
-                        style={[styles.resultBox, isResultOpen ? styles.resultGood : styles.resultNormal]}
+                        style={styles.resultBox}
                         onPress={() => setIsResultOpen(!isResultOpen)}
                     >
                         <Text style={styles.resultText}>
@@ -116,8 +113,7 @@ const ReportDetail = ({ route }: any) => {
                 {isResultOpen && (
                     <ScrollView style={[styles.resultContent, { maxHeight: 250 }]} nestedScrollEnabled={true}>
                         <View style={styles.resultItem}>
-                            <Text style={styles.itemTitle}>📌 Kategori</Text>
-                            <Text style={styles.itemText}>{aiCategory}</Text>
+                            <Text style={styles.itemTitle}>📌 Kategori: {aiCategory}</Text>
                         </View>
                         <View style={styles.resultItem}>
                             <Text style={styles.itemTitle}>🧠 Not</Text>
@@ -166,7 +162,7 @@ const styles = StyleSheet.create({
         width: 300,
         padding: 15,
         height: 140,
-        marginBottom: 35,
+        marginBottom: 20,
         borderRadius: 15,
         justifyContent: "center",
         alignItems: "center",
@@ -194,26 +190,19 @@ const styles = StyleSheet.create({
         color: "white",
     },
     resultText: {
-        color: "black",
+        color: "white",
         fontWeight: "200",
         fontSize: 12,
         textAlign: "center",
     },
     resultContent: {
-        backgroundColor: "#e6f0ff",
-        padding: 10,
+        backgroundColor: "white",
         borderRadius: 10,
-        marginTop: 10,
         width: 300,
-    },
-    resultNormal: {
-        backgroundColor: "#1976D2",
-    },
-    resultGood: {
-        backgroundColor: "rgba(25, 118, 210, 0.7)", // Daha şeffaf mavi
+        marginTop: 20,
     },
     resultItem: {
-        backgroundColor: '#f8fafc',
+        backgroundColor: '#e6f0ff',
         borderRadius: 12,
         padding: 12,
         marginBottom: 10,
@@ -227,12 +216,12 @@ const styles = StyleSheet.create({
     },
     itemTitle: {
         fontWeight: '600',
-        fontSize: 12,
+        fontSize: 14,
         marginBottom: 6,
         color: '#0f172a',
     },
     itemText: {
-        fontSize: 10,
+        fontSize: 12,
         color: '#334155',
         lineHeight: 20,
     },

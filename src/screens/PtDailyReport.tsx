@@ -314,6 +314,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#183B4E",
         borderRadius: 10,
+        width: 350,
         overflow: 'hidden', // Kaydırma çubuğunun görünmesini engeller
 
     },
