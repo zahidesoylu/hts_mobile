@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native
 import BottomMenu from "../components/ui/BottomMenu";
 import { auth, db } from "../config/firebaseConfig"; // Firebase config dosyasını import edin
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
 // Hasta tipini tanımla
 type Patient = {
@@ -28,6 +29,21 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
     const [showPatientList, setShowPatientList] = useState(false);
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [doctorId, setDoctorId] = useState<string | null>(null);
+
+
+    useEffect(() => {
+        const fetchDoctorInfo = async () => {
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            const docRef = doc(db, "users", uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setDoctorName(docSnap.data().name); // veya ad soyad birleşimi
+                setDoctorId(uid);
+            }
+        };
+        fetchDoctorInfo();
+    }, []);
 
 
     // Firestore'dan hasta verilerini çek
@@ -128,6 +144,7 @@ const DoctorMessageScreen = ({ navigation }: { navigation: any }) => {
                             navigation.navigate("ChatScreen", {
                                 patient: selectedPatient,
                                 doctorName: doctorName,
+                                doctorId: doctorId,
 
 
                             });

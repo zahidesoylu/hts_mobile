@@ -66,6 +66,8 @@ const PtChatScreen = ({ route }: { route: any }) => {
                     timestamp: serverTimestamp(),
                     senderName: patientName || "Hasta",
                     receiverName: doctorName || "Doktor",
+                    chatKey: [doctorId, patientId].sort().join("_"), // <-- EKLENDİ
+
                 };
 
                 // messages koleksiyonuna yeni bir mesaj ekliyoruz
@@ -87,8 +89,8 @@ const PtChatScreen = ({ route }: { route: any }) => {
         const messagesRef = collection(db, "messages");
 
         const q = query(messagesRef,
-            where("senderId", "in", [doctorId, patientId]),
-            where("receiverId", "in", [doctorId, patientId]),
+            where("chatKey", "==", [doctorId, patientId].sort().join("_")),
+
             orderBy("timestamp") // Mesajları zaman sırasına göre sıralıyoruz
         );
 
@@ -107,6 +109,7 @@ const PtChatScreen = ({ route }: { route: any }) => {
                 return {
                     id: doc.id,
                     sender: data.senderName || "Unknown",
+                    senderId: data.senderId, // <-- BUNU EKLE!
                     text: data.text || "",
                     time: timeString,
                 };
@@ -161,7 +164,9 @@ const PtChatScreen = ({ route }: { route: any }) => {
                             <View
                                 style={[
                                     styles.messageBox,
-                                    item.sender === "Doktor" ? styles.doctorMessage : styles.patientMessage,
+                                    item.senderId === doctorId
+                                        ? styles.doctorMessage
+                                        : styles.patientMessage,
                                 ]}
                             >
                                 <Text style={styles.messageText}>{item.text}</Text>
@@ -237,6 +242,7 @@ const styles = StyleSheet.create({
         width: "100%",
         flex: 1,
         marginBottom: 20,
+        padding: 10,
     },
     messageBox: {
         maxWidth: "80%",

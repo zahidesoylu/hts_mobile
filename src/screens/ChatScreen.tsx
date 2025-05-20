@@ -1,186 +1,190 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import BottomMenu from "../components/ui/BottomMenu";
 import { auth, db } from "@/config/firebaseConfig";
 import { collection, serverTimestamp, doc, getDoc, getDocs, query, where, addDoc } from "firebase/firestore";
 import { orderBy, onSnapshot } from "firebase/firestore";
+import { FlatList, TextInput, TouchableOpacity, View, Text, StyleSheet } from "react-native";
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const ChatScreen = ({ route }: { route: any }) => {
-    /* const [loading, setLoading] = useState(true);
-     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-     const [message, setMessage] = useState("");
-     const [patients, setPatients] = useState<{ id: string; name: string }[]>([]);
-     const myPatient = route.params.patient; // myPatient'ı route'dan alıyoruz
-     const flatListRef = useRef<FlatList>(null);
- 
-     const [messages, setMessages] = useState<{ id: string; sender: string; text: string; time: string; timestamp?: { seconds: number; nanoseconds: number } }[]>([]);
-     const [patientName, setPatientName] = useState<string>("");
-     const [doctorName, setDoctorName] = useState<string>("");
-     const { patientId, doctorId } = route.params;
- 
- 
-     console.log("Route params:", route.params);
-     console.log("Doktor Adı :", doctorName);
- 
-     // Veritabanından hasta ve doktor adlarını çek
-     useEffect(() => {
-         const fetchNames = async () => {
-             try {
- 
-                 const patientSnap = await getDoc(doc(db, "patients", patientId));
-                 const doctorSnap = await getDoc(doc(db, "users", doctorId));
- 
-                 if (patientSnap.exists()) {
-                     setPatientName(`${patientSnap.data().ad} ${patientSnap.data().soyad}` || "Hasta");
-                 } else {
-                     setErrorMessage("Hasta verisi bulunamadı.");
-                 }
-                 if (doctorSnap.exists()) {
-                     setDoctorName(`${doctorSnap.data().unvan} ${doctorSnap.data().ad} ${doctorSnap.data().soyad}` || "Doktor");
-                 } else {
-                     setErrorMessage("Doktor verisi bulunamadı.");
-                 }
-             } catch (err) {
-                 console.error("Adları getirirken hata:", err);
-             }
-         };
- 
-         fetchNames();
-     }, [patientId, doctorId]);
- 
-     // Mesaj gönderme fonksiyonu
-     const handleSendMessage = async () => {
-         if (message.trim()) {
-             if (!doctorId || !patientId) {
-                 console.error("Doktor veya Hasta ID'si geçerli değil!");
-                 console.log("Route params:", route.params); // Bu satır, route.params'ın içeriğini görmek için kullanılabilir
- 
-                 return;
-             }
-             try {
-                 // Mesaj verilerini Firestore'a kaydediyoruz
-                 const messageData = {
-                     senderId: doctorId,
-                     receiverId: patientId,  // Burada hasta ID'si seçili olmalı
-                     text: message,
-                     timestamp: serverTimestamp(),
-                     senderName: doctorName || "Doktor",
-                     receiverName: patientName || "Hasta",
- 
-                 };
- 
-                 // messages koleksiyonuna yeni bir mesaj ekliyoruz
-                 await addDoc(collection(db, "messages"), messageData);
-                 setMessage("");  // Mesaj kutusunu sıfırlıyoruz
-                 flatListRef.current?.scrollToEnd({ animated: true });
- 
-             } catch (error) {
-                 console.error("Mesaj gönderme hatası:", error);
-             }
-         }
-     };
- 
-     // Mesajları çekme fonksiyonu
-     useEffect(() => {
- 
-         if (!doctorId || !patientId) return;
- 
-         const messagesRef = collection(db, "messages");
-         const q = query(messagesRef,
-             where("senderId", "in", [doctorId, patientId]),  // Kullanıcı ve hasta arasında iletişim
-             where("receiverId", "in", [doctorId, patientId]),
-             orderBy("timestamp") // Mesajları zaman sırasına göre sıralıyoruz
-         );
- 
-         // Firestore'dan veri dinleme
-         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-             const messagesData = querySnapshot.docs.map((doc) => {
-                 const data = doc.data();
-                 const timestamp = data.timestamp;
- 
-                 let timeString = "Bilinmeyen zaman";
-                 if (timestamp?.seconds) {
-                     const date = new Date(timestamp.seconds * 1000);
-                     timeString = date.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-                 }
- 
-                 return {
-                     id: doc.id,
-                     sender: data.senderName || "Unknown",
-                     text: data.text || "",
-                     time: timeString,
-                 };
-             });
- 
-             setMessages(messagesData);
-         });
- 
- 
-         return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
-     }, [doctorId, patientId]);
- 
-     useEffect(() => {
-         console.log("doctorId:", doctorId);
-         console.log("patientId:", patientId);
-     }, [doctorId, patientId]);
- 
-     /*Hasta verisi
-     useEffect(() => {
-         const fetchPatients = async () => {
-             try {
-                 const userId = auth.currentUser?.uid;
-                 console.log("Giriş yapan doktor ID'si:", userId);
- 
-                 const patientsRef = collection(db, "patients");
-                 const q = query(patientsRef, where("doctorId", "==", userId));
-                 const querySnapshot = await getDocs(q);
- 
-                 const patientList = querySnapshot.docs.map(doc => {
-                     const data = doc.data();
-                     return {
-                         id: doc.id,
-                         name: `${data.ad} ${data.soyad}`
-                     };
-                 });
- 
-                 setPatients(patientList);
-             } catch (error) {
-                 console.error("Hastalar alınırken hata oluştu:", error);
-             }
-         };
- 
-         fetchPatients();
-     }, []);
- 
-     //Doktor verisi
- 
-     // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-     useEffect(() => {
-         const fetchDoctorData = async () => {
-             try {
-                 const docRef = doc(db, 'users', doctorId);
-                 const docSnap = await getDoc(docRef);
- 
-                 if (docSnap.exists()) {
-                     const userData = docSnap.data();
-                     const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
-                     setDoctorName(fullName);
-                 } else {
-                     setErrorMessage("Doktor verisi bulunamadı.");
-                     console.log("Doktor verisi bulunamadı.");
-                 }
-             } catch (error) {
-                 setErrorMessage("Veri çekme hatası oluştu.");
-             } finally {
-                 setLoading(false);
-             }
-         };
- 
-         fetchDoctorData();
-     }, []);*/
+    const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [message, setMessage] = useState("");
+    const [patients, setPatients] = useState<{ id: string; name: string }[]>([]);
+    const myPatient = route.params.patient; // myPatient'ı route'dan alıyoruz
+    const flatListRef = useRef<FlatList>(null);
+
+    const [messages, setMessages] = useState<{ id: string; sender: string; text: string; time: string; timestamp?: { seconds: number; nanoseconds: number } }[]>([]);
+    const [patientName, setPatientName] = useState<string>("");
+    const [doctorName, setDoctorName] = useState<string>("");
+    const doctorId = route.params.doctorId;
+    const patient = route.params.patient;
+    const patientId = route.params.patient?.id;
+
+
+    console.log("Route params:", route.params);
+    console.log("Doktor Adı :", doctorName);
+
+    // Veritabanından hasta ve doktor adlarını çek
+    useEffect(() => {
+        const fetchNames = async () => {
+            try {
+
+                const patientSnap = await getDoc(doc(db, "patients", patientId));
+                const doctorSnap = await getDoc(doc(db, "users", doctorId));
+
+                if (patientSnap.exists()) {
+                    setPatientName(`${patientSnap.data().ad} ${patientSnap.data().soyad}` || "Hasta");
+                } else {
+                    setErrorMessage("Hasta verisi bulunamadı.");
+                }
+                if (doctorSnap.exists()) {
+                    setDoctorName(`${doctorSnap.data().unvan} ${doctorSnap.data().ad} ${doctorSnap.data().soyad}` || "Doktor");
+                } else {
+                    setErrorMessage("Doktor verisi bulunamadı.");
+                }
+            } catch (err) {
+                console.error("Adları getirirken hata:", err);
+            }
+        };
+
+        fetchNames();
+    }, [patientId, doctorId]);
+
+    // Mesaj gönderme fonksiyonu
+    const handleSendMessage = async () => {
+        if (message.trim()) {
+            if (!doctorId || !patientId) {
+                console.error("Doktor veya Hasta ID'si geçerli değil!");
+                return;
+            }
+            try {
+                // Mesaj verilerini Firestore'a kaydediyoruz
+                const messageData = {
+                    senderId: doctorId,
+                    receiverId: patientId,  // Burada hasta ID'si seçili olmalı
+                    text: message,
+                    timestamp: serverTimestamp(),
+                    senderName: doctorName || "Doktor",
+                    receiverName: patientName || "Hasta",
+                    chatKey: [doctorId, patientId].sort().join("_"), // <-- EKLENDİ
+
+
+                };
+
+                // messages koleksiyonuna yeni bir mesaj ekliyoruz
+                await addDoc(collection(db, "messages"), messageData);
+                setMessage("");  // Mesaj kutusunu sıfırlıyoruz
+                flatListRef.current?.scrollToEnd({ animated: true });
+
+            } catch (error) {
+                console.error("Mesaj gönderme hatası:", error);
+            }
+        }
+    };
+
+    // Mesajları çekme fonksiyonu
+    useEffect(() => {
+
+        console.log("doctorId:", doctorId);
+        console.log("patientId:", patientId);
+        if (!doctorId || !patientId) return;
+
+        const messagesRef = collection(db, "messages");
+        const q = query(messagesRef,
+            where("chatKey", "==", [doctorId, patientId].sort().join("_")),
+            orderBy("timestamp") // Mesajları zaman sırasına göre sıralıyoruz
+        );
+
+        // Firestore'dan veri dinleme
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const messagesData = querySnapshot.docs.map((doc) => {
+                const data = doc.data();
+                const timestamp = data.timestamp;
+
+                let timeString = "Bilinmeyen zaman";
+                if (timestamp?.seconds) {
+                    const date = new Date(timestamp.seconds * 1000);
+                    timeString = date.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+                }
+
+                return {
+                    id: doc.id,
+                    sender: data.senderName || "Unknown",
+                    text: data.text || "",
+                    senderId: data.senderId,
+                    time: timeString,
+                };
+            });
+            console.log("Firestore'dan gelen mesajlar:", messagesData); // <-- EKLE
+
+            setMessages(messagesData);
+        });
+
+
+        return () => unsubscribe(); // component unmount olduğunda dinlemeyi durduruyoruz
+    }, [doctorId, patientId]);
+
+    useEffect(() => {
+        console.log("doctorId:", doctorId);
+        console.log("patientId:", patientId);
+    }, [doctorId, patientId]);
+
+    useEffect(() => {
+        const fetchPatients = async () => {
+            try {
+                const userId = auth.currentUser?.uid;
+                console.log("Giriş yapan doktor ID'si:", userId);
+
+                const patientsRef = collection(db, "patients");
+                const q = query(patientsRef, where("doctorId", "==", userId));
+                const querySnapshot = await getDocs(q);
+
+                const patientList = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: `${data.ad} ${data.soyad}`
+                    };
+                });
+
+                setPatients(patientList);
+            } catch (error) {
+                console.error("Hastalar alınırken hata oluştu:", error);
+            }
+        };
+
+        fetchPatients();
+    }, []);
+
+    //Doktor verisi
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useEffect(() => {
+        const fetchDoctorData = async () => {
+            try {
+                const docRef = doc(db, 'users', doctorId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    const fullName = `${userData?.unvan} ${userData?.ad} ${userData?.soyad}`;
+                    setDoctorName(fullName);
+                } else {
+                    setErrorMessage("Doktor verisi bulunamadı.");
+                    console.log("Doktor verisi bulunamadı.");
+                }
+            } catch (error) {
+                setErrorMessage("Veri çekme hatası oluştu.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDoctorData();
+    }, []);
 
 
 
@@ -214,14 +218,22 @@ const ChatScreen = ({ route }: { route: any }) => {
                             <View
                                 style={[
                                     styles.messageBox,
-                                    item.sender === "Doktor" ? styles.doctorMessage : styles.patientMessage,
+                                    item.senderId === doctorId ? styles.doctorMessage : styles.patientMessage,
                                 ]}
                             >
                                 <Text style={styles.messageText}>{item.text}</Text>
                                 <Text style={styles.timeText}>{item.time}</Text>
                             </View>
                         )}
-                        keyExtractor={(item) => item.id}
+                        keyExtractor={(item: {
+                            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                            [x: string]: any;
+                            sender: string;
+                            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                            text: any;
+                            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                            time: any; id: any;
+                        }) => item.id}
                     />
                 </View>
 
@@ -256,8 +268,11 @@ const styles = StyleSheet.create({
         height: 600, // Yüksekliği belirleyerek sabit tutuyoruz
         backgroundColor: "white",
         padding: 20,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        borderWidth: 2,
+        marginBottom: -2,
+        borderColor: "#183B4E",
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
         alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.1,
@@ -271,9 +286,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "100%",
         padding: 10,
-        backgroundColor: "#ffffff",
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        backgroundColor: "#2E5077",
+        borderRadius: 10,
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 5,
@@ -282,7 +296,7 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 18,
         fontWeight: "bold",
-
+        color: "white",
     },
     infoBox: {
         width: "100%",
@@ -290,6 +304,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#f0f0f0",
         borderRadius: 8,
         marginVertical: 20,
+        borderWidth: 2,
+        borderColor: "#183B4E",
     },
     infoText: {
         fontSize: 16,
@@ -306,8 +322,8 @@ const styles = StyleSheet.create({
     messagesContainer: {
         width: "100%",
         flex: 1,
-        flexGrow: 1,
         marginBottom: 20,
+        padding: 10,
     },
     messageBox: {
         maxWidth: "80%",
@@ -316,16 +332,18 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     doctorMessage: {
+        borderWidth: 1,
+        borderColor: "2E5077",
+        backgroundColor: "#eee", // Hasta mesajları için yeşil tonları
+        alignSelf: "flex-end",
+    },
+    patientMessage: {
         backgroundColor: "#e1f5fe", // Doktor mesajları için mavi tonları
         alignSelf: "flex-start",
     },
-    patientMessage: {
-        backgroundColor: "#c8e6c9", // Hasta mesajları için yeşil tonları
-        alignSelf: "flex-end",
-    },
     messageText: {
         fontSize: 16,
-        color: "#333",
+        color: "#2E5077",
     },
     timeText: {
         fontSize: 12,
@@ -341,13 +359,13 @@ const styles = StyleSheet.create({
         width: "85%",
         padding: 10,
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#2E5077",
         borderRadius: 8,
         marginRight: 10,
         fontSize: 16,
     },
     sendButton: {
-        backgroundColor: "#007BFF",
+        backgroundColor: "#2E5077",
         padding: 10,
         borderRadius: 8,
     },
