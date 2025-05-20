@@ -54,23 +54,23 @@ const Stack = createNativeStackNavigator<RootStackParamList>(); // Doğru Stack 
 const Navigation = () => {
   return (
     <Stack.Navigator initialRouteName="LoginScreen">
-      <Stack.Screen name="LoginScreen" component={LoginScreen} />
-      <Stack.Screen name="DoctorMenu" component={DoctorMenu} />
-      <Stack.Screen name="PatientMenu" component={PatientMenu} />
-      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
-      <Stack.Screen name="DrRandevuButton" component={DrRandevuButton} />
-      <Stack.Screen name="PtRandevuButton" component={PtRandevuButton} />
-      <Stack.Screen name="DrHastalar" component={DrHastalar} />
+      <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ title: 'Giriş' }} />
+      <Stack.Screen name="DoctorMenu" component={DoctorMenu} options={{ title: 'Menü' }} />
+      <Stack.Screen name="PatientMenu" component={PatientMenu} options={{ title: 'Menü' }} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ title: 'Doktor Kayıt' }} />
+      <Stack.Screen name="DrRandevuButton" component={DrRandevuButton} options={{ title: 'Randevular' }} />
+      <Stack.Screen name="PtRandevuButton" component={PtRandevuButton} options={{ title: 'Randevularım' }} />
+      <Stack.Screen name="DrHastalar" component={DrHastalar} options={{ title: 'Hasta İşlemleri' }} />
       <Stack.Screen name="DrMessageScreen" component={DrMessageScreen} />
-      <Stack.Screen name="DrMessage" component={DoctorMessage} />
-      <Stack.Screen name="PtReport" component={PtReport} />
-      <Stack.Screen name="PatientRegister" component={PatientRegister} />
-      <Stack.Screen name="ChatScreen" component={ChatScreen} />
-      <Stack.Screen name="PtChatScreen" component={PtChatScreen} />
-      <Stack.Screen name="Bildirimler" component={Bildirimler} />
-      <Stack.Screen name="PtDailyReport" component={PtDailyReport} />
-      <Stack.Screen name="Reports" component={Reports} />
-      <Stack.Screen name="ReportDetail" component={ReportDetail} />
+      <Stack.Screen name="DrMessage" component={DoctorMessage} options={{ title: 'Mesaj' }} />
+      <Stack.Screen name="PtReport" component={PtReport} options={{ title: 'Raporlarım' }} />
+      <Stack.Screen name="PatientRegister" component={PatientRegister} options={{ title: 'Hasta Kayıt' }} />
+      <Stack.Screen name="ChatScreen" component={ChatScreen} options={{ title: 'Mesajlarım' }} />
+      <Stack.Screen name="PtChatScreen" component={PtChatScreen} options={{ title: 'Mesajlarım' }} />
+      <Stack.Screen name="Bildirimler" component={Bildirimler} options={{ title: 'Bildirimler' }} />
+      <Stack.Screen name="PtDailyReport" component={PtDailyReport} options={{ title: 'Raporum' }} />
+      <Stack.Screen name="Reports" component={Reports} options={{ title: 'Raporlar' }} />
+      <Stack.Screen name="ReportDetail" component={ReportDetail} options={{ title: 'Rapor Detayları' }} />
     </Stack.Navigator>
   );
 };
