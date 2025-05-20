@@ -173,7 +173,7 @@ const DrRandevuButton = () => {
                     <Text style={styles.emptyText}>
                         {selectedDate === "Bugün" && "Bugüne ait randevu talebi bulunmamaktadır."}
                         {selectedDate === "Dün" && "Düne ait geçmiş randevu bulunmamaktadır."}
-                        {selectedDate === "Yarın" && "Yarına ait randevu bulunmamaktadır."}
+                        {selectedDate === "Yarın" && "Yarına ait randevu talebi bulunmamaktadır."}
                     </Text>
                 ) : (
 

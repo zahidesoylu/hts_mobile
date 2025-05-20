@@ -116,12 +116,12 @@ const ReportDetail = ({ route }: any) => {
                             <Text style={styles.itemTitle}>📌 Kategori: {aiCategory}</Text>
                         </View>
                         <View style={styles.resultItem}>
-                            <Text style={styles.itemTitle}>🧠 Not</Text>
-                            <Text style={styles.itemText}>{aiNote}</Text>
-                        </View>
-                        <View style={styles.resultItem}>
                             <Text style={styles.itemTitle}>📝 Açıklama</Text>
                             <Text style={styles.itemText}>{aiDescription}</Text>
+                        </View>
+                        <View style={styles.resultItem}>
+                            <Text style={styles.itemTitle}>🧠 Not</Text>
+                            <Text style={styles.itemText}>{aiNote}</Text>
                         </View>
                     </ScrollView>
                 )}

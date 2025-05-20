@@ -4,18 +4,16 @@ import { FontAwesome } from "@expo/vector-icons";
 import { doc, getDoc, getDocs, collection, addDoc } from 'firebase/firestore';
 import { db, auth } from "../../src/config/firebaseConfig";
 import BottomMenu from "../components/ui/BottomMenu";
-import firestore from '@react-native-firebase/firestore';
 import { Picker } from "@react-native-picker/picker"; // Picker bileşenini içe aktarıyoruz
 
 
+interface Hastalik {
+    id: string;
+    hastalik: string;
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const PatientRegister = ({ navigation }: any) => {
-
-    interface Hastalik {
-        id: string; // Firestore'dan gelen her bir hastalık objesinde bir id olacak
-        hastalik: string;
-    }
-
     const [doctorName, setDoctorName] = useState<string | null>(null);
     const [patientData, setPatientData] = useState({
         ad: "",

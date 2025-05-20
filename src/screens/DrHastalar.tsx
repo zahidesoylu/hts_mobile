@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from "react-native";
 import BottomMenu from "../components/ui/BottomMenu";
 import { db, auth } from "../../src/config/firebaseConfig";
 import { doc, getDoc, query, where, deleteDoc, getDocs, collection } from 'firebase/firestore';
 import { getAuth } from "firebase/auth";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -74,7 +75,6 @@ const DrHastalar = ({ navigation, route }: any) => {
 
     return (
         <View style={styles.container}>
-
             <View style={styles.innerContainer}>
                 <Text style={styles.dateText}>
                     {new Date().toLocaleDateString("tr-TR", {

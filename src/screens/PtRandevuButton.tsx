@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   infoBox: {
     width: "100%",
     padding: 15,
-    backgroundColor: "#183B4E",
+    backgroundColor: "#2E5077",
     borderRadius: 8,
     marginVertical: 10,
   },
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   },
   createButton: {
     width: "80%",
-    backgroundColor: "#183B4E",
+    backgroundColor: "#2E5077",
     padding: 12,
     borderRadius: 12,
     alignItems: "center",
